@@ -1,0 +1,506 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1" />
+<title>Study Desk</title>
+<meta name="theme-color" content="#2D5F4C" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="Study Desk" />
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232D5F4C'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23FAF9F4' font-family='Georgia,serif'%3ES%3C/text%3E%3C/svg%3E" />
+<link rel="apple-touch-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Crect width='100' height='100' rx='20' fill='%232D5F4C'/%3E%3Ctext x='50' y='68' font-size='58' text-anchor='middle' fill='%23FAF9F4' font-family='Georgia,serif'%3ES%3C/text%3E%3C/svg%3E" />
+<link rel="manifest" href='data:application/manifest+json,{"name":"Study%20Desk","short_name":"StudyDesk","start_url":".","display":"standalone","background_color":"%23FAF9F4","theme_color":"%232D5F4C","icons":[{"src":"data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 100 100%27%3E%3Crect width=%27100%27 height=%27100%27 rx=%2720%27 fill=%27%232D5F4C%27/%3E%3Ctext x=%2750%27 y=%2768%27 font-size=%2758%27 text-anchor=%27middle%27 fill=%27%23FAF9F4%27 font-family=%27Georgia,serif%27%3ES%3C/text%3E%3C/svg%3E","sizes":"192x192","type":"image/svg%2Bxml"}]}' />
+<style>
+  :root {
+    --paper: #FAF9F4;
+    --paper-dark: #F0EEE4;
+    --ink: #232320;
+    --ink-soft: #5B5A52;
+    --line: #DDD9CB;
+    --pine: #2D5F4C;
+    --pine-dark: #1F4436;
+    --gold: #B9891E;
+    --rust: #A54A26;
+    --card: #FFFFFF;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--paper-dark); }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Inter", Segoe UI, Roboto, sans-serif;
+    color: var(--ink);
+    min-height: 100vh;
+  }
+  #app { max-width: 720px; margin: 0 auto; background: var(--paper); min-height: 100vh; border-left: 1px solid var(--line); border-right: 1px solid var(--line); }
+  .header { padding: 18px 20px; border-bottom: 1px solid var(--line); display: flex; align-items: center; justify-content: space-between; position: sticky; top: 0; background: var(--paper); z-index: 5; }
+  .brand { font-family: Georgia, serif; font-size: 22px; font-weight: 700; color: var(--pine-dark); }
+  .back { font-size: 13px; color: var(--ink-soft); cursor: pointer; }
+  .content { padding: 20px; }
+  input, textarea {
+    font-family: inherit; border: 1px solid var(--line); border-radius: 6px; padding: 10px 12px;
+    font-size: 14px; background: var(--card); color: var(--ink); width: 100%;
+  }
+  input:focus, textarea:focus { outline: 2px solid var(--pine); outline-offset: 1px; }
+  textarea { min-height: 110px; resize: vertical; }
+  button {
+    font-family: inherit; font-weight: 600; font-size: 14px; padding: 10px 16px;
+    border-radius: 6px; border: none; cursor: pointer;
+  }
+  button:disabled { opacity: 0.5; cursor: default; }
+  .btn-primary { background: var(--pine); color: #fff; }
+  .btn-secondary { background: var(--paper-dark); color: var(--ink); }
+  .btn-gold { background: var(--gold); color: #fff; }
+  .btn-ghost { background: transparent; color: var(--rust); padding: 4px 8px; font-size: 12px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; }
+  .deck-row {
+    display: flex; align-items: center; justify-content: space-between; padding: 14px 16px;
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px; cursor: pointer; margin-bottom: 8px;
+  }
+  .deck-row:active { background: var(--paper-dark); }
+  .deck-title { font-weight: 600; font-size: 15px; }
+  .deck-meta { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .tabs { display: flex; gap: 4px; padding: 0 20px; border-bottom: 1px solid var(--line); position: sticky; top: 61px; background: var(--paper); z-index: 4; }
+  .tab { cursor: pointer; padding: 10px 12px; font-size: 13px; font-weight: 600; border-bottom: 2px solid transparent; color: var(--ink-soft); }
+  .tab.active { color: var(--pine-dark); border-bottom: 2px solid var(--pine); }
+  .note-card, .card-row {
+    background: var(--card); border: 1px solid var(--line); border-radius: 8px; padding: 14px; margin-bottom: 10px;
+  }
+  .empty { color: var(--ink-soft); font-size: 14px; text-align: center; padding: 30px 0; }
+  .spinner {
+    display: inline-block; width: 14px; height: 14px; border: 2px solid var(--line);
+    border-top-color: var(--pine); border-radius: 50%; animation: spin 0.7s linear infinite; vertical-align: middle;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .flash-card {
+    background: var(--card); border: 1px solid var(--line); border-radius: 10px; padding: 40px 24px;
+    min-height: 120px; display: flex; align-items: center; justify-content: center;
+    font-size: 17px; font-weight: 600; margin-bottom: 16px; text-align: center; cursor: pointer;
+  }
+  .quiz-option { padding: 12px 14px; border-radius: 8px; border: 1px solid var(--line); background: var(--card); cursor: pointer; font-size: 14px; margin-bottom: 8px; }
+  .center { text-align: center; }
+  .small { font-size: 12px; color: var(--ink-soft); }
+  .settings-link { font-size: 12px; color: var(--ink-soft); cursor: pointer; text-decoration: underline; }
+  .modal-backdrop { position: fixed; inset: 0; background: rgba(0,0,0,0.4); display: flex; align-items: center; justify-content: center; z-index: 20; padding: 20px; }
+  .modal { background: var(--card); border-radius: 10px; padding: 20px; max-width: 380px; width: 100%; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<script>
+// ---------- storage ----------
+const DATA_KEY = "studydesk-data-v1";
+const KEY_KEY = "studydesk-api-key";
+function loadData() {
+  try { return JSON.parse(localStorage.getItem(DATA_KEY)) || { decks: [], notes: [], cards: [] }; }
+  catch { return { decks: [], notes: [], cards: [] }; }
+}
+function saveData(data) { localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+function getApiKey() { return localStorage.getItem(KEY_KEY) || ""; }
+function setApiKey(k) { localStorage.setItem(KEY_KEY, k); }
+
+let state = loadData();
+let view = { screen: "decks", activeDeckId: null, tab: "notes", generating: false, genError: "", studySession: null, quiz: null, showKeyModal: false };
+
+const uid = () => Math.random().toString(36).slice(2, 10);
+const todayISO = () => new Date().toISOString().slice(0, 10);
+function addDays(d, n) { const dt = new Date(d); dt.setDate(dt.getDate() + n); return dt.toISOString().slice(0, 10); }
+
+function persist() { saveData(state); }
+
+// ---------- AI ----------
+const GEMINI_MODEL = "gemini-2.5-flash";
+async function askGemini(prompt) {
+  const key = getApiKey();
+  if (!key) throw new Error("no-key");
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/${GEMINI_MODEL}:generateContent`;
+  const res = await fetch(url, {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      "x-goog-api-key": key
+    },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }]
+    })
+  });
+  const data = await res.json();
+  if (data.error) throw new Error(data.error.message || "api-error");
+  const text = (data.candidates?.[0]?.content?.parts || []).map(p => p.text || "").join("\n").trim();
+  if (!text) throw new Error("empty-response");
+  return text.replace(/```json|```/g, "").trim();
+}
+
+async function generateFlashcards(deckId, noteContent) {
+  view.generating = true; view.genError = ""; render();
+  try {
+    const prompt = `You are helping a student turn study notes into flashcards. Read the notes below and produce 5 to 8 flashcards that test the key facts, definitions, and concepts. Respond with ONLY a JSON array, no preamble, no markdown fences, in this exact shape:
+[{"question": "...", "answer": "..."}]
+Keep questions specific and answers concise (under 30 words).
+
+NOTES:
+"""
+${noteContent}
+"""`;
+    const raw = await askGemini(prompt);
+    const parsed = JSON.parse(raw);
+    const newCards = parsed.filter(c => c.question && c.answer).map(c => ({
+      id: uid(), deckId, question: c.question, answer: c.answer,
+      interval: 1, ease: 2.3, repetitions: 0, nextReview: todayISO()
+    }));
+    state.cards = [...newCards, ...state.cards];
+    persist();
+    view.tab = "cards";
+  } catch (e) {
+    view.genError = e.message === "no-key"
+      ? "Add your Gemini API key first (Settings link below) to use AI generation."
+      : "Couldn't generate flashcards. Check your API key or try again.";
+  } finally {
+    view.generating = false; render();
+  }
+}
+
+// ---------- actions ----------
+function createDeck(title, subject) {
+  if (!title.trim()) return;
+  const deck = { id: uid(), title: title.trim(), subject: subject.trim() || "General", createdAt: todayISO() };
+  state.decks = [deck, ...state.decks];
+  persist();
+  view.activeDeckId = deck.id; view.tab = "notes";
+  render();
+}
+function deleteDeck(id) {
+  state.decks = state.decks.filter(d => d.id !== id);
+  state.notes = state.notes.filter(n => n.deckId !== id);
+  state.cards = state.cards.filter(c => c.deckId !== id);
+  persist();
+  if (view.activeDeckId === id) view.activeDeckId = null;
+  render();
+}
+function saveNote(deckId, content) {
+  if (!content.trim()) return;
+  state.notes = [{ id: uid(), deckId, content: content.trim(), createdAt: todayISO() }, ...state.notes];
+  persist(); render();
+}
+function deleteNote(id) { state.notes = state.notes.filter(n => n.id !== id); persist(); render(); }
+function addManualCard(deckId, question, answer) {
+  if (!question.trim() || !answer.trim()) return;
+  state.cards = [{ id: uid(), deckId, question: question.trim(), answer: answer.trim(), interval: 1, ease: 2.3, repetitions: 0, nextReview: todayISO() }, ...state.cards];
+  persist(); render();
+}
+function deleteCard(id) { state.cards = state.cards.filter(c => c.id !== id); persist(); render(); }
+
+function startStudy(deckId, useDue) {
+  const deckCards = state.cards.filter(c => c.deckId === deckId);
+  const pool = useDue ? deckCards.filter(c => c.nextReview <= todayISO()) : deckCards;
+  if (pool.length === 0) return;
+  view.studySession = { queue: [...pool].sort(() => Math.random() - 0.5), index: 0, showAnswer: false };
+  view.tab = "study"; render();
+}
+function rateCard(rating) {
+  const session = view.studySession;
+  const card = session.queue[session.index];
+  state.cards = state.cards.map(c => {
+    if (c.id !== card.id) return c;
+    let { interval, ease, repetitions } = c;
+    if (rating === "again") { repetitions = 0; interval = 1; ease = Math.max(1.3, ease - 0.2); }
+    else {
+      repetitions += 1;
+      if (rating === "hard") { interval = Math.max(1, Math.round(interval * 1.2)); ease = Math.max(1.3, ease - 0.05); }
+      else if (rating === "good") { interval = Math.round(interval * ease); }
+      else if (rating === "easy") { interval = Math.round(interval * ease * 1.3); ease = ease + 0.1; }
+    }
+    return { ...c, interval, ease, repetitions, nextReview: addDays(todayISO(), interval) };
+  });
+  persist();
+  const nextIndex = session.index + 1;
+  if (nextIndex >= session.queue.length) { view.studySession = null; view.tab = "cards"; }
+  else { view.studySession = { ...session, index: nextIndex, showAnswer: false }; }
+  render();
+}
+function startQuiz(deckId) {
+  const deckCards = state.cards.filter(c => c.deckId === deckId);
+  if (deckCards.length < 3) return;
+  const shuffled = [...deckCards].sort(() => Math.random() - 0.5).slice(0, Math.min(10, deckCards.length));
+  const questions = shuffled.map(c => {
+    const distractors = deckCards.filter(o => o.id !== c.id).sort(() => Math.random() - 0.5).slice(0, 3).map(o => o.answer);
+    const options = [...distractors, c.answer].sort(() => Math.random() - 0.5);
+    return { question: c.question, correct: c.answer, options };
+  });
+  view.quiz = { questions, index: 0, score: 0, picked: null };
+  view.tab = "quiz"; render();
+}
+function pickQuizOption(opt) {
+  if (view.quiz.picked) return;
+  const correct = opt === view.quiz.questions[view.quiz.index].correct;
+  view.quiz.picked = opt;
+  view.quiz.score += correct ? 1 : 0;
+  render();
+}
+function nextQuizQuestion() {
+  const nextIndex = view.quiz.index + 1;
+  if (nextIndex >= view.quiz.questions.length) { view.tab = "quizdone"; }
+  else { view.quiz.index = nextIndex; view.quiz.picked = null; }
+  render();
+}
+
+// ---------- render helpers ----------
+function esc(s) { const d = document.createElement("div"); d.textContent = s; return d.innerHTML; }
+
+function render() {
+  const app = document.getElementById("app");
+  const activeDeck = state.decks.find(d => d.id === view.activeDeckId);
+
+  let html = `<div class="header"><div class="brand">Study Desk</div>`;
+  html += activeDeck ? `<div class="back" onclick="goHome()">&larr; all decks</div>` : `<div class="settings-link" onclick="openKeyModal()">API key</div>`;
+  html += `</div>`;
+
+  if (!activeDeck) {
+    html += renderDeckList();
+  } else {
+    html += renderDeckTabs(activeDeck);
+    html += `<div class="content">` + renderTabContent(activeDeck) + `</div>`;
+  }
+
+  if (view.showKeyModal) html += renderKeyModal();
+
+  app.innerHTML = html;
+  wireEvents(activeDeck);
+}
+
+function renderDeckList() {
+  let html = `<div class="content">`;
+  html += `<div class="row" style="margin-bottom:18px;">
+    <input id="deckTitle" placeholder="Deck title, e.g. Physics: Mechanics" style="flex:1 1 200px" />
+    <input id="deckSubject" placeholder="Subject (optional)" style="width:140px" />
+    <button class="btn-primary" id="createDeckBtn">New deck</button>
+  </div>`;
+  if (state.decks.length === 0) {
+    html += `<div class="empty">No decks yet. Create one above to start adding notes and flashcards.</div>`;
+  } else {
+    state.decks.forEach(d => {
+      const dCards = state.cards.filter(c => c.deckId === d.id);
+      const dDue = dCards.filter(c => c.nextReview <= todayISO()).length;
+      html += `<div class="deck-row" data-open="${d.id}">
+        <div>
+          <div class="deck-title">${esc(d.title)}</div>
+          <div class="deck-meta">${esc(d.subject)} · ${dCards.length} cards${dDue > 0 ? ` · ${dDue} due` : ""}</div>
+        </div>
+        <button class="btn-ghost" data-delete="${d.id}">Delete</button>
+      </div>`;
+    });
+  }
+  html += `</div>`;
+  return html;
+}
+
+function renderDeckTabs(deck) {
+  const deckCards = state.cards.filter(c => c.deckId === deck.id);
+  const tabs = [["notes", "Notes"], ["cards", `Flashcards (${deckCards.length})`], ["quiz", "Quiz"]];
+  let html = `<div class="tabs">`;
+  tabs.forEach(([key, label]) => {
+    const active = view.tab === key || (key === "cards" && view.tab === "study") || (key === "quiz" && view.tab === "quizdone");
+    html += `<div class="tab ${active ? "active" : ""}" data-tab="${key}">${label}</div>`;
+  });
+  html += `</div>`;
+  return html;
+}
+
+function renderTabContent(deck) {
+  const deckNotes = state.notes.filter(n => n.deckId === deck.id);
+  const deckCards = state.cards.filter(c => c.deckId === deck.id);
+  const dueCards = deckCards.filter(c => c.nextReview <= todayISO());
+
+  if (view.tab === "notes") {
+    let html = `<textarea id="noteDraft" placeholder="Paste or type your notes here…"></textarea>
+      <div class="row" style="margin-top:8px;">
+        <button class="btn-secondary" id="saveNoteBtn">Save note</button>
+        <button class="btn-gold" id="genFromDraftBtn" ${view.generating ? "disabled" : ""}>
+          ${view.generating ? '<span class="spinner"></span> ' : ""}Generate flashcards from this
+        </button>
+      </div>`;
+    if (view.genError) html += `<div class="small" style="color:var(--rust); margin-top:8px;">${esc(view.genError)}</div>`;
+    html += `<div style="margin-top:22px;">`;
+    if (deckNotes.length === 0) html += `<div class="empty">No notes yet.</div>`;
+    deckNotes.forEach(n => {
+      html += `<div class="note-card">
+        <div style="white-space:pre-wrap; line-height:1.5; font-size:14px;">${esc(n.content)}</div>
+        <div class="row" style="justify-content:space-between; margin-top:10px;">
+          <span class="settings-link" style="color:var(--gold);" data-gen-note="${n.id}">Generate flashcards &rarr;</span>
+          <button class="btn-ghost" data-delete-note="${n.id}">Delete</button>
+        </div>
+      </div>`;
+    });
+    html += `</div>`;
+    return html;
+  }
+
+  if (view.tab === "cards") {
+    let html = `<div class="row" style="margin-bottom:14px;">
+      <button class="btn-primary" id="studyDueBtn" ${dueCards.length === 0 ? "disabled" : ""}>Study due cards (${dueCards.length})</button>
+      <button class="btn-secondary" id="studyAllBtn" ${deckCards.length === 0 ? "disabled" : ""}>Study all (${deckCards.length})</button>
+    </div>
+    <div class="row" style="margin-bottom:18px;">
+      <input id="cardQ" placeholder="Question" style="flex:1 1 160px" />
+      <input id="cardA" placeholder="Answer" style="flex:1 1 160px" />
+      <button class="btn-secondary" id="addCardBtn">Add card</button>
+    </div>`;
+    if (deckCards.length === 0) {
+      html += `<div class="empty">No flashcards yet — generate some from your notes, or add one manually above.</div>`;
+    } else {
+      deckCards.forEach(c => {
+        html += `<div class="card-row" style="display:flex; justify-content:space-between; gap:10px;">
+          <div>
+            <div style="font-weight:600; font-size:14px;">${esc(c.question)}</div>
+            <div class="small" style="margin-top:4px;">${esc(c.answer)}</div>
+            <div class="small" style="margin-top:6px;">${c.nextReview <= todayISO() ? "Due now" : `Next review ${c.nextReview}`}</div>
+          </div>
+          <button class="btn-ghost" data-delete-card="${c.id}" style="height:fit-content;">Delete</button>
+        </div>`;
+      });
+    }
+    return html;
+  }
+
+  if (view.tab === "study" && view.studySession) {
+    const session = view.studySession;
+    const card = session.queue[session.index];
+    let html = `<div class="center"><div class="small" style="margin-bottom:14px;">Card ${session.index + 1} of ${session.queue.length}</div>`;
+    html += `<div class="flash-card" id="flashCard">${esc(session.showAnswer ? card.answer : card.question)}</div>`;
+    if (!session.showAnswer) {
+      html += `<div class="small">Tap the card to reveal the answer</div>`;
+    } else {
+      html += `<div class="row" style="justify-content:center;">
+        <button style="background:var(--rust); color:#fff;" data-rate="again">Again</button>
+        <button style="background:#C98A3E; color:#fff;" data-rate="hard">Hard</button>
+        <button class="btn-primary" data-rate="good">Good</button>
+        <button style="background:var(--pine-dark); color:#fff;" data-rate="easy">Easy</button>
+      </div>`;
+    }
+    html += `</div>`;
+    return html;
+  }
+
+  if (view.tab === "quiz" && !view.quiz) {
+    if (deckCards.length < 3) return `<div class="center"><div class="empty">Add at least 3 flashcards to this deck to unlock a quiz.</div></div>`;
+    return `<div class="center"><button class="btn-primary" id="startQuizBtn">Start quiz (${Math.min(10, deckCards.length)} questions)</button></div>`;
+  }
+
+  if (view.tab === "quiz" && view.quiz) {
+    const q = view.quiz.questions[view.quiz.index];
+    let html = `<div class="small" style="margin-bottom:10px;">Question ${view.quiz.index + 1} of ${view.quiz.questions.length} · Score ${view.quiz.score}</div>
+      <div style="font-size:16px; font-weight:600; margin-bottom:16px;">${esc(q.question)}</div>`;
+    q.options.forEach(opt => {
+      let style = "";
+      if (view.quiz.picked) {
+        if (opt === q.correct) style = "background:#E4EFE9; border-color:var(--pine);";
+        else if (opt === view.quiz.picked) style = "background:#F3E2D9; border-color:var(--rust);";
+      }
+      html += `<div class="quiz-option" style="${style}" data-pick="${esc(opt)}">${esc(opt)}</div>`;
+    });
+    if (view.quiz.picked) {
+      html += `<button class="btn-primary" id="nextQuizBtn" style="margin-top:10px;">${view.quiz.index + 1 >= view.quiz.questions.length ? "See results" : "Next question"}</button>`;
+    }
+    return html;
+  }
+
+  if (view.tab === "quizdone" && view.quiz) {
+    const pct = view.quiz.score / view.quiz.questions.length;
+    const msg = pct === 1 ? "Perfect score." : pct >= 0.7 ? "Solid work." : "Worth another pass through the notes.";
+    return `<div class="center">
+      <div style="font-family:Georgia,serif; font-size:28px; color:var(--pine-dark); margin-bottom:6px;">${view.quiz.score} / ${view.quiz.questions.length}</div>
+      <div class="small" style="margin-bottom:18px;">${msg}</div>
+      <div class="row" style="justify-content:center;">
+        <button class="btn-primary" id="retakeQuizBtn">Retake quiz</button>
+        <button class="btn-secondary" id="backToCardsBtn">Back to cards</button>
+      </div>
+    </div>`;
+  }
+
+  return "";
+}
+
+function renderKeyModal() {
+  return `<div class="modal-backdrop" id="keyModalBackdrop">
+    <div class="modal">
+      <div style="font-weight:700; margin-bottom:8px;">Gemini API key</div>
+      <div class="small" style="margin-bottom:12px;">Needed only for "Generate flashcards" AI features. Get a free key at aistudio.google.com/apikey. Stored only on this device.</div>
+      <input id="apiKeyInput" placeholder="AIza…" value="${esc(getApiKey())}" style="margin-bottom:12px;" />
+      <div class="row" style="justify-content:flex-end;">
+        <button class="btn-secondary" id="closeKeyModal">Cancel</button>
+        <button class="btn-primary" id="saveKeyModal">Save</button>
+      </div>
+    </div>
+  </div>`;
+}
+
+function goHome() { view.activeDeckId = null; render(); }
+function openKeyModal() { view.showKeyModal = true; render(); }
+
+// ---------- event wiring ----------
+function wireEvents(activeDeck) {
+  const $ = (sel) => document.querySelector(sel);
+  const $$ = (sel) => document.querySelectorAll(sel);
+
+  if (!activeDeck) {
+    $("#createDeckBtn")?.addEventListener("click", () => {
+      createDeck($("#deckTitle").value, $("#deckSubject").value);
+    });
+    $$("[data-open]").forEach(el => el.addEventListener("click", (e) => {
+      if (e.target.closest("[data-delete]")) return;
+      view.activeDeckId = el.getAttribute("data-open"); view.tab = "notes"; render();
+    }));
+    $$("[data-delete]").forEach(el => el.addEventListener("click", (e) => {
+      e.stopPropagation(); deleteDeck(el.getAttribute("data-delete"));
+    }));
+  } else {
+    $$("[data-tab]").forEach(el => el.addEventListener("click", () => { view.tab = el.getAttribute("data-tab"); render(); }));
+
+    $("#saveNoteBtn")?.addEventListener("click", () => saveNote(activeDeck.id, $("#noteDraft").value));
+    $("#genFromDraftBtn")?.addEventListener("click", () => generateFlashcards(activeDeck.id, $("#noteDraft").value));
+    $$("[data-gen-note]").forEach(el => el.addEventListener("click", () => {
+      const note = state.notes.find(n => n.id === el.getAttribute("data-gen-note"));
+      if (note) generateFlashcards(activeDeck.id, note.content);
+    }));
+    $$("[data-delete-note]").forEach(el => el.addEventListener("click", () => deleteNote(el.getAttribute("data-delete-note"))));
+
+    $("#studyDueBtn")?.addEventListener("click", () => startStudy(activeDeck.id, true));
+    $("#studyAllBtn")?.addEventListener("click", () => startStudy(activeDeck.id, false));
+    $("#addCardBtn")?.addEventListener("click", () => addManualCard(activeDeck.id, $("#cardQ").value, $("#cardA").value));
+    $$("[data-delete-card]").forEach(el => el.addEventListener("click", () => deleteCard(el.getAttribute("data-delete-card"))));
+
+    $("#flashCard")?.addEventListener("click", () => {
+      if (!view.studySession.showAnswer) { view.studySession.showAnswer = true; render(); }
+    });
+    $$("[data-rate]").forEach(el => el.addEventListener("click", () => rateCard(el.getAttribute("data-rate"))));
+
+    $("#startQuizBtn")?.addEventListener("click", () => startQuiz(activeDeck.id));
+    $$("[data-pick]").forEach(el => el.addEventListener("click", () => pickQuizOption(el.getAttribute("data-pick"))));
+    $("#nextQuizBtn")?.addEventListener("click", nextQuizQuestion);
+    $("#retakeQuizBtn")?.addEventListener("click", () => { view.quiz = null; startQuiz(activeDeck.id); });
+    $("#backToCardsBtn")?.addEventListener("click", () => { view.quiz = null; view.tab = "cards"; render(); });
+  }
+
+  $(".settings-link")?.addEventListener("click", openKeyModal);
+  $("#closeKeyModal")?.addEventListener("click", () => { view.showKeyModal = false; render(); });
+  $("#saveKeyModal")?.addEventListener("click", () => {
+    setApiKey($("#apiKeyInput").value.trim());
+    view.showKeyModal = false; render();
+  });
+  $("#keyModalBackdrop")?.addEventListener("click", (e) => {
+    if (e.target.id === "keyModalBackdrop") { view.showKeyModal = false; render(); }
+  });
+}
+
+render();
+
+// register a minimal service worker for installability, if supported
+if ("serviceWorker" in navigator) {
+  const swCode = `self.addEventListener('fetch', () => {});`;
+  const swUrl = URL.createObjectURL(new Blob([swCode], { type: "application/javascript" }));
+  navigator.serviceWorker.register(swUrl).catch(() => {});
+}
+</script>
+</body>
+</html>
