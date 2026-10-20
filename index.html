@@ -268,6 +268,16 @@ body{background:#070b14;background-image:radial-gradient(60rem 30rem at 85% -10%
 .quiz-opt{border:1px solid #1a2744}
 .empty2 .ec{background:#12284a}
 .empty2 h3{color:#6f84ad}
+
+/* ===== background jobs ===== */
+#jobs-root{position:fixed;left:0;right:0;bottom:calc(5.4rem + env(safe-area-inset-bottom));z-index:55;display:flex;flex-direction:column;align-items:center;gap:.45rem;padding:0 1rem;pointer-events:none}
+.jobpill{pointer-events:auto;display:flex;align-items:center;gap:.6rem;max-width:min(30rem,100%);background:#0f1729;color:#fff;border:1.5px solid #2de2a6;border-radius:999px;padding:.55rem .95rem;font-size:.85rem;font-weight:500;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);cursor:pointer;animation:jpin .25s ease}
+.jobpill span.t{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.jobpill.err{border-color:#ff6b9a}
+.jobpill.ok{border-color:#2de2a6;background:#12372f}
+.jobpill .jx{margin-left:.3rem;background:transparent;color:#ff6b9a;border:1px solid #ff6b9a;border-radius:999px;padding:.15rem .6rem;font:inherit;font-size:.78rem;cursor:pointer;flex:none}
+.jobpill .x{margin-left:.2rem;opacity:.7;font-size:1rem;line-height:1}
+@keyframes jpin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
 </style>
 </head>
 <body>
@@ -287,6 +297,7 @@ body{background:#070b14;background-image:radial-gradient(60rem 30rem at 85% -10%
 </div>
 <div id="modal-root"></div>
 <div id="toast-root"></div>
+<div id="jobs-root"></div>
 <input type="file" id="imgInput" accept="image/*,application/pdf" multiple style="display:none">
 <input type="file" id="schedInput" accept="image/*,application/pdf" multiple style="display:none" onchange="importSchedule(this.files)">
 
@@ -797,6 +808,7 @@ async function createWordDoc(){
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     if(document.getElementById("docStatus")) closeModal();
     toast(mode === "guide" ? "Study guide created" : "Word document created");
+    notifyLocal("QuickLearn", mode === "guide" ? "Your study guide is ready" : "Your Word document is ready", "#/");
   }catch(e){
     console.error(e);
     setDocStatus(esc(e.message || "Couldn't create the Word document") + (mode === "guide" ? "<br><span class='muted'>You can try again, or choose Raw notes to export without AI.</span>" : ""), true);
@@ -1356,56 +1368,45 @@ function addManualCard(id){
   if(!addCards(id,[{question:q,answer:a}])){ toast("Fill in both question and answer"); return; }
   route(); toast("Card added");
 }
+function setOut(h){ const o=document.getElementById("aiOut"); if(o) o.innerHTML=h; }
+const BG_NOTE = "Working in the background — you can leave this page or close the app. We'll notify you when it's ready.";
 async function aiAct(id, kind){
-  const out = document.getElementById("aiOut");
-  out.innerHTML = `<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Working…</div>`;
+  askNotifyPermission();
+  setOut(`<div class="panel" style="margin-top:.75rem"><span class="spin"></span> ${BG_NOTE}</div>`);
   const notes = deckNotes(id).map(n=>n.content).join("\n\n");
   const mdRule = " Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.). Use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O.";
   const plainTextRule = " Write in plain text only — no Markdown formatting (no ** for bold, no # headings), and no LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.). Use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O.";
   try{
     if(kind==="improve" || kind==="summarize"){
-      const src = notes;
-      if(!src.trim()) throw new Error("Add some notes first.");
+      if(!notes.trim()) throw new Error("Add some notes first.");
       const prompt = (kind==="improve"
         ? "Improve and expand these study notes. Make them clear, structured, and complete for a student. Return only the improved notes."
-        : "Summarize these study notes for a student who will study from the summary alone, so it must be COMPLETE. Do not leave out anything that could be tested: keep every key fact, definition, term, name, date, number, formula, rule, cause and effect, step in a process, example, comparison and exception. Shorten the notes only by removing filler, repetition and long-winded wording, never by dropping a point. Cover every topic and section in the notes in their original order, using a ## heading for each, with bullet points under it. The summary should be as long as it needs to be: longer or denser notes must give a longer summary. Before you answer, go back through the notes once more and add anything important you missed. Return only the summary.") + mdRule + "\n\n"+src;
-      const text = cleanAiText(await gemini(prompt));
-      data.notes.unshift({ id:uid(), deckId:id, content:text, createdAt: todayISO() });
-      save(); route(); toast(kind==="improve"?"Improved note saved":"Summary saved");
+        : "Summarize these study notes for a student who will study from the summary alone, so it must be COMPLETE. Do not leave out anything that could be tested: keep every key fact, definition, term, name, date, number, formula, rule, cause and effect, step in a process, example, comparison and exception. Shorten the notes only by removing filler, repetition and long-winded wording, never by dropping a point. Cover every topic and section in the notes in their original order, using a ## heading for each, with bullet points under it. The summary should be as long as it needs to be: longer or denser notes must give a longer summary. Before you answer, go back through the notes once more and add anything important you missed. Return only the summary.") + mdRule + "\n\n"+notes;
+      await startJob(kind, id, prompt);
     } else if(kind==="cards"){
-      const text = await gemini(
+      await startJob("cards", id,
         "Create flashcards from these study notes. Return ONLY a JSON array of objects with \"question\" and \"answer\" strings, no markdown fences. Make as many cards as needed to cover every important fact, term, definition and concept in the notes. Do not stop at a fixed number: longer or denser notes should produce many more cards."+plainTextRule+"\n\n"+notes);
-      const clean = text.replace(/```json|```/g,"").trim();
-      let arr;
-      try{ arr = JSON.parse(clean.slice(clean.indexOf("["), clean.lastIndexOf("]")+1)); }
-      catch(_){ arr = JSON.parse(clean.slice(clean.indexOf("["), clean.lastIndexOf("}")+1) + "]"); } // reply was cut off: keep every complete card
-      arr = arr.map(c => ({ question: stripMd(c.question), answer: stripMd(c.answer) }));
-      const n = addCards(id, arr);
-      route(); toast(`${n} flashcards added`);
     }
   }catch(e){
-    out.innerHTML = `<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`;
+    setOut(`<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`);
   }
 }
-async function scanImage(deckId, fileList){
+async function scanImage(deckId, fileList, then){
   const files = Array.from(fileList || []);
   if(!files.length) return;
-  const out = document.getElementById("aiOut");
-  out.innerHTML = `<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Reading ${files.length>1?files.length+" pages…":"your document…"}</div>`;
+  askNotifyPermission();
+  setOut(`<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Reading ${files.length>1?files.length+" pages…":"your document…"}</div>`);
   try{
     const encoded = await filesToImages(files); // photos + PDF pages, max 8 images
     if(!encoded.length) throw new Error("Couldn't read that file.");
     const pageNote = encoded.length > 1 ? ` These are ${encoded.length} pages of the same document, in order — combine them into one continuous set of notes.` : "";
     const prompt = `Transcribe the study notes in this document into clean, structured text.${pageNote} Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.). Use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O. Return only the notes.`;
-    const text = cleanAiText(await gemini(prompt, encoded));
-    if(text){
-      data.notes.unshift({ id:uid(), deckId, content:text, createdAt: todayISO() });
-      save(); route(); toast("Scanned note saved");
-    }
+    setOut(`<div class="panel" style="margin-top:.75rem"><span class="spin"></span> ${BG_NOTE}</div>`);
+    await startJob("scan", deckId, prompt, encoded, then);
   }catch(e){
-    out.innerHTML = `<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`;
+    setOut(`<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`);
   }
-  document.getElementById("imgInput").value = "";
+  const inp = document.getElementById("imgInput"); if(inp) inp.value = "";
 }
 
 /* ============================== QUIZ ============================== */
@@ -1843,12 +1844,12 @@ function refineSheet(id){
 }
 async function aiRefine(id){
   const ins=document.getElementById("refineTxt").value.trim(); if(!ins){toast("Say how to refine it");return;}
+  askNotifyPermission();
   closeModal();
-  const out=document.getElementById("aiOut"); if(out) out.innerHTML=`<div class="panel"><span class="spin"></span> Refining…</div>`;
+  setOut(`<div class="panel"><span class="spin"></span> ${BG_NOTE}</div>`);
   try{
-    const text=cleanAiText(await gemini("Revise these study notes following this instruction: "+ins+". Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation. Return only the revised notes.\n\n"+deckNotes(id).map(n=>n.content).join("\n\n")));
-    data.notes.unshift({id:uid(),deckId:id,content:text,createdAt:todayISO()}); save(); route(); toast("Refined note saved");
-  }catch(e){ if(out) out.innerHTML=`<div class="panel" style="color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`; }
+    await startJob("refine", id, "Revise these study notes following this instruction: "+ins+". Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation. Return only the revised notes.\n\n"+deckNotes(id).map(n=>n.content).join("\n\n"));
+  }catch(e){ setOut(`<div class="panel" style="color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`); }
 }
 
 /* ---- Flashcard session ---- */
@@ -1910,8 +1911,7 @@ async function newFromFiles(files,mode,title){
   const d=createDeck(title||base||(mode==="summarize"?"Summary":"New notes"),null);
   location.hash="#/deck/"+d.id;
   await new Promise(r=>setTimeout(r,80));
-  await scanImage(d.id,files);
-  if(mode==="summarize"&&deckNotes(d.id).length) await aiAct(d.id,"summarize");
+  await scanImage(d.id,files,mode==="summarize"?"summarize":null);
 }
 async function manualNotes(){
   const v=await askText("Name your notes","","e.g. Biology — Chapter 4"); if(v===null) return;
@@ -1977,6 +1977,163 @@ if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
 }
 window.addEventListener("offline", ()=>toast("You're offline — your notes and cards still work"));
 window.addEventListener("online", ()=>toast("Back online"));
+
+/* ============================== BACKGROUND JOBS ============================== */
+// AI requests run in the service worker, so they keep going when you leave a deck, switch apps
+// or lock the phone. Results are saved the moment they arrive, and a notification tells you when
+// they're ready. Jobs are remembered on the device, so a finished job is still picked up
+// if the app was closed in the meantime.
+const JOBS_KEY = "quicklearn-jobs";
+const JOBS_CACHE = "quicklearn-jobs";
+const JOB_NAME = { cards:"flashcards", summarize:"summary", improve:"improved notes", scan:"scanned notes", refine:"refined note" };
+let jobs = (()=>{ try{ return JSON.parse(localStorage.getItem(JOBS_KEY)) || []; }catch(_){ return []; } })();
+function saveJobs(){ try{ localStorage.setItem(JOBS_KEY, JSON.stringify(jobs)); }catch(_){} }
+function deckNameOf(id){ return data.decks.find(d=>d.id===id)?.title || "your deck"; }
+
+function askNotifyPermission(){
+  try{ if("Notification" in window && Notification.permission === "default") Notification.requestPermission(); }catch(_){}
+}
+async function notifyLocal(title, body, hash){
+  try{
+    if(!document.hidden || !("Notification" in window) || Notification.permission !== "granted") return;
+    const reg = await navigator.serviceWorker.getRegistration(); if(!reg) return;
+    await reg.showNotification(title, { body, icon:"icon-192.png", badge:"icon-192.png", tag:"quicklearn-"+Date.now(), data:{ hash } });
+  }catch(_){}
+}
+
+function sendToWorker(payload){
+  return new Promise(async res => {
+    try{
+      if(!("serviceWorker" in navigator)) return res(false);
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sw = navigator.serviceWorker.controller || (reg && reg.active);
+      if(!sw) return res(false);
+      const mc = new MessageChannel();
+      const t = setTimeout(()=>res(false), 2500);
+      mc.port1.onmessage = e => { clearTimeout(t); res(e.data === "ack"); };
+      sw.postMessage(Object.assign({ type:"gen", models:[GEMINI_MODEL, GEMINI_FALLBACK_MODEL], delays:RETRY_DELAYS, retryable:RETRYABLE }, payload), [mc.port2]);
+    }catch(_){ res(false); }
+  });
+}
+
+async function startJob(kind, deckId, prompt, files, then){
+  const key = getKey();
+  if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
+  if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
+  const job = { id:uid(), kind, deckId, then:then||null, status:"running", startedAt:Date.now() };
+  jobs.push(job); saveJobs(); renderJobs();
+  const name = deckNameOf(deckId);
+  const sent = await sendToWorker({
+    id:job.id, key, prompt,
+    images:(files||[]).slice(0,8).map(f=>f.dataUrl.split(",")[1]),
+    notify:{
+      title:"QuickLearn",
+      ok:`Your ${JOB_NAME[kind]} for “${name}” ${kind==="cards"?"are":"is"} ready`,
+      fail:`Couldn't make your ${JOB_NAME[kind]} for “${name}”. Open QuickLearn to try again.`,
+      hash:"#/deck/"+deckId
+    }
+  });
+  if(!sent){ // no service worker (e.g. opened as a plain file): run it here instead
+    gemini(prompt, files).then(
+      text => completeJob(job.id, { ok:true, text }),
+      err => completeJob(job.id, { ok:false, error:err.message })
+    );
+  }
+  return job;
+}
+
+function applyJob(job, text){
+  if(!data.decks.some(d=>d.id===job.deckId)) throw new Error("That deck was deleted.");
+  const name = deckNameOf(job.deckId);
+  if(job.kind === "cards"){
+    const clean = (text||"").replace(/```json|```/g,"").trim();
+    let arr;
+    try{ arr = JSON.parse(clean.slice(clean.indexOf("["), clean.lastIndexOf("]")+1)); }
+    catch(_){ arr = JSON.parse(clean.slice(clean.indexOf("["), clean.lastIndexOf("}")+1) + "]"); } // reply was cut off: keep every complete card
+    arr = arr.map(c => ({ question: stripMd(c.question), answer: stripMd(c.answer) }));
+    const n = addCards(job.deckId, arr);
+    return `${n} flashcards added to “${name}”`;
+  }
+  const note = cleanAiText(text || "");
+  if(!note.trim()) throw new Error("The AI sent back an empty answer. Please try again.");
+  data.notes.unshift({ id:uid(), deckId:job.deckId, content:note, createdAt: todayISO() });
+  save();
+  if(job.kind === "scan" && job.then) setTimeout(()=>aiAct(job.deckId, job.then), 60);
+  const done = { improve:"Improved note saved", summarize:"Summary saved", scan:"Scanned note saved", refine:"Refined note saved" }[job.kind];
+  return `${done} in “${name}”`;
+}
+
+function completeJob(id, res){
+  const job = jobs.find(j=>j.id===id);
+  if(!job || job.status !== "running") return;
+  let ok = !!res.ok, msg;
+  try{
+    if(!ok) throw new Error(res.error || "Something went wrong.");
+    msg = applyJob(job, res.text);
+  }catch(e){ ok = false; msg = e.message || "Something went wrong."; console.error(e); }
+  job.status = ok ? "done" : "error"; job.msg = msg; saveJobs();
+  if(location.hash === "#/deck/"+job.deckId) route();       // refresh only if you're looking at that deck
+  if(!ok) setOut(`<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(msg)}</div>`);
+  else if(location.hash === "#/deck/"+job.deckId && !job.then) setOut("");
+  if(document.hidden) notifyLocal("QuickLearn", ok ? msg : "Couldn't finish: "+msg, "#/deck/"+job.deckId);
+  else { toast(ok ? msg : "Couldn't finish: "+msg); try{ navigator.vibrate && navigator.vibrate(ok ? 120 : [80,60,80]); }catch(_){} }
+  if(ok) setTimeout(()=>{ jobs = jobs.filter(j=>j.id !== id); saveJobs(); renderJobs(); }, 6000);
+  renderJobs();
+}
+
+async function collectJob(id){
+  const job = jobs.find(j=>j.id===id && j.status==="running"); if(!job) return;
+  try{
+    const c = await caches.open(JOBS_CACHE);
+    const r = await c.match("/__job/"+id); if(!r) return;
+    const res = await r.json(); await c.delete("/__job/"+id);
+    completeJob(id, res);
+  }catch(_){}
+}
+async function checkJobs(){
+  for(const j of jobs.filter(j=>j.status==="running")){
+    await collectJob(j.id);
+    if(j.status==="running" && Date.now()-j.startedAt > 12*60*1000) completeJob(j.id, { ok:false, error:"This was interrupted — please run it again." });
+  }
+}
+
+function renderJobs(){
+  const root = document.getElementById("jobs-root"); if(!root) return;
+  root.innerHTML = jobs.map(j => {
+    const name = esc(deckNameOf(j.deckId)), what = JOB_NAME[j.kind];
+    if(j.status === "running") return `<div class="jobpill" onclick="go('#/deck/${j.deckId}')"><span class="spin"></span><span class="t">Making ${what} for “${name}”…</span><button class="jx" onclick="event.stopPropagation();cancelJob('${j.id}')">Cancel</button></div>`;
+    if(j.status === "done") return `<div class="jobpill ok" onclick="go('#/deck/${j.deckId}')"><span class="t">✓ ${esc(j.msg||"Done")}</span></div>`;
+    return `<div class="jobpill err" onclick="dismissJob('${j.id}')"><span class="t">⚠ ${esc(j.msg||"Failed")}</span><span class="x">×</span></div>`;
+  }).join("");
+}
+function cancelJob(id){
+  const job = jobs.find(j=>j.id===id); if(!job) return;
+  jobs = jobs.filter(j=>j.id!==id); saveJobs(); renderJobs();
+  (async()=>{
+    try{
+      const reg = await navigator.serviceWorker.getRegistration();
+      const sw = navigator.serviceWorker.controller || (reg && reg.active);
+      if(sw) sw.postMessage({ type:"cancel", id });
+      const c = await caches.open(JOBS_CACHE); await c.delete("/__job/"+id);
+    }catch(_){}
+  })();
+  if(location.hash === "#/deck/"+job.deckId) setOut("");
+  toast("Cancelled");
+}
+function dismissJob(id){ jobs = jobs.filter(j=>j.id!==id); saveJobs(); renderJobs(); }
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.addEventListener("message", e => {
+    const m = e.data || {};
+    if(m.type === "genDone") collectJob(m.id);
+    if(m.type === "goto" && m.hash) go(m.hash);
+  });
+}
+document.addEventListener("visibilitychange", ()=>{ if(!document.hidden) checkJobs(); });
+window.addEventListener("focus", checkJobs);
+setInterval(()=>{ if(jobs.some(j=>j.status==="running")) checkJobs(); }, 4000);
+jobs = jobs.filter(j => j.status === "running");   // stale finished/failed pills don't come back after a restart
+saveJobs(); renderJobs(); checkJobs();
 </script>
 </body>
 </html>
