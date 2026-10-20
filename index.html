@@ -1,0 +1,1982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
+<title>QuickLearn — Notes, AI Flashcards & Smart Revision</title>
+<meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
+<meta name="theme-color" content="#070b14" />
+<meta name="mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-capable" content="yes" />
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+<meta name="apple-mobile-web-app-title" content="QuickLearn" />
+<link rel="icon" type="image/svg+xml" href="favicon.svg" />
+<link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
+<link rel="apple-touch-icon" href="apple-touch-icon.png" />
+<link rel="manifest" href="manifest.json" />
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --radius:1rem;
+  --background:oklch(0.16 0.012 288);
+  --foreground:oklch(0.96 0.004 285);
+  --surface:oklch(0.21 0.014 288);
+  --surface-2:oklch(0.25 0.016 288);
+  --primary:oklch(0.63 0.19 288);
+  --primary-fg:oklch(0.99 0 0);
+  --muted-fg:oklch(0.68 0.014 286);
+  --accent:oklch(0.3 0.03 288);
+  --destructive:oklch(0.66 0.19 15);
+  --success:oklch(0.72 0.17 150);
+  --warning:oklch(0.79 0.15 78);
+  --info:oklch(0.68 0.16 250);
+  --border:oklch(0.3 0.016 288);
+  --font-display:"Sora",ui-sans-serif,system-ui,sans-serif;
+  --font-sans:"DM Sans",ui-sans-serif,system-ui,sans-serif;
+}
+*{box-sizing:border-box;border-color:var(--border)}
+html{-webkit-text-size-adjust:100%;text-size-adjust:100%;overflow-x:hidden;touch-action:manipulation}
+body{margin:0;overflow-x:hidden;width:100%;touch-action:manipulation;overscroll-behavior-x:none;background:var(--background);color:var(--foreground);font-family:var(--font-sans);-webkit-font-smoothing:antialiased}
+h1,h2,h3{font-family:var(--font-display);letter-spacing:-.02em;margin:0}
+button,input,textarea{font-family:inherit}
+.shell{max-width:720px;width:100%;margin:0 auto;min-height:100vh;min-height:100dvh;padding-bottom:calc(7rem + env(safe-area-inset-bottom))}
+header.top{position:sticky;top:0;z-index:20;display:flex;align-items:center;justify-content:space-between;padding:calc(1rem + env(safe-area-inset-top)) 1.25rem 1rem;background:color-mix(in oklab,var(--background) 85%,transparent);backdrop-filter:blur(12px)}
+.brand{font-family:var(--font-display);font-size:1.25rem;font-weight:800;letter-spacing:-.02em;cursor:pointer}
+.keybtn{border:1px solid var(--border);background:transparent;color:var(--muted-fg);border-radius:999px;padding:.4rem .9rem;font-size:.75rem;font-weight:600;cursor:pointer}
+.keybtn:hover{color:var(--foreground)}
+main{padding:0 1.25rem;min-width:0;overflow-x:hidden}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:calc(var(--radius) + 4px);padding:1rem}
+.hero{border-radius:calc(var(--radius) + 8px);padding:1.5rem;background-image:linear-gradient(140deg,oklch(0.4 0.14 292) 0%,oklch(0.28 0.08 290) 55%,oklch(0.22 0.02 288) 100%);margin-top:.5rem}
+.hero h1{font-size:1.6rem;font-weight:800}
+.hero p{color:oklch(0.85 0.02 290);font-size:.9rem;margin:.4rem 0 0}
+.btn{display:inline-flex;min-height:44px;align-items:center;justify-content:center;gap:.5rem;border-radius:.75rem;padding:0 1rem;font-size:.875rem;font-weight:600;border:none;cursor:pointer;transition:.15s}
+.btn:active{transform:scale(.98)}
+.btn:disabled{opacity:.45;pointer-events:none}
+.btn-primary{background:var(--primary);color:var(--primary-fg);box-shadow:0 12px 32px -14px oklch(0.62 0.21 288 / .85)}
+.btn-primary:hover{filter:brightness(1.1)}
+.btn-secondary{background:var(--surface-2);color:var(--foreground);border:1px solid var(--border)}
+.btn-secondary:hover{background:var(--accent)}
+.btn-ghost{background:transparent;color:var(--muted-fg)}
+.btn-ghost:hover{color:var(--foreground)}
+.btn-success{background:var(--success);color:var(--background)}
+.btn-warning{background:var(--warning);color:var(--background)}
+.btn-danger{background:var(--destructive);color:var(--primary-fg)}
+.input{min-height:44px;width:100%;min-width:0;max-width:100%;border-radius:.75rem;border:1px solid var(--border);background:var(--surface-2);padding:0 .875rem;font-size:16px;color:var(--foreground);outline:none}
+.input:focus{border-color:var(--primary);box-shadow:0 0 0 3px color-mix(in oklab,var(--primary) 30%,transparent)}
+.input::placeholder,textarea::placeholder{color:var(--muted-fg)}
+textarea.input{font-size:16px;min-height:9rem;padding:.875rem;resize:vertical;line-height:1.6;border-radius:1rem}
+.label{margin:1.5rem 0 .75rem;font-size:.75rem;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--muted-fg)}
+.empty{border:1px dashed var(--border);border-radius:1rem;background:color-mix(in oklab,var(--surface) 50%,transparent);padding:1.5rem;text-align:center;font-size:.875rem;color:var(--muted-fg)}
+.row{display:flex;gap:.5rem;align-items:center;min-width:0}
+img,svg{max-width:100%}
+.grid2{display:grid;grid-template-columns:1fr 1fr;gap:.75rem}
+.muted{color:var(--muted-fg);font-size:.85rem}
+.deck-card{display:block;width:100%;max-width:100%;overflow-wrap:anywhere;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1rem;cursor:pointer;color:var(--foreground);margin-bottom:.6rem}
+.deck-card:hover{border-color:var(--primary)}
+.deck-title{font-weight:700;font-size:.95rem}
+.chip{display:inline-block;font-size:.7rem;font-weight:600;border-radius:999px;padding:.15rem .6rem;margin-top:.4rem}
+.tone0{color:var(--info);background:oklch(0.68 0.16 250 / .16)}
+.tone1{color:var(--warning);background:oklch(0.79 0.15 78 / .16)}
+.tone2{color:var(--success);background:oklch(0.72 0.17 150 / .16)}
+.tone3{color:var(--primary);background:oklch(0.63 0.19 288 / .18)}
+.tone4{color:var(--destructive);background:oklch(0.66 0.19 15 / .16)}
+.progress{height:.5rem;border-radius:999px;background:var(--surface-2);overflow:hidden;margin-top:.8rem}
+.progress>div{height:100%;background:var(--primary);border-radius:999px;transition:width .3s}
+nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;width:100%;max-width:720px;margin:0 auto;display:flex;align-items:center;justify-content:space-around;border-top:1px solid var(--border);background:color-mix(in oklab,var(--surface) 95%,transparent);backdrop-filter:blur(12px);padding:.5rem .5rem max(.5rem,env(safe-area-inset-bottom))}
+.navitem{flex:1;display:flex;flex-direction:column;align-items:center;gap:.2rem;background:none;border:none;color:var(--muted-fg);cursor:pointer;padding:.2rem 0;font-size:.625rem;font-weight:700}
+.navitem.active{color:var(--primary)}
+.navitem .ico{display:flex;height:2rem;width:2.5rem;align-items:center;justify-content:center;border-radius:.75rem}
+.navitem.active .ico{background:color-mix(in oklab,var(--primary) 15%,transparent)}
+.plusbtn{margin-top:-1.5rem;width:3.25rem;height:3.25rem;border-radius:1rem;background:var(--primary);color:var(--primary-fg);border:none;display:flex;align-items:center;justify-content:center;cursor:pointer;box-shadow:0 12px 32px -14px oklch(0.62 0.21 288 / .85)}
+.plusbtn:active{transform:scale(.95)}
+.modal-bg{position:fixed;inset:0;overflow-y:auto;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);padding:1rem}
+@media(min-width:640px){.modal-bg{align-items:center}}
+.modal{width:100%;max-width:28rem;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:1.25rem;padding:1.25rem}
+.flashcard{position:relative;width:100%;max-width:100%;overflow-wrap:anywhere;min-height:16rem;border-radius:1.5rem;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;transition:.2s;user-select:none}
+.flashcard:hover{border-color:var(--primary)}
+.flashcard .q{font-size:1.15rem;font-weight:600;line-height:1.5}
+.flashcard .hint{position:absolute;bottom:1rem;left:0;right:0;font-size:.7rem;color:var(--muted-fg)}
+.flashcard .tag{position:absolute;top:1rem;left:1rem;font-size:.7rem;color:var(--muted-fg)}
+.ratings{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:1rem}
+.note{overflow-wrap:anywhere;background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1rem;margin-bottom:.6rem;font-size:.875rem;line-height:1.6;white-space:pre-wrap}
+.md{white-space:normal;overflow-wrap:anywhere}
+.md p{margin:0 0 .6rem}
+.md h3{font-size:1rem;font-weight:700;margin:.9rem 0 .4rem}
+.md h4{font-size:.9rem;font-weight:700;margin:.7rem 0 .3rem}
+.md>:first-child{margin-top:0}
+.md ul,.md ol{margin:0 0 .6rem;padding-left:1.25rem}
+.md li{margin:.2rem 0}
+.md strong{font-weight:700;color:var(--foreground)}
+.md code{background:var(--surface-2);border-radius:.35rem;padding:.05rem .35rem;font-size:.85em}
+.md hr{border:none;border-top:1px solid var(--border);margin:.8rem 0}
+.backbtn{background:none;border:none;color:var(--muted-fg);cursor:pointer;font-size:.85rem;font-weight:600;padding:.5rem 0;display:inline-flex;align-items:center;gap:.3rem}
+.backbtn:hover{color:var(--foreground)}
+.spin{display:inline-block;width:1rem;height:1rem;border:2px solid currentColor;border-top-color:transparent;border-radius:50%;animation:sp .7s linear infinite;vertical-align:-.15em}
+@keyframes sp{to{transform:rotate(360deg)}}
+.toast{position:fixed;left:50%;bottom:6.5rem;transform:translateX(-50%);background:var(--surface-2);border:1px solid var(--border);color:var(--foreground);border-radius:.75rem;padding:.6rem 1rem;font-size:.85rem;z-index:60;max-width:90%}
+.quiz-opt{display:block;width:100%;text-align:left;background:var(--surface-2);border:1px solid var(--border);border-radius:.75rem;padding:.8rem 1rem;margin-bottom:.5rem;color:var(--foreground);cursor:pointer;font-size:.9rem}
+.quiz-opt.correct{border-color:var(--success);background:color-mix(in oklab,var(--success) 15%,transparent)}
+.quiz-opt.wrong{border-color:var(--destructive);background:color-mix(in oklab,var(--destructive) 15%,transparent)}
+a.linkcard{display:block;background:var(--surface);border:1px solid var(--border);border-radius:1rem;padding:1rem;margin-bottom:.6rem;color:var(--foreground);text-decoration:none}
+a.linkcard:hover{border-color:var(--primary)}
+/* ===== Knowt-style UI layer ===== */
+:root{--background:#070b14;--surface:#0f1729;--surface-2:#18233a;--border:#223152;--primary:#2de2a6;--primary-fg:#070b14;--font-sans:'DM Sans',system-ui,sans-serif}
+body{background:#070b14;font-family:'DM Sans',system-ui,sans-serif}
+header.top{display:none}
+main#view{padding-bottom:6.5rem;overflow-x:hidden}
+.kh{display:flex;align-items:center;gap:.75rem;padding:calc(.9rem + env(safe-area-inset-top)) 1.1rem .8rem;font-family:DM Sans,system-ui,sans-serif}
+.kh.home{background:#0f1729;flex-wrap:wrap;padding-bottom:.4rem}
+.kh h1{font-size:1.15rem;font-weight:400;margin:0;flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kh button,.kh .ib{background:none;border:0;color:#fff;font:inherit;font-size:.95rem;display:flex;padding:.3rem;cursor:pointer}
+.avatar{width:2.1rem;height:2.1rem;border-radius:50%;background:#2de2a6;color:#fff;font-weight:600;display:grid;place-items:center;border:0;font-family:'DM Sans'}
+.stats{margin-left:auto;display:flex;gap:1rem;font-size:.95rem;align-items:center}
+.stats span{display:flex;gap:.3rem;align-items:center}
+.sp{width:100%;display:flex;align-items:center;gap:.7rem;background:#070b14;border:0;color:#ddd;border-radius:999px;padding:.95rem 1.1rem;margin:.9rem 0 .5rem;font:inherit;font-size:1rem;cursor:pointer}
+.qa{display:flex;gap:1.1rem;overflow-x:auto;width:100%;padding:.5rem 0 .9rem;scrollbar-width:none}
+.qa::-webkit-scrollbar,.chips::-webkit-scrollbar{display:none}
+.qa button{background:none;border:0;color:#fff;font:inherit;font-size:.78rem;display:flex;flex-direction:column;align-items:center;gap:.4rem;flex:none;cursor:pointer;transition:transform .15s}
+.qa button:active{transform:scale(.92)}
+.qa .c{width:3.1rem;height:3.1rem;border-radius:50%;display:grid;place-items:center}
+.qa i.dv{width:1px;background:#555;align-self:stretch;margin:0 .2rem}
+.chips{display:flex;gap:.6rem;overflow-x:auto;padding:1rem 1.1rem .5rem;scrollbar-width:none}
+.chip2{flex:none;display:flex;gap:.45rem;align-items:center;border:0;border-radius:999px;padding:.6rem 1rem;background:#0d1526;color:#fff;font:inherit;font-size:.95rem;cursor:pointer;transition:background .2s,color .2s}
+.chip2.on{background:#fff;color:#070b14}
+.rows{padding:.5rem 1.1rem;position:relative}
+.row2{display:flex;align-items:center;gap:.9rem;width:100%;background:#0f1729;border:0;color:#fff;text-align:left;border-radius:1.15rem;padding:.7rem .8rem;margin-bottom:.55rem;font:inherit;cursor:pointer;transition:transform .15s,background .15s;animation:rise .3s both}
+.row2:active{transform:scale(.98);background:#16213a}
+.row2 .t{flex:1;min-width:0}.row2 .t b{display:block;font-weight:400;font-size:1rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.row2 .t small{color:#bbb;font-size:.85rem}
+.tile{width:2.9rem;height:2.9rem;border-radius:.8rem;display:grid;place-items:center;flex:none}
+.more{color:#fff;background:none;border:0;font-size:1.3rem;padding:.2rem .6rem;cursor:pointer}
+.viewall{position:sticky;bottom:7rem;display:block;margin:-2.9rem auto 0;background:#1e1e1e;color:#fff;border:1px solid #2c3d63;border-radius:999px;padding:.6rem 1.3rem;font:inherit;cursor:pointer}
+.fab{position:fixed;right:1.2rem;bottom:5.6rem;width:3.6rem;height:3.6rem;border-radius:50%;background:#2de2a6;border:0;display:grid;place-items:center;z-index:25;box-shadow:0 6px 18px #0008;animation:pop .25s both;cursor:pointer}
+.fab:active{transform:scale(.92)}
+.empty2{text-align:center;padding:6rem 2rem;animation:rise .3s both}
+.empty2 .ec{width:5.2rem;height:5.2rem;border-radius:50%;background:#e8e8e8;margin:0 auto 1rem;display:grid;place-items:center}
+.empty2 h3{font-size:1.5rem;font-weight:400;color:#8a8a8a;margin:0 0 .5rem}.empty2 p{color:#ddd;margin:0}
+.sk{height:3.2rem;border-radius:1.15rem;margin:.6rem 1.1rem;background:linear-gradient(90deg,#3c3c3c 0%,#555 50%,#3c3c3c 100%) 0 0/200% 100%;animation:shim 1.1s linear infinite}
+@keyframes shim{to{background-position:-200% 0}}
+@keyframes rise{from{opacity:0;transform:translateY(8px)}}
+@keyframes pop{from{opacity:0;transform:scale(.6)}}
+@keyframes inR{from{transform:translateX(40%);opacity:0}}
+@keyframes inL{from{transform:translateX(-40%);opacity:0}}
+@keyframes up{from{transform:translateY(100%)}}
+@keyframes fade{from{opacity:0}}
+.goR{animation:inR .28s cubic-bezier(.2,.8,.2,1) both}.goL{animation:inL .28s cubic-bezier(.2,.8,.2,1) both}
+nav.bottom{background:#0f1729;border:0;max-width:none;height:4.4rem;padding:0 .9rem calc(.2rem + env(safe-area-inset-bottom));gap:.4rem}
+.navitem{flex:1;height:2.9rem;border:0;border-radius:1rem;background:none;color:#fff;display:grid;place-items:center;max-width:5.6rem;cursor:pointer;transition:background .25s,color .25s,transform .15s}
+.navitem:active{transform:scale(.9)}
+.navitem svg{width:1.6rem;height:1.6rem}
+.navitem.active{background:var(--pl);color:var(--pi);animation:pop .2s both}
+.plusbtn{margin:0;width:2.9rem;height:2.9rem;flex:none;border-radius:50%;background:#2de2a6;color:#000;transition:transform .15s,background .15s}
+.plusbtn:active{background:#5c5c5c;transform:scale(.9)}
+.modal-bg{background:rgba(0,0,0,.62);padding:0;animation:fade .2s both}
+.modal{max-width:720px;border:0;border-radius:1.8rem 1.8rem 0 0;background:#0f1729;padding:.7rem 1.2rem 1.6rem;animation:up .28s cubic-bezier(.2,.8,.2,1) both;font-family:DM Sans,system-ui,sans-serif}
+.modal::before{content:"";display:block;width:2.4rem;height:.28rem;border-radius:9px;background:#e6e6e6;margin:0 auto .9rem}
+.sh h2{text-align:center;font-weight:400;font-size:1.2rem;margin:0 0 1rem}
+.sr{display:flex;align-items:center;gap:1rem;width:100%;background:none;border:0;color:#fff;font:inherit;padding:.5rem 0;cursor:pointer;text-align:left}
+.sr:active{opacity:.6}
+.sr .tile{width:3rem;height:3rem;border-radius:.75rem}
+.kh svg,.sp svg{width:1.4rem;height:1.4rem;flex:none}
+.kh .avatar{background:#2de2a6;width:2.1rem;height:2.1rem;border-radius:50%;padding:0;align-items:center;justify-content:center}
+.kh .sp{background:#070b14;border-radius:999px;padding:.95rem 1.1rem;width:100%;align-items:center;gap:.7rem}
+.kh .stats{font-size:.95rem}.kh .stats svg{width:1.1rem;height:1.1rem}
+.qa svg{width:1.4rem;height:1.4rem}.chip2 svg{width:1.1rem;height:1.1rem}
+.kh button:active{opacity:.6}
+main#view{padding-left:0;padding-right:0}
+main#view.legacy{padding-left:1.25rem;padding-right:1.25rem;padding-top:calc(.8rem + env(safe-area-inset-top))}
+
+/* ===== Knowt 1:1 pass: sheets, buttons, inputs, note, exams, flashcards, quiz ===== */
+.btn{border-radius:999px;font-family:DM Sans,system-ui,sans-serif;font-weight:500}
+.btn-primary{background:#2de2a6;color:#070b14;box-shadow:none}
+.btn-secondary{background:#18233a;border:0;color:#fff}.btn-secondary:hover{background:#22304f}
+.btn-ghost{color:#bbb}
+.btn-danger{background:#3a1d1d;color:#ff7b7b}.btn-warning{background:#3a2e17;color:#f5b84a}.btn-success{background:#17301f;color:#5fd68a}
+.input{background:#18233a;border:0;border-radius:1rem;color:#fff;font-family:DM Sans,system-ui,sans-serif}
+.input:focus{box-shadow:0 0 0 2px #fff4;border:0}
+.panel{background:#0f1729;border:1.5px solid transparent;border-radius:1.15rem}
+.empty{border:0;background:#0f1729;border-radius:1.15rem;color:#bbb}
+.muted{color:#aaa;font-family:DM Sans,system-ui,sans-serif}
+.label,.lbl{font-family:DM Sans,system-ui,sans-serif;letter-spacing:0;text-transform:none;font-size:.95rem;font-weight:400;color:#fff;margin:1.1rem 0 .6rem}
+.lbl{padding:0 1.1rem}
+.quiz-opt{background:#0f1729;border:0;border-radius:1.15rem;padding:1rem;font-family:DM Sans,system-ui,sans-serif}
+.quiz-opt.correct{background:#17301f;box-shadow:inset 0 0 0 1.5px #3ecf6e}
+.quiz-opt.wrong{background:#3a1d1d;box-shadow:inset 0 0 0 1.5px #ff6b6b}
+.progress{height:.3rem;background:#18233a;margin-top:.3rem}.progress>div{background:#fff}
+.flashcard{background:#0f1729;border:0;border-radius:1.5rem;font-family:DM Sans,system-ui,sans-serif;min-height:55vh}
+.flashcard:hover{border:0}
+.ratings .btn{min-height:3rem}
+.toast{top:calc(.8rem + env(safe-area-inset-top));bottom:auto;background:#2de2a6;color:#070b14;border:1.5px solid #2de2a6;border-radius:999px;font-family:DM Sans,system-ui,sans-serif;font-weight:500;padding:.55rem 1.1rem}
+.modal h2{font-family:DM Sans,system-ui,sans-serif;font-weight:400;font-size:1.2rem!important;text-align:center;margin:0 0 1rem}
+.modal .quiz-opt{background:#18233a}
+a.row2,a.ext{text-decoration:none;color:#fff}
+.doc{padding:.3rem 1.2rem 8rem;font-family:DM Sans,system-ui,sans-serif;color:#f2f2f2;line-height:1.55;font-size:1rem}
+.doc h1{font-family:DM Sans,system-ui,sans-serif;font-size:1.65rem;font-weight:700;line-height:1.25;margin:.6rem 0 1rem;color:#fff;letter-spacing:0}
+.doc .md h3{font-family:DM Sans,system-ui,sans-serif;font-size:1.65rem;font-weight:700;line-height:1.25;margin:1.2rem 0 .8rem;color:#fff;letter-spacing:0}
+.doc .md h4{font-family:DM Sans,system-ui,sans-serif;font-size:1.25rem;font-weight:700;margin:1rem 0 .5rem}
+.doc .md p{margin:0 0 1rem}.doc .md li{margin:.4rem 0}.doc .md code{background:#18233a}
+.nsep{border:0;border-top:1px solid #223152;margin:1.2rem 0}
+.bar{position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;gap:.6rem;padding:.7rem 1rem calc(.8rem + env(safe-area-inset-bottom));background:#000}
+.bar .rf{flex:1;display:flex;align-items:center;gap:.6rem;background:#0f1729;border:0;color:#8a8a8a;border-radius:999px;padding:.9rem 1.1rem;font-family:DM Sans,system-ui,sans-serif;font-size:.95rem;cursor:pointer;text-align:left}
+.bar .brain{display:flex;align-items:center;justify-content:center;gap:.35rem;background:#16213a;color:#fff;border:1px solid #2c3d63;border-radius:999px;padding:.85rem .95rem;font-family:DM Sans,system-ui,sans-serif;font-size:1.1rem;cursor:pointer;flex:none}
+.bar .ai{display:flex;align-items:center;gap:.5rem;background:#17284a;color:#fff;border:0;border-radius:999px;padding:.9rem 1.2rem;font-family:DM Sans,system-ui,sans-serif;font-size:.95rem;cursor:pointer}
+.bar svg{width:1.15rem;height:1.15rem}
+.kh .mid{flex:1;display:flex;justify-content:center}
+.kh .pill{border:1px solid #444;border-radius:999px;padding:.5rem 1rem;gap:.45rem;align-items:center}
+.pill svg{width:1.1rem!important;height:1.1rem!important}
+.lg{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;padding:.2rem 0 .5rem}
+.lc{text-align:left;background:none;border:1px solid #2c3d63;border-radius:1.1rem;padding:.9rem;color:#fff;font-family:DM Sans,system-ui,sans-serif;cursor:pointer;display:flex;flex-direction:column;gap:.2rem;min-height:7.4rem}
+.lc .tile{width:2.7rem;height:2.7rem;margin-bottom:.5rem}
+.lc b{font-weight:400;font-size:.95rem}.lc small{color:#cfcfcf;font-size:.8rem;line-height:1.3}
+.ex{display:grid;grid-template-columns:1fr 1fr;gap:.55rem;padding:0 1.1rem}
+.ext{display:flex;align-items:center;gap:.6rem;background:#0f1729;border:0;border-radius:.9rem;padding:.8rem;color:#fff;font-family:DM Sans,system-ui,sans-serif;font-size:.95rem;cursor:pointer;text-align:left;min-width:0}
+.ext .e{font-size:1.5rem;flex:none}.ext small{font-size:.8rem}
+
+.ob{display:flex;align-items:center;gap:1rem;width:100%;background:none;border:1px solid #2c3d63;border-radius:1rem;padding:.95rem 1rem;color:#fff;font-family:DM Sans,system-ui,sans-serif;font-size:.95rem;margin-bottom:.6rem;cursor:pointer;text-align:left}
+.ob svg{width:1.3rem;height:1.3rem;flex:none}.ob:active{background:#18233a}
+.sub{text-align:center;color:#ddd;margin:-.6rem 0 1.1rem;font-family:DM Sans,system-ui,sans-serif}
+.rec{min-height:8rem;max-height:40vh;overflow:auto;font-family:DM Sans,system-ui,sans-serif;line-height:1.5;color:#ddd}
+
+/* ===== QuickLearn theme layer ===== */
+:root{--ql-mint:#2de2a6;--ql-blue:#5b8cff;--ql-ink:#04130e;--primary:#2de2a6;--primary-fg:#04130e;--font-display:"Sora",system-ui,sans-serif;--font-sans:"DM Sans",system-ui,sans-serif}
+body{background:#070b14;background-image:radial-gradient(60rem 30rem at 85% -10%,rgba(45,226,166,.10),transparent 60%),radial-gradient(50rem 30rem at -10% 10%,rgba(91,140,255,.10),transparent 60%);background-attachment:fixed}
+.wm{font-family:"Sora",system-ui,sans-serif;font-weight:600;font-size:1.05rem;letter-spacing:-.02em;color:#fff}
+.wm b{font-weight:800;color:var(--ql-mint)}
+.avatar{color:var(--ql-ink)!important;font-family:"Sora",sans-serif;font-weight:700}
+.kh.home{background:linear-gradient(180deg,#0f1729 0%,#0b1222 100%)}
+.sp{background:#070b14!important;border:1px solid #223152!important}
+.chip2{background:#0f1729;border:1px solid #223152}
+.chip2.on{background:var(--ql-mint);color:var(--ql-ink);border-color:var(--ql-mint);font-weight:600}
+.btn-primary,.plusbtn,.fab{background:linear-gradient(135deg,#2de2a6,#27c7d8)!important;color:var(--ql-ink)!important;box-shadow:0 10px 28px -12px rgba(45,226,166,.7)}
+.plusbtn svg,.fab svg{color:var(--ql-ink)}
+.row2{border:1px solid #1a2744}
+.row2:active{background:#16213a}
+.nav-glow,nav.bottom{background:#0b1222;border-top:1px solid #1a2744!important}
+.modal{background:#0f1729;border-top:1px solid #223152}
+.modal::before{background:#2c3d63}
+.progress>div{background:linear-gradient(90deg,#2de2a6,#5b8cff)}
+.flashcard{border:1px solid #223152;background:linear-gradient(160deg,#101b33,#0c1424)}
+.flashcard:hover{border:1px solid #2de2a6}
+.doc h1,.doc .md h3{font-family:"Sora",sans-serif}
+.doc .md strong{color:#7ff5cf}
+.bar{background:#070b14;border-top:1px solid #1a2744}
+.bar .ai{background:linear-gradient(135deg,#1d2a5e,#12284a);border:1px solid #2c3d63}
+.ob,.lc{border-color:#2c3d63}
+.toast{color:var(--ql-ink)}
+.quiz-opt{border:1px solid #1a2744}
+.empty2 .ec{background:#12284a}
+.empty2 h3{color:#6f84ad}
+</style>
+</head>
+<body>
+<div class="shell">
+  <header class="top">
+    <div class="brand" onclick="go('#/')">QuickLearn</div>
+    <button class="keybtn" onclick="openKeyModal()">AI key</button>
+  </header>
+  <main id="view"></main>
+  <nav class="bottom">
+    <button class="navitem" data-nav="#/" onclick="go('#/')"><span class="ico">🏠</span>Home</button>
+    <button class="navitem" data-nav="#/search" onclick="go('#/search')"><span class="ico">🔍</span>Search</button>
+    <button class="plusbtn" aria-label="Create" onclick="openPlusMenu()">＋</button>
+    <button class="navitem" data-nav="#/library" onclick="go('#/library')"><span class="ico">📚</span>Library</button>
+    <button class="navitem" data-nav="#/study" onclick="go('#/study')"><span class="ico">🎯</span>Study</button>
+  </nav>
+</div>
+<div id="modal-root"></div>
+<div id="toast-root"></div>
+<input type="file" id="imgInput" accept="image/*,application/pdf" multiple style="display:none">
+<input type="file" id="schedInput" accept="image/*,application/pdf" multiple style="display:none" onchange="importSchedule(this.files)">
+
+<script>
+/* ============================== DATA ============================== */
+const DATA_KEY = "quicklearn-data-v1";
+const KEY_KEY = "quicklearn-gemini-key";
+const GEMINI_MODEL = "gemini-3.6-flash";
+const GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"; // lighter backup model, offered only if retries fail
+const RETRY_DELAYS = [2000, 5000, 10000];     // wait before retry 1, 2, 3 (ms)
+const RETRYABLE = [429, 500, 502, 503, 504];  // busy / temporary errors worth retrying
+
+const EMPTY = { decks: [], subjects: [], notes: [], cards: [], examSchedule: {}, subjectScores: {}, studyFreq: {} };
+let data = load();
+
+function load(){
+  try{
+    const raw = localStorage.getItem(DATA_KEY);
+    if(!raw) return structuredClone(EMPTY);
+    const d = JSON.parse(raw);
+    // Migrate old format (one date string per subject) to a list of exams per subject.
+    const sched = {};
+    Object.entries(d.examSchedule||{}).forEach(([sid,v])=>{
+      if(Array.isArray(v)) sched[sid] = v.filter(e=>e && e.date);
+      else if(typeof v === "string" && v) sched[sid] = [{ id:Math.random().toString(36).slice(2,10), date:v, title:"" }];
+    });
+    return {
+      decks:d.decks||[], subjects:d.subjects||[], notes:d.notes||[], cards:d.cards||[],
+      examSchedule:sched, subjectScores:d.subjectScores||{}, studyFreq:d.studyFreq||{}
+    };
+  }catch{ return structuredClone(EMPTY); }
+}
+function save(){ localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+const uid = () => Math.random().toString(36).slice(2,10);
+const todayISO = () => new Date().toISOString().slice(0,10);
+function addDays(d,n){ const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); }
+function daysUntil(dateStr){
+  if(!dateStr) return null;
+  const today = new Date(todayISO()+"T00:00:00");
+  const target = new Date(dateStr+"T00:00:00");
+  return Math.round((target-today)/86400000);
+}
+// ---- exams: each subject can have several (e.g. Math Paper 1 and Paper 2) ----
+const examsOf = sid => (data.examSchedule[sid] || []).slice().sort((a,b)=>a.date.localeCompare(b.date));
+const upcomingExams = sid => examsOf(sid).filter(e => daysUntil(e.date) >= 0);
+// Days until the soonest not-yet-passed exam of a subject, or null if none.
+function nextExamDays(sid){
+  const u = upcomingExams(sid);
+  return u.length ? daysUntil(u[0].date) : null;
+}
+function addExam(sid, date, title){
+  if(!sid || !date) return false;
+  data.examSchedule[sid] = data.examSchedule[sid] || [];
+  if(data.examSchedule[sid].some(e => e.date === date && (e.title||"").toLowerCase() === (title||"").toLowerCase())) return false;
+  data.examSchedule[sid].push({ id:uid(), date, title:(title||"").trim() });
+  return true;
+}
+function fmtDate(d){
+  try{ return new Date(d+"T00:00:00").toLocaleDateString(undefined,{weekday:"short",day:"numeric",month:"short"}); }
+  catch{ return d; }
+}
+const esc = s => String(s??"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+
+const deckCards = id => data.cards.filter(c => c.deckId === id);
+const deckNotes = id => data.notes.filter(n => n.deckId === id);
+const dueCards = id => data.cards.filter(c => c.nextReview <= todayISO() && (id ? c.deckId === id : true));
+const subjectName = d => d.subjectId ? (data.subjects.find(s=>s.id===d.subjectId)?.name || d.subject) : d.subject;
+const tone = i => "tone" + (i % 5);
+
+function createDeck(title, subjectId){
+  if(!title.trim()) return null;
+  const subj = data.subjects.find(s=>s.id===subjectId);
+  const deck = { id:uid(), title:title.trim(), subject: subj?subj.name:"General", subjectId: subjectId||null, createdAt: todayISO() };
+  data.decks.unshift(deck); save(); return deck;
+}
+function deleteDeck(id){
+  data.decks = data.decks.filter(d=>d.id!==id);
+  data.notes = data.notes.filter(n=>n.deckId!==id);
+  data.cards = data.cards.filter(c=>c.deckId!==id);
+  save();
+}
+function createSubject(name){
+  if(!name.trim()) return;
+  data.subjects.push({ id:uid(), name:name.trim(), createdAt: todayISO() }); save();
+}
+function deleteSubject(id){
+  data.subjects = data.subjects.filter(s=>s.id!==id);
+  data.decks = data.decks.map(d => d.subjectId===id ? {...d, subjectId:null} : d);
+  save();
+}
+function addCards(deckId, cards){
+  const made = cards.filter(c=>c.question?.trim() && c.answer?.trim()).map(c=>({
+    id:uid(), deckId, question:c.question.trim(), answer:c.answer.trim(),
+    interval:1, ease:2.3, repetitions:0, nextReview: todayISO()
+  }));
+  if(made.length){ data.cards = [...made, ...data.cards]; save(); }
+  return made.length;
+}
+function rateCard(cardId, rating){
+  data.cards = data.cards.map(c=>{
+    if(c.id!==cardId) return c;
+    let {interval, ease, repetitions} = c;
+    if(rating==="again"){ repetitions=0; interval=1; ease=Math.max(1.3, ease-0.2); }
+    else{
+      repetitions++;
+      if(rating==="hard"){ interval=Math.max(1, Math.round(interval*1.2)); ease=Math.max(1.3, ease-0.05); }
+      else if(rating==="good"){ interval=Math.round(interval*ease); }
+      else { interval=Math.round(interval*ease*1.3); ease=ease+0.1; }
+    }
+    return {...c, interval, ease, repetitions, nextReview: addDays(todayISO(), interval)};
+  });
+  save();
+}
+
+/* ============================== GEMINI ============================== */
+const getKey = () => localStorage.getItem(KEY_KEY) || "";
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+
+// Small text prompt (used for renaming). Resolves the new text, or null if cancelled.
+function askText(title, value, placeholder){
+  return new Promise(resolve=>{
+    const el = document.createElement("div");
+    el.className = "modal-bg"; el.style.zIndex = 70;
+    el.innerHTML = `<div class="modal">
+      <h2 style="font-size:1rem">${esc(title)}</h2>
+      <input class="input" id="askTextField" style="margin-top:1rem" maxlength="80" placeholder="${esc(placeholder||"")}">
+      <div class="row" style="justify-content:flex-end;margin-top:1.25rem">
+        <button class="btn btn-secondary" data-c="cancel">Cancel</button>
+        <button class="btn btn-primary" data-c="save">Save</button>
+      </div></div>`;
+    const input = el.querySelector("#askTextField");
+    input.value = value || "";
+    const done = v => { el.remove(); resolve(v); };
+    el.addEventListener("click", e=>{
+      if(e.target === el) return done(null);
+      const c = e.target.closest("[data-c]")?.dataset.c;
+      if(c === "cancel") done(null);
+      else if(c === "save") done(input.value);
+    });
+    input.addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); done(input.value); } });
+    document.body.appendChild(el);
+    setTimeout(()=>{ input.focus(); input.select(); }, 50);
+  });
+}
+async function copyText(text){
+  try{ await navigator.clipboard.writeText(text); return true; }
+  catch{
+    // Fallback for browsers/contexts where the Clipboard API is blocked (e.g. some file:// pages).
+    const ta = document.createElement("textarea");
+    ta.value = text; ta.style.cssText = "position:fixed;top:0;left:0;opacity:0;font-size:16px";
+    document.body.appendChild(ta); ta.focus(); ta.select();
+    let ok = false;
+    try{ ok = document.execCommand("copy"); }catch{}
+    ta.remove();
+    return ok;
+  }
+}
+async function copyNote(id){
+  const n = data.notes.find(x=>x.id===id); if(!n) return;
+  toast(await copyText(stripMd(n.content)) ? "Note copied" : "Couldn't copy — press and hold the text to copy it");
+}
+async function copyAllNotes(deckId){
+  const notes = deckNotes(deckId);
+  if(!notes.length){ toast("No notes to copy"); return; }
+  const ok = await copyText(notes.map(n=>stripMd(n.content)).join("\n\n"));
+  toast(ok ? `Copied ${notes.length} note${notes.length===1?"":"s"}` : "Couldn't copy — press and hold the text to copy it");
+}
+/* ============================== WORD (.docx) EXPORT ============================== */
+// Builds a real .docx file in the browser (no libraries, works offline).
+// "Study guide" mode first asks the AI to turn the raw notes into a structured study guide
+// (key terms, clear sections, quick revision, practice questions + answer key).
+// "Raw notes" mode exports the notes exactly as written and needs no internet.
+const xe = s => String(s ?? "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, "").replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const DOCX_W = 9638; // text width in twips: A4 page with 2 cm side margins
+function docxRuns(text, base){
+  base = base || {};
+  const one = part => part.split(/(\*\*[^*]+?\*\*|__[^_]+?__|`[^`]+`|\*[^*\s][^*]*?\*)/).filter(Boolean).map(tok => {
+    let t = tok, b = !!base.b, i = false, code = false;
+    if(/^\*\*[^*]+\*\*$/.test(tok) || /^__[^_]+__$/.test(tok)){ t = tok.slice(2,-2); b = true; }
+    else if(/^`[^`]+`$/.test(tok)){ t = tok.slice(1,-1); code = true; }
+    else if(/^\*[^*\s][^*]*\*$/.test(tok)){ t = tok.slice(1,-1); i = true; }
+    const rpr = (code ? '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>' : "") + (b ? "<w:b/>" : "") + (i ? "<w:i/>" : "") + (base.color ? `<w:color w:val="${base.color}"/>` : "") + (code ? '<w:shd w:val="clear" w:color="auto" w:fill="EDEDED"/>' : "");
+    return `<w:r>${rpr ? `<w:rPr>${rpr}</w:rPr>` : ""}<w:t xml:space="preserve">${xe(t)}</w:t></w:r>`;
+  }).join("");
+  return String(text).split(/<br\s*\/?>/i).map(one).join("<w:r><w:br/></w:r>");
+}
+const DOCX_HR = '<w:p><w:pPr><w:pBdr><w:bottom w:val="single" w:sz="6" w:space="1" w:color="BBBBBB"/></w:pBdr></w:pPr></w:p>';
+const DOCX_PB = '<w:p><w:r><w:br w:type="page"/></w:r></w:p>';
+// "| a | b |" -> ["a","b"]  (a literal pipe inside a cell is written \|)
+function splitRow(line){
+  let s = line.trim();
+  if(s.startsWith("|")) s = s.slice(1);
+  if(s.endsWith("|") && !s.endsWith("\\|")) s = s.slice(0, -1);
+  const cells = []; let cur = "";
+  for(let k = 0; k < s.length; k++){
+    if(s[k] === "\\" && s[k+1] === "|"){ cur += "|"; k++; }
+    else if(s[k] === "|"){ cells.push(cur.trim()); cur = ""; }
+    else cur += s[k];
+  }
+  cells.push(cur.trim());
+  return cells;
+}
+const isTableRow = l => /^\s*\|.*\|\s*$/.test(l);
+const isTableSep = l => l.includes("|") && l.includes("-") && /^\s*\|?\s*:?-{2,}:?\s*(\|\s*:?-{2,}:?\s*)*\|?\s*$/.test(l);
+function docxTable(rows){ // rows[0] is the header row
+  const n = Math.max(...rows.map(r => r.length));
+  let widths;
+  if(n === 2){ // give the first column a share that fits its content (short terms vs. long questions)
+    const avg = ci => rows.slice(1).reduce((a, r) => a + (r[ci] || "").length, 0) / Math.max(1, rows.length - 1) + 8;
+    const share = Math.min(0.5, Math.max(0.25, avg(0) / (avg(0) + avg(1))));
+    const w0 = Math.round(DOCX_W * share);
+    widths = [w0, DOCX_W - w0];
+  } else { widths = Array(n).fill(Math.floor(DOCX_W / n)); }
+  const bd = 'w:val="single" w:sz="4" w:space="0" w:color="BFC8D9"';
+  const cell = (txt, w, fill, base) => `<w:tc><w:tcPr><w:tcW w:w="${w}" w:type="dxa"/>${fill ? `<w:shd w:val="clear" w:color="auto" w:fill="${fill}"/>` : ""}</w:tcPr><w:p><w:pPr><w:spacing w:before="0" w:after="0"/></w:pPr>${docxRuns(txt, base)}</w:p></w:tc>`;
+  const trs = rows.map((r, ri) => {
+    const hdr = ri === 0;
+    const fill = hdr ? "2F5496" : (ri % 2 === 0 ? "EEF2F9" : null);
+    return `<w:tr><w:trPr><w:cantSplit/>${hdr ? "<w:tblHeader/>" : ""}</w:trPr>` + Array.from({ length: n }, (_, ci) => cell(r[ci] ?? "", widths[ci], fill, hdr ? { b:true, color:"FFFFFF" } : (ci === 0 ? { b:true } : {}))).join("") + `</w:tr>`;
+  }).join("");
+  return `<w:tbl><w:tblPr><w:tblW w:w="${DOCX_W}" w:type="dxa"/><w:tblBorders><w:top ${bd}/><w:left ${bd}/><w:bottom ${bd}/><w:right ${bd}/><w:insideH ${bd}/><w:insideV ${bd}/></w:tblBorders><w:tblLayout w:type="fixed"/><w:tblCellMar><w:top w:w="70" w:type="dxa"/><w:left w:w="110" w:type="dxa"/><w:bottom w:w="70" w:type="dxa"/><w:right w:w="110" w:type="dxa"/></w:tblCellMar></w:tblPr><w:tblGrid>${widths.map(w => `<w:gridCol w:w="${w}"/>`).join("")}</w:tblGrid>${trs}</w:tbl><w:p><w:pPr><w:spacing w:after="80"/><w:rPr><w:sz w:val="8"/></w:rPr></w:pPr></w:p>`;
+}
+// A "> ..." line becomes a shaded box with a coloured bar (blue = tip, orange = warning)
+function docxCallout(txt){
+  const warn = /watch out|warning|careful|mistake|trap|common error|let op|pasop|waarskuwing/i.test(txt.slice(0, 40));
+  const bar = warn ? "C55A11" : "2F5496", fill = warn ? "FDF0E6" : "EAF0FA";
+  return `<w:p><w:pPr><w:keepLines/><w:pBdr><w:left w:val="single" w:sz="24" w:space="8" w:color="${bar}"/></w:pBdr><w:shd w:val="clear" w:color="auto" w:fill="${fill}"/><w:spacing w:before="60" w:after="60"/><w:ind w:left="240" w:right="120"/></w:pPr>${docxRuns(txt)}</w:p>`;
+}
+function docxBody(text, ctx){
+  const out = [];
+  let list = null, numId = 0;
+  const P = (inner, ppr) => `<w:p>${ppr ? `<w:pPr>${ppr}</w:pPr>` : ""}${inner}</w:p>`;
+  const lines = String(text ?? "").replace(/\r/g, "").split("\n");
+  for(let k = 0; k < lines.length; k++){
+    const raw = lines[k];
+    let m;
+    if(!raw.trim()) continue; // blank lines don't break a numbered list
+    if(/^\s*\[\[PAGEBREAK\]\]\s*$/i.test(raw)){ list = null; out.push(DOCX_PB); continue; }
+    if(/^\s*[-*_]{3,}\s*$/.test(raw)){ list = null; out.push(DOCX_HR); continue; }
+    if(isTableRow(raw) && k + 1 < lines.length && isTableSep(lines[k + 1])){
+      const rows = [splitRow(raw)];
+      k += 2;
+      while(k < lines.length && isTableRow(lines[k])){ rows.push(splitRow(lines[k])); k++; }
+      k--; list = null;
+      out.push(docxTable(rows));
+      continue;
+    }
+    if(/^\s*>/.test(raw)){
+      list = null;
+      const t = raw.replace(/^\s*>\s?/, "").trim();
+      if(t) out.push(docxCallout(t));
+      continue;
+    }
+    if((m = raw.match(/^\s{0,3}(#{1,6})\s+(.*)$/))){
+      list = null;
+      out.push(P(docxRuns(m[2].replace(/\s*#+\s*$/, "")), `<w:pStyle w:val="Heading${(m[1].length <= 2 ? 1 : 2) + ctx.shift}"/>`));
+      continue;
+    }
+    if((m = raw.match(/^(\s*)[-*•]\s+(.*)$/))){
+      list = "ul";
+      const lvl = Math.min(Math.floor(m[1].length / 2), 2);
+      out.push(P(docxRuns(m[2]), `<w:pStyle w:val="ListParagraph"/><w:numPr><w:ilvl w:val="${lvl}"/><w:numId w:val="1"/></w:numPr>`));
+      continue;
+    }
+    if((m = raw.match(/^(\s*)(\d+)[.)]\s+(.*)$/))){
+      if(list !== "ol"){ list = "ol"; numId = ++ctx.n; ctx.defs.push({ id:numId, start:parseInt(m[2], 10) || 1 }); }
+      out.push(P(docxRuns(m[3]), `<w:pStyle w:val="ListParagraph"/><w:numPr><w:ilvl w:val="0"/><w:numId w:val="${numId}"/></w:numPr>`));
+      continue;
+    }
+    list = null;
+    out.push(P(docxRuns(raw.trim())));
+  }
+  return out.join("");
+}
+function crc32(bytes){
+  if(!crc32.t){ crc32.t = []; for(let n = 0; n < 256; n++){ let c = n; for(let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; crc32.t[n] = c >>> 0; } }
+  let crc = -1;
+  for(let i = 0; i < bytes.length; i++) crc = crc32.t[(crc ^ bytes[i]) & 255] ^ (crc >>> 8);
+  return (crc ^ -1) >>> 0;
+}
+function zipStore(files){ // minimal ZIP writer (no compression), enough for a .docx
+  const enc = new TextEncoder(), chunks = [], central = [];
+  let offset = 0;
+  const d = new Date();
+  const time = (d.getHours() << 11) | (d.getMinutes() << 5) | (d.getSeconds() >> 1);
+  const date = ((d.getFullYear() - 1980) << 9) | ((d.getMonth() + 1) << 5) | d.getDate();
+  for(const f of files){
+    const name = enc.encode(f.name), data = enc.encode(f.data), crc = crc32(data);
+    const lh = new DataView(new ArrayBuffer(30));
+    lh.setUint32(0, 0x04034b50, true); lh.setUint16(4, 20, true); lh.setUint16(6, 0x0800, true); lh.setUint16(8, 0, true);
+    lh.setUint16(10, time, true); lh.setUint16(12, date, true); lh.setUint32(14, crc, true);
+    lh.setUint32(18, data.length, true); lh.setUint32(22, data.length, true); lh.setUint16(26, name.length, true); lh.setUint16(28, 0, true);
+    chunks.push(new Uint8Array(lh.buffer), name, data);
+    const ch = new DataView(new ArrayBuffer(46));
+    ch.setUint32(0, 0x02014b50, true); ch.setUint16(4, 20, true); ch.setUint16(6, 20, true); ch.setUint16(8, 0x0800, true); ch.setUint16(10, 0, true);
+    ch.setUint16(12, time, true); ch.setUint16(14, date, true); ch.setUint32(16, crc, true);
+    ch.setUint32(20, data.length, true); ch.setUint32(24, data.length, true); ch.setUint16(28, name.length, true);
+    ch.setUint32(42, offset, true);
+    central.push(new Uint8Array(ch.buffer), name);
+    offset += 30 + name.length + data.length;
+  }
+  const cdSize = central.reduce((a, c) => a + c.length, 0);
+  const end = new DataView(new ArrayBuffer(22));
+  end.setUint32(0, 0x06054b50, true); end.setUint16(8, files.length, true); end.setUint16(10, files.length, true);
+  end.setUint32(12, cdSize, true); end.setUint32(16, offset, true);
+  return new Blob([...chunks, ...central, new Uint8Array(end.buffer)], { type:"application/vnd.openxmlformats-officedocument.wordprocessingml.document" });
+}
+// Labels for the fixed parts of the document (title bar, flashcard table). Used when the AI doesn't supply its own.
+const DOC_LABELS = {
+  en:{ sub:"Study guide", subRaw:"Study notes", cards:"Flashcard recap", cover:"Cover the Answer column and test yourself.", q:"Question", a:"Answer", locale:"en-GB", lang:"en-ZA" },
+  af:{ sub:"Studiegids", subRaw:"Studienotas", cards:"Flitskaartopsomming", cover:"Bedek die Antwoord-kolom en toets jouself.", q:"Vraag", a:"Antwoord", locale:"af-ZA", lang:"af-ZA" }
+};
+function docLangOf(text){ // quick Afrikaans-vs-English check on the notes
+  const t = " " + String(text).toLowerCase().replace(/[\u2019\u2018]/g, "'").replace(/[^a-z\u00e0-\u00ff' ]/g, " ") + " ";
+  const cnt = ws => ws.reduce((a, w) => a + (t.split(" " + w + " ").length - 1), 0);
+  const af = cnt(["die","en","van","het","nie","'n","wat","om","dit","vir","met","dat","deur","hulle","ook","kan","word","sy"]);
+  const en = cnt(["the","and","of","to","that","it","for","with","are","this","which","from","by","be","an"]);
+  return af > en ? "af" : "en";
+}
+// sections: [{ title, notes:[{content}], guide?: "markdown study guide", cards?: [{question,answer}] }]
+// opts: { subtitle, labels }
+function buildDocx(title, sections, opts){
+  opts = opts || {};
+  const W = 'xmlns:w="http://schemas.openxmlformats.org/wordprocessingml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const multi = sections.length > 1;
+  const ctx = { n: 1, defs: [], shift: multi ? 1 : 0 };
+  const L0 = opts.labels || DOC_LABELS.en;
+  const dateStr = new Date().toLocaleDateString(L0.locale || "en-GB", { day:"numeric", month:"long", year:"numeric" });
+  let body = `<w:p><w:pPr><w:pStyle w:val="Title"/></w:pPr><w:r><w:t xml:space="preserve">${xe(title)}</w:t></w:r></w:p>`;
+  body += `<w:p><w:pPr><w:pStyle w:val="Subtitle"/></w:pPr><w:r><w:t xml:space="preserve">${xe((opts.subtitle || L0.subRaw || "Study notes") + " · " + dateStr)}</w:t></w:r></w:p>`;
+  sections.forEach((sec, si) => {
+    if(multi) body += `<w:p><w:pPr><w:pStyle w:val="Heading1"/>${si ? "<w:pageBreakBefore/>" : ""}</w:pPr><w:r><w:t xml:space="preserve">${xe(sec.title)}</w:t></w:r></w:p>`;
+    if(sec.guide) body += docxBody(sec.guide, ctx);
+    else sec.notes.forEach((n, i) => { if(i) body += DOCX_HR; body += docxBody(n.content, ctx); });
+    if(sec.cards && sec.cards.length){
+      const cell = s => stripMd(s).replace(/\|/g, "\\|").replace(/\s*\n\s*/g, "<br>");
+      const L = sec.labels || L0;
+      body += docxBody(`## ${L.cards}\n${L.cover}\n\n| ${L.q} | ${L.a} |\n|---|---|\n` + sec.cards.map(c => `| ${cell(c.question)} | ${cell(c.answer)} |`).join("\n"), ctx);
+    }
+  });
+  const documentXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:document ${W}><w:body>${body}<w:sectPr><w:footerReference w:type="default" r:id="rId3"/><w:pgSz w:w="11906" w:h="16838"/><w:pgMar w:top="1247" w:right="1134" w:bottom="1247" w:left="1134" w:header="567" w:footer="567" w:gutter="0"/></w:sectPr></w:body></w:document>`;
+  const fld = t => `<w:r><w:rPr><w:color w:val="808080"/><w:sz w:val="18"/></w:rPr>${t}</w:r>`;
+  const footerXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:ftr ${W}><w:p><w:pPr><w:jc w:val="center"/></w:pPr>${fld(`<w:t xml:space="preserve">${xe(title)}  ·  Page </w:t>`)}${fld('<w:fldChar w:fldCharType="begin"/>')}${fld('<w:instrText xml:space="preserve"> PAGE </w:instrText>')}${fld('<w:fldChar w:fldCharType="separate"/>')}${fld("<w:t>1</w:t>")}${fld('<w:fldChar w:fldCharType="end"/>')}</w:p></w:ftr>`;
+  const stylesXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:styles ${W}>
+<w:docDefaults><w:rPrDefault><w:rPr><w:rFonts w:ascii="Calibri" w:hAnsi="Calibri" w:eastAsia="Calibri" w:cs="Calibri"/><w:sz w:val="22"/><w:szCs w:val="22"/><w:lang w:val="${L0.lang || "en-ZA"}"/></w:rPr></w:rPrDefault><w:pPrDefault><w:pPr><w:spacing w:after="120" w:line="276" w:lineRule="auto"/></w:pPr></w:pPrDefault></w:docDefaults>
+<w:style w:type="paragraph" w:default="1" w:styleId="Normal"><w:name w:val="Normal"/><w:qFormat/></w:style>
+<w:style w:type="paragraph" w:styleId="Title"><w:name w:val="Title"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:spacing w:after="60"/></w:pPr><w:rPr><w:b/><w:color w:val="1F3864"/><w:sz w:val="52"/><w:szCs w:val="52"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Subtitle"><w:name w:val="Subtitle"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:spacing w:after="240"/></w:pPr><w:rPr><w:color w:val="7F7F7F"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading1"><w:name w:val="heading 1"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:pBdr><w:bottom w:val="single" w:sz="8" w:space="2" w:color="2F5496"/></w:pBdr><w:spacing w:before="320" w:after="120"/><w:outlineLvl w:val="0"/></w:pPr><w:rPr><w:b/><w:color w:val="2F5496"/><w:sz w:val="34"/><w:szCs w:val="34"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading2"><w:name w:val="heading 2"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="240" w:after="80"/><w:outlineLvl w:val="1"/></w:pPr><w:rPr><w:b/><w:color w:val="2F5496"/><w:sz w:val="28"/><w:szCs w:val="28"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="Heading3"><w:name w:val="heading 3"/><w:basedOn w:val="Normal"/><w:next w:val="Normal"/><w:qFormat/><w:pPr><w:keepNext/><w:spacing w:before="180" w:after="60"/><w:outlineLvl w:val="2"/></w:pPr><w:rPr><w:b/><w:color w:val="1F3864"/><w:sz w:val="24"/><w:szCs w:val="24"/></w:rPr></w:style>
+<w:style w:type="paragraph" w:styleId="ListParagraph"><w:name w:val="List Paragraph"/><w:basedOn w:val="Normal"/><w:qFormat/><w:pPr><w:spacing w:after="60"/></w:pPr></w:style>
+</w:styles>`;
+  const bullets = ["•", "◦", "▪"];
+  let numberingXml = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><w:numbering ${W}>`;
+  numberingXml += `<w:abstractNum w:abstractNumId="0"><w:multiLevelType w:val="hybridMultilevel"/>` + bullets.map((b, l) => `<w:lvl w:ilvl="${l}"><w:start w:val="1"/><w:numFmt w:val="bullet"/><w:lvlText w:val="${b}"/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="${720 * (l + 1)}" w:hanging="360"/></w:pPr></w:lvl>`).join("") + `</w:abstractNum>`;
+  numberingXml += `<w:abstractNum w:abstractNumId="1"><w:multiLevelType w:val="hybridMultilevel"/><w:lvl w:ilvl="0"><w:start w:val="1"/><w:numFmt w:val="decimal"/><w:lvlText w:val="%1."/><w:lvlJc w:val="left"/><w:pPr><w:ind w:left="720" w:hanging="360"/></w:pPr></w:lvl></w:abstractNum>`;
+  numberingXml += `<w:num w:numId="1"><w:abstractNumId w:val="0"/></w:num>`;
+  ctx.defs.forEach(d => { numberingXml += `<w:num w:numId="${d.id}"><w:abstractNumId w:val="1"/><w:lvlOverride w:ilvl="0"><w:startOverride w:val="${d.start}"/></w:lvlOverride></w:num>`; });
+  numberingXml += `</w:numbering>`;
+  const R = "http://schemas.openxmlformats.org/package/2006/relationships";
+  const RT = "http://schemas.openxmlformats.org/officeDocument/2006/relationships";
+  const CT = "application/vnd.openxmlformats-officedocument.wordprocessingml";
+  return zipStore([
+    { name:"[Content_Types].xml", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/word/document.xml" ContentType="${CT}.document.main+xml"/><Override PartName="/word/styles.xml" ContentType="${CT}.styles+xml"/><Override PartName="/word/numbering.xml" ContentType="${CT}.numbering+xml"/><Override PartName="/word/footer1.xml" ContentType="${CT}.footer+xml"/></Types>` },
+    { name:"_rels/.rels", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${R}"><Relationship Id="rId1" Type="${RT}/officeDocument" Target="word/document.xml"/></Relationships>` },
+    { name:"word/_rels/document.xml.rels", data:`<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="${R}"><Relationship Id="rId1" Type="${RT}/styles" Target="styles.xml"/><Relationship Id="rId2" Type="${RT}/numbering" Target="numbering.xml"/><Relationship Id="rId3" Type="${RT}/footer" Target="footer1.xml"/></Relationships>` },
+    { name:"word/document.xml", data:documentXml },
+    { name:"word/styles.xml", data:stylesXml },
+    { name:"word/numbering.xml", data:numberingXml },
+    { name:"word/footer1.xml", data:footerXml }
+  ]);
+}
+
+// Ask the AI to turn one deck's raw notes into a structured study guide (Markdown).
+async function aiStudyGuide(title, notesText){
+  const prompt = `LANGUAGE (the most important rule): find the language the NOTES are written in and write EVERYTHING in that same language: every heading, explanation, table, question and answer. NEVER translate into English or any other language, even though these instructions are in English. If the notes mix languages, keep each term in the language it was written in and write the surrounding text in the main language of the notes.
+
+You are a teacher turning a student's raw study notes into a STUDY GUIDE for a test. The student will read it (often printed) and must be able to learn everything from it quickly and without confusion.
+
+TOPIC: ${title}
+
+RULES
+- The facts must come from the notes. You may add short plain-language explanations, simple examples or memory tricks, but never contradict the notes or invent facts, dates, numbers, names or formulas. If something in the notes looks wrong, keep what the notes say.
+- Keep EVERY fact that could be tested. Reorganise and reword for clarity, but never drop a point.
+- Merge duplicates and put related ideas together, in the order a student would best learn them (basics first).
+- Use short, simple sentences. One idea per bullet. No long paragraphs.
+- The section headings named below are only a guide to the structure: translate them into the language of the notes (for example into Afrikaans if the notes are Afrikaans).
+
+STRUCTURE (use these ## sections in this order; leave one out only if the notes truly have nothing for it)
+1. ## At a glance: 2-4 bullets saying what this topic is about and what matters most for the test.
+2. ## Key terms: a Markdown table with the header row | Term | Meaning | covering every important term, definition, name, date and formula in the notes. Keep each Meaning to one or two short sentences.
+3. One ## section for each main topic in the notes, named after the topic. Inside it: ### sub-headings where helpful, short bullets, **bold** on key terms, numbered lists for steps or processes, and a Markdown table whenever things are compared or have several attributes. Add a callout line starting with > only where it really helps, for example > **Remember:** ... for a key rule or memory trick, or > **Watch out:** ... for a common confusion. At most 1-2 callouts per section.
+4. ## Common mistakes: bullets of things students mix up or get wrong on this topic.
+5. ## Quick revision: the 8-15 most important points as bullets, a last-minute cheat sheet.
+6. ## Practice questions: numbered test-style questions (about 10 for short notes, up to 25 for long notes) mixing recall, explain-why and application questions. Questions only, no answers.
+7. A line containing exactly [[PAGEBREAK]] followed by ## Answer key: numbered answers matching the question numbers, short but complete.
+
+FIRST LINE OF YOUR ANSWER: exactly one line in this form, with the five phrases translated into the language of the notes: [[LABELS: Study guide | Flashcard recap | Cover the Answer column and test yourself. | Question | Answer]]
+
+FORMAT: Markdown only (## headings, ### sub-headings, **bold**, - bullets, numbered lists, | tables |, > callouts). No LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.); use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O. Return only the study guide, with no introduction or closing remarks.
+
+NOTES:
+${notesText}`;
+  let text = cleanAiText(await gemini(prompt)).replace(/ -> /g, " → ");
+  let labels = null;
+  const m = text.match(/^\s*\[\[LABELS:([^\]]*)\]\]\s*$/m);
+  if(m){
+    const p = m[1].split("|").map(x => x.trim());
+    if(p.length >= 5 && p.slice(0, 5).every(Boolean)) labels = { sub:p[0], cards:p[1], cover:p[2], q:p[3], a:p[4] };
+    text = text.replace(m[0], "").trim();
+  }
+  return { text, labels };
+}
+
+// Pick one or more decks; their notes are combined into a single Word document.
+let docBusy = false, docRun = 0;
+function openWordDocModal(){
+  const decks = data.decks.filter(d => deckNotes(d.id).length);
+  if(!decks.length){ closeModal(); toast("Add some notes to a deck first."); return; }
+  const opt = (inner) => `<label class="quiz-opt" style="display:flex;align-items:flex-start;gap:.75rem;cursor:pointer">${inner}</label>`;
+  modal(`<h2 style="font-size:1rem">Make a Word doc</h2>
+    <div class="muted" style="margin-top:.4rem">Choose the decks whose notes you want in one document.</div>
+    <div class="row" style="justify-content:space-between;margin-top:1rem">
+      <button class="btn btn-secondary" id="docAllBtn" style="min-height:36px;font-size:.8rem" onclick="toggleDocAll()">Select all</button>
+      <span class="muted" id="docCount" style="font-size:.8rem"></span>
+    </div>
+    <div id="docDecks" style="margin-top:.75rem;max-height:34vh;overflow-y:auto">
+      ${decks.map(d => { const c = deckNotes(d.id).length; return opt(`
+        <input type="checkbox" value="${d.id}" onchange="updateDocCount()" style="width:1.1rem;height:1.1rem;accent-color:var(--primary);flex:none;margin-top:.1rem">
+        <span style="flex:1;min-width:0;overflow-wrap:anywhere">${esc(d.title)}</span>
+        <span class="muted" style="flex:none;font-size:.75rem">${c} note${c===1?"":"s"}</span>`); }).join("")}
+    </div>
+    <div class="label" style="margin-top:1rem">Document type</div>
+    ${opt(`<input type="radio" name="docMode" value="guide" checked style="width:1.1rem;height:1.1rem;accent-color:var(--primary);flex:none;margin-top:.1rem">
+      <span style="flex:1;min-width:0"><b>Study guide</b><br><span class="muted" style="font-size:.78rem">AI organises your notes into key terms, clear sections, a quick-revision list and practice questions with a separate answer key. Needs internet.</span></span>`)}
+    ${opt(`<input type="radio" name="docMode" value="raw" style="width:1.1rem;height:1.1rem;accent-color:var(--primary);flex:none;margin-top:.1rem">
+      <span style="flex:1;min-width:0"><b>Raw notes</b><br><span class="muted" style="font-size:.78rem">Your notes exactly as you wrote them. Works offline.</span></span>`)}
+    ${data.cards.length ? opt(`<input type="checkbox" id="docCards" checked style="width:1.1rem;height:1.1rem;accent-color:var(--primary);flex:none;margin-top:.1rem">
+      <span style="flex:1;min-width:0"><b>Add my flashcards</b><br><span class="muted" style="font-size:.78rem">A question and answer table at the end of each deck.</span></span>`) : ""}
+    <div id="docStatus" style="margin-top:.75rem"></div>
+    <div class="row" style="justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-secondary" onclick="docRun++;docBusy=false;closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="docStartBtn" onclick="createWordDoc()">Create Word doc</button>
+    </div>`);
+  updateDocCount();
+}
+function docBoxes(){ return Array.from(document.querySelectorAll("#docDecks input[type=checkbox]")); }
+function toggleDocAll(){
+  const boxes = docBoxes(), all = boxes.every(b => b.checked);
+  boxes.forEach(b => b.checked = !all);
+  updateDocCount();
+}
+function updateDocCount(){
+  const boxes = docBoxes(), on = boxes.filter(b => b.checked);
+  const cnt = document.getElementById("docCount");
+  if(cnt) cnt.textContent = on.length ? `${on.length} deck${on.length===1?"":"s"} selected` : "None selected";
+  const all = document.getElementById("docAllBtn");
+  if(all) all.textContent = boxes.length && on.length === boxes.length ? "Deselect all" : "Select all";
+  const start = document.getElementById("docStartBtn");
+  if(start) start.disabled = !on.length || docBusy;
+}
+function setDocStatus(html, isError){
+  const el = document.getElementById("docStatus");
+  if(el) el.innerHTML = html ? `<div class="panel" style="font-size:.85rem;${isError ? "color:var(--destructive)" : ""}">${html}</div>` : "";
+}
+async function createWordDoc(){
+  if(docBusy){ toast("Still writing your study guide…"); return; }
+  const ids = docBoxes().filter(b => b.checked).map(b => b.value);
+  if(!ids.length){ toast("Pick at least one deck"); return; }
+  const mode = document.querySelector("input[name=docMode]:checked")?.value || "guide";
+  const withCards = !!document.getElementById("docCards")?.checked;
+  const sections = ids.map(id => ({ title: data.decks.find(d => d.id === id)?.title || "Untitled deck", notes: deckNotes(id), cards: withCards ? deckCards(id) : [] })).filter(sec => sec.notes.length);
+  if(!sections.length){ toast("Those decks have no notes"); return; }
+  if(mode === "guide" && !getKey()){
+    setDocStatus("Study guides need your Gemini API key. Add it with the <b>AI key</b> button (top right), or choose <b>Raw notes</b> to export without AI.", true);
+    return;
+  }
+  const run = ++docRun;
+  docBusy = true; updateDocCount();
+  try{
+    if(mode === "guide"){
+      for(let i = 0; i < sections.length; i++){
+        setDocStatus(`<span class="spin"></span> Writing study guide ${i + 1} of ${sections.length}: ${esc(sections[i].title)}… this can take a minute.`);
+        const g = await aiStudyGuide(sections[i].title, sections[i].notes.map(n => n.content).join("\n\n---\n\n"));
+        if(run !== docRun) return; // cancelled
+        if(!g.text.trim()) throw new Error("The AI sent back an empty answer. Please try again.");
+        sections[i].guide = g.text;
+        sections[i].aiLabels = g.labels;
+      }
+    }
+    const multi = sections.length > 1;
+    // labels for the fixed parts: the AI's own (guide mode) or Afrikaans/English picked from the notes themselves
+    sections.forEach(sec => {
+      const base = DOC_LABELS[docLangOf(sec.notes.map(n => n.content).join(" "))];
+      sec.labels = Object.assign({}, base, sec.aiLabels || {});
+    });
+    const L = sections[0].labels;
+    const subtitle = mode === "guide" ? L.sub : L.subRaw;
+    const title = multi ? subtitle : sections[0].title;
+    const blob = buildDocx(title, sections, { subtitle, labels: L });
+    const base = title.replace(/[\\/:*?"<>|]+/g, "").trim().slice(0, 60) || "notes";
+    const fname = (mode === "guide" && !multi ? base + " - " + subtitle : base) + ".docx";
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = fname;
+    document.body.appendChild(a); a.click(); a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+    if(document.getElementById("docStatus")) closeModal();
+    toast(mode === "guide" ? "Study guide created" : "Word document created");
+  }catch(e){
+    console.error(e);
+    setDocStatus(esc(e.message || "Couldn't create the Word document") + (mode === "guide" ? "<br><span class='muted'>You can try again, or choose Raw notes to export without AI.</span>" : ""), true);
+    if(!document.getElementById("docStatus")) toast("Couldn't create the Word document");
+  }finally{
+    if(run === docRun){ docBusy = false; updateDocCount(); }
+  }
+}
+async function renameDeck(id){
+  const d = data.decks.find(x=>x.id===id); if(!d) return;
+  const v = await askText("Rename deck", d.title, "Deck name");
+  if(v === null) return;
+  if(!v.trim()){ toast("Name can't be empty"); return; }
+  d.title = v.trim(); save(); route(); toast("Deck renamed");
+}
+async function renameFolder(id){
+  const sub = data.subjects.find(x=>x.id===id); if(!sub) return;
+  const v = await askText("Rename folder", sub.name, "Folder name");
+  if(v === null) return;
+  if(!v.trim()){ toast("Name can't be empty"); return; }
+  sub.name = v.trim();
+  data.decks.forEach(d=>{ if(d.subjectId===id) d.subject = sub.name; }); // keep the stored copy in sync
+  save(); route(); toast("Folder renamed");
+}
+async function renameExam(sid, eid){
+  const e = (data.examSchedule[sid]||[]).find(x=>x.id===eid); if(!e) return;
+  const v = await askText("Rename exam", e.title || "", "e.g. Paper 1");
+  if(v === null) return;
+  e.title = v.trim(); save(); openExamScheduleModal(); toast("Exam renamed");
+}
+
+// Shown when automatic retries all fail: explains why, lists the downsides of the
+// backup model, and lets the person choose. Resolves "fallback" | "retry" | "cancel".
+function askFallback(status){
+  return new Promise(resolve=>{
+    const el = document.createElement("div");
+    el.className = "modal-bg"; el.style.zIndex = 70;
+    const why = status === 429
+      ? "You've hit Gemini's request limit for the moment, so Google is turning requests away."
+      : "The servers for this AI model have high traffic right now, so Google turned the request away" + (status ? ` (error ${status})` : " or couldn't be reached") + ".";
+    el.innerHTML = `<div class="modal">
+      <h2 style="font-size:1rem">Gemini is busy right now</h2>
+      <p class="muted" style="margin:.5rem 0 0">${why} The app already retried ${RETRY_DELAYS.length} times automatically.</p>
+      <p style="margin:1rem 0 .3rem;font-size:.85rem;font-weight:700">You can switch to a lighter backup model, but:</p>
+      <ul class="muted" style="margin:0;padding-left:1.1rem;line-height:1.55">
+        <li><b style="color:var(--foreground)">Less accurate.</b> It can misread photos and PDFs, so double-check exam dates after importing a timetable and review flashcards it writes.</li>
+        <li><b style="color:var(--foreground)">Less consistent.</b> It sometimes ignores the requested format, so imports or flashcard generation may fail and need another try.</li>
+      </ul>
+      <div style="display:flex;flex-direction:column;gap:.5rem;margin-top:1.25rem">
+        <button class="btn btn-primary" data-c="fallback">Use backup model</button>
+        <button class="btn btn-secondary" data-c="retry">Try the main model again</button>
+        <button class="btn btn-ghost" data-c="cancel">Cancel</button>
+      </div></div>`;
+    el.addEventListener("click", e=>{
+      const c = e.target.closest("[data-c]")?.dataset.c;
+      if(!c) return;
+      el.remove(); resolve(c);
+    });
+    document.body.appendChild(el);
+  });
+}
+
+// files = [{ dataUrl }] (JPEG data URLs from filesToImages)
+async function gemini(prompt, files){
+  const key = getKey();
+  if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
+  if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
+  const parts = [{text:prompt}];
+  if(files && files.length){
+    files.slice(0,8).forEach(f => parts.push({ inline_data:{ mime_type:"image/jpeg", data:f.dataUrl.split(",")[1] } }));
+  }
+  const body = JSON.stringify({ contents:[{ parts }] });
+  let model = GEMINI_MODEL;
+  while(true){
+    let lastStatus = 0;
+    for(let attempt = 0; attempt <= RETRY_DELAYS.length; attempt++){
+      let res = null;
+      try{
+        res = await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+model+":generateContent?key="+encodeURIComponent(key), {
+          method:"POST", headers:{"Content-Type":"application/json"}, body
+        });
+      }catch(e){ // network hiccup: treat like a busy server, unless we've actually gone offline
+        if(navigator.onLine === false) throw new Error("You lost your internet connection — AI features need it. Everything else still works.");
+        res = null;
+      }
+      if(res && res.ok){
+        const j = await res.json();
+        return j.candidates?.[0]?.content?.parts?.map(p=>p.text||"").join("") || "";
+      }
+      if(res && !RETRYABLE.includes(res.status)){
+        const t = await res.text();
+        if(res.status===400||res.status===403) throw new Error("API key rejected — check it in the AI key dialog.");
+        throw new Error("Gemini error " + res.status + ": " + t.slice(0,120));
+      }
+      lastStatus = res ? res.status : 0;
+      if(attempt < RETRY_DELAYS.length){
+        toast(`Servers are busy — retrying automatically (${attempt+1}/${RETRY_DELAYS.length})…`);
+        await sleep(RETRY_DELAYS[attempt]);
+      }
+    }
+    // All automatic retries failed.
+    if(model === GEMINI_FALLBACK_MODEL) throw new Error("Gemini is still too busy even on the backup model. Please try again in a few minutes.");
+    const choice = await askFallback(lastStatus);
+    if(choice === "fallback") model = GEMINI_FALLBACK_MODEL;
+    else if(choice !== "retry") throw new Error("Cancelled — Gemini's servers are busy right now. Try again in a few minutes.");
+  }
+}
+// Turn photos / PDFs into downscaled JPEG data URLs that Gemini accepts.
+// PDF pages are rendered with pdf.js (loaded on demand).
+function loadScript(src){
+  return new Promise((res,rej)=>{
+    const s = document.createElement("script");
+    s.src = src; s.onload = res; s.onerror = ()=>rej(new Error("Couldn't load the PDF reader — check your connection."));
+    document.head.appendChild(s);
+  });
+}
+function canvasToJpeg(canvas, maxSide){
+  const sc = Math.min(1, maxSide / Math.max(canvas.width, canvas.height));
+  const out = document.createElement("canvas");
+  out.width = Math.round(canvas.width*sc); out.height = Math.round(canvas.height*sc);
+  out.getContext("2d").drawImage(canvas, 0, 0, out.width, out.height);
+  return out.toDataURL("image/jpeg", 0.85);
+}
+function imageFileToJpeg(file){
+  return new Promise((res,rej)=>{
+    const url = URL.createObjectURL(file);
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement("canvas");
+      c.width = img.naturalWidth; c.height = img.naturalHeight;
+      c.getContext("2d").drawImage(img,0,0);
+      URL.revokeObjectURL(url);
+      res(canvasToJpeg(c, 1600));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); rej(new Error("Couldn't read that image.")); };
+    img.src = url;
+  });
+}
+async function pdfToJpegs(file){
+  if(!window.pdfjsLib){
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+  const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  const pages = [];
+  for(let p=1; p<=Math.min(pdf.numPages, 8); p++){
+    const page = await pdf.getPage(p);
+    const vp = page.getViewport({ scale: 1.6 });
+    const c = document.createElement("canvas");
+    c.width = vp.width; c.height = vp.height;
+    await page.render({ canvasContext: c.getContext("2d"), viewport: vp }).promise;
+    pages.push(canvasToJpeg(c, 1600));
+  }
+  return pages;
+}
+// Returns up to 8 [{dataUrl}] images from any mix of photos and PDFs.
+async function filesToImages(fileList){
+  const out = [];
+  for(const f of Array.from(fileList||[])){
+    if(f.type === "application/pdf" || /\.pdf$/i.test(f.name)) (await pdfToJpegs(f)).forEach(d=>out.push({dataUrl:d}));
+    else out.push({ dataUrl: await imageFileToJpeg(f) });
+    if(out.length >= 8) break;
+  }
+  return out.slice(0,8);
+}
+// The model sometimes answers with Markdown bold (**word**) or LaTeX math
+// notation ($\rightarrow$, \text{H}_2\text{O}) even when asked not to.
+// This app just displays plain text, so strip that formatting down to
+// readable plain text instead of showing the raw symbols.
+function cleanAiText(t){
+  return (t || "")
+    .replace(/\$\$?/g, "")
+    .replace(/\\text\{([^}]*)\}/g, "$1")
+    .replace(/\\mathrm\{([^}]*)\}/g, "$1")
+    .replace(/\\rightarrow/g, "→")
+    .replace(/\\leftarrow/g, "←")
+    .replace(/\\leftrightarrow/g, "↔")
+    .replace(/\\Rightarrow/g, "⇒")
+    .replace(/\\times/g, "×")
+    .replace(/\\div/g, "÷")
+    .replace(/\\pm/g, "±")
+    .replace(/\\Delta/g, "Δ")
+    .replace(/\\approx/g, "≈")
+    .replace(/\\neq/g, "≠")
+    .replace(/\\leq/g, "≤")
+    .replace(/\\geq/g, "≥")
+    .replace(/\\%/g, "%")
+    .replace(/_\{?(\d+)\}?/g, "$1")
+    .replace(/\^\{?(\d+)\}?/g, "$1")
+    .replace(/\\\\/g, "")
+    .trim();
+}
+
+// Plain-text version (for flashcards, search previews, copying): removes Markdown symbols.
+function stripMd(t){
+  return cleanAiText(t)
+    .replace(/^\s{0,3}#{1,6}\s*/gm, "")
+    .replace(/^(\s*)[*-]\s+/gm, "$1• ")
+    .replace(/\*\*([\s\S]*?)\*\*/g, "$1")
+    .replace(/\*([^*\n]+)\*/g, "$1")
+    .replace(/__([^_]+)__/g, "$1")
+    .replace(/`([^`]+)`/g, "$1")
+    .replace(/^[-*_]{3,}\s*$/gm, "")
+    .trim();
+}
+// Renders Markdown (headings, bold, italic, bullets, numbered lists) as safe HTML.
+function inlineMd(h){ // h is already HTML-escaped
+  return h
+    .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>")
+    .replace(/__([^_]+?)__/g, "<strong>$1</strong>")
+    .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\*)/g, "$1<em>$2</em>");
+}
+function md(text){
+  const lines = String(text ?? "").replace(/\r/g, "").split("\n");
+  let html = "", list = null, para = [];
+  const flushPara = () => { if(para.length){ html += "<p>" + para.join("<br>") + "</p>"; para = []; } };
+  const closeList = () => { if(list){ html += "</" + list + ">"; list = null; } };
+  const openList = type => { if(list !== type){ closeList(); html += "<" + type + ">"; list = type; } };
+  for(const raw of lines){
+    let m;
+    if(!raw.trim()){ flushPara(); closeList(); continue; }
+    if(/^\s*[-*_]{3,}\s*$/.test(raw)){ flushPara(); closeList(); html += "<hr>"; continue; }
+    if((m = raw.match(/^\s{0,3}(#{1,6})\s+(.*)$/))){
+      flushPara(); closeList();
+      const tag = m[1].length <= 2 ? "h3" : "h4";
+      html += "<" + tag + ">" + inlineMd(esc(m[2].replace(/\s*#+\s*$/, ""))) + "</" + tag + ">";
+      continue;
+    }
+    if((m = raw.match(/^(\s*)[-*•]\s+(.*)$/))){
+      flushPara(); openList("ul");
+      const depth = Math.min(Math.floor(m[1].length / 2), 3);
+      html += "<li" + (depth ? ` style="margin-left:${depth * 1.1}rem"` : "") + ">" + inlineMd(esc(m[2])) + "</li>";
+      continue;
+    }
+    if((m = raw.match(/^(\s*)(\d+)[.)]\s+(.*)$/))){
+      flushPara();
+      if(list !== "ol"){ closeList(); html += `<ol start="${m[2]}">`; list = "ol"; }
+      html += "<li>" + inlineMd(esc(m[3])) + "</li>";
+      continue;
+    }
+    closeList();
+    para.push(inlineMd(esc(raw.trim())));
+  }
+  flushPara(); closeList();
+  return html;
+}
+
+/* ============================== UI HELPERS ============================== */
+const view = document.getElementById("view");
+function go(hash){ if(location.hash===hash) route(); else location.hash = hash; }
+function toast(msg){
+  const t = document.createElement("div");
+  t.className = "toast"; t.textContent = msg;
+  document.getElementById("toast-root").appendChild(t);
+  setTimeout(()=>t.remove(), 3000);
+}
+function modal(html){
+  const root = document.getElementById("modal-root");
+  root.innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
+}
+function closeModal(){ document.getElementById("modal-root").innerHTML = ""; }
+function openCreateDeckModal(){
+  modal(`<h2 style="font-size:1rem">Create a deck</h2>
+    <input class="input" id="deckTitle" placeholder="e.g. Biology — Chapter 4" style="margin-top:1rem">
+    <div class="row" style="margin-top:.75rem">
+      <select class="input" id="deckSubject" style="flex:1">
+        <option value="">No folder</option>
+        ${data.subjects.map(s=>`<option value="${s.id}">${esc(s.name)}</option>`).join("")}
+      </select>
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:1.25rem">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="createDeckFromModal()">Create</button>
+    </div>`);
+  setTimeout(()=>document.getElementById("deckTitle")?.focus(), 50);
+}
+function createDeckFromModal(){
+  const t = document.getElementById("deckTitle").value;
+  const s = document.getElementById("deckSubject").value;
+  const d = createDeck(t, s||null);
+  if(!d){ toast("Give the deck a title first"); return; }
+  closeModal();
+  go("#/deck/"+d.id);
+}
+function openExamScheduleModal(){
+  data.examSchedule = data.examSchedule || {};
+  const rows = data.subjects.length ? data.subjects.map(s=>{
+    const exams = examsOf(s.id);
+    return `<div style="margin-top:.8rem;background:#0a1120;border-radius:1rem;padding:.9rem">
+      <div class="deck-title">${esc(s.name)}</div>
+      ${exams.map(e=>{
+        const d = daysUntil(e.date);
+        return `<div class="row" style="justify-content:space-between;margin-top:.4rem;font-size:.82rem">
+          <div style="flex:1;${d<0?"opacity:.5":""}">${esc(fmtDate(e.date))}${e.title?` · ${esc(e.title)}`:""}${d<0?" (passed)":""}</div>
+          <div class="row" style="flex-shrink:0;gap:0">
+            <button class="btn btn-ghost" style="min-height:2rem;padding:0 .5rem;font-size:.75rem" onclick="renameExam('${s.id}','${e.id}')">Rename</button>
+            <button class="btn btn-ghost" style="min-height:2rem;padding:0 .5rem;font-size:.75rem" onclick="removeExam('${s.id}','${e.id}')">Remove</button>
+          </div>
+        </div>`;
+      }).join("")}
+      <div class="row" style="margin-top:.5rem">
+        <input type="date" class="input" style="flex:0 1 150px;min-width:0" id="exd_${s.id}">
+        <input class="input" style="flex:1;min-width:0" id="ext_${s.id}" placeholder="e.g. Paper 1 (optional)">
+        <button class="btn btn-secondary" style="padding:0 .8rem" onclick="addExamFromModal('${s.id}')">Add</button>
+      </div>
+    </div>`;
+  }).join("") : `<div class="empty" style="margin-top:.75rem">Create folders first in Library, then add exams for them here. Importing a timetable creates the folders for you.</div>`;
+  modal(`<div style="max-height:75vh;overflow-y:auto">
+    <h2 style="font-size:1rem">Exam schedule</h2>
+    <p class="muted" style="margin:.4rem 0 .5rem">Add as many exams as you need per subject (e.g. Maths Paper 1 and Paper 2). Study focuses on whichever exam is coming up soonest.</p>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="document.getElementById('schedInput').click()">📷 Import schedule from photo or PDF</button>
+    <div id="schedStatus"></div>
+    ${rows}
+    <div class="row" style="justify-content:flex-end;margin-top:1.25rem">
+      <button class="btn btn-primary" onclick="closeModal();route()">Done</button>
+    </div></div>`);
+}
+function addExamFromModal(sid){
+  const date = document.getElementById("exd_"+sid).value;
+  const title = document.getElementById("ext_"+sid).value;
+  if(!date){ toast("Pick a date first"); return; }
+  if(!addExam(sid, date, title)){ toast("That exam is already added"); return; }
+  save(); openExamScheduleModal();
+}
+function removeExam(sid, eid){
+  data.examSchedule[sid] = (data.examSchedule[sid]||[]).filter(e=>e.id!==eid);
+  save(); openExamScheduleModal();
+}
+// Match an imported subject name to an existing folder (loose match), or create a new folder.
+function findOrCreateSubject(name){
+  const n = (name||"").trim();
+  if(!n) return null;
+  const low = n.toLowerCase();
+  let s = data.subjects.find(x=>x.name.toLowerCase()===low)
+       || data.subjects.find(x=>{ const xl=x.name.toLowerCase(); return xl.includes(low) || low.includes(xl); });
+  if(!s){ s = { id:uid(), name:n, createdAt: todayISO() }; data.subjects.push(s); }
+  return s;
+}
+async function importSchedule(fileList){
+  const files = Array.from(fileList||[]);
+  const input = document.getElementById("schedInput");
+  if(!files.length) return;
+  const status = document.getElementById("schedStatus");
+  const setStatus = h => { const el = document.getElementById("schedStatus"); if(el) el.innerHTML = h; };
+  setStatus(`<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Reading your exam timetable…</div>`);
+  try{
+    const images = await filesToImages(files);
+    if(!images.length) throw new Error("Couldn't read any pages from that file.");
+    const known = data.subjects.map(s=>s.name).join(", ") || "none yet";
+    const prompt = `This is a student's exam timetable (photo or PDF pages). Extract every exam in it.
+Return ONLY a JSON array, no markdown fences and no commentary. Each item: {"subject": string, "date": "YYYY-MM-DD", "title": string}.
+- "subject" is the subject name (e.g. Mathematics, Accounting). If it matches one of the student's existing subjects (${known}), use that exact spelling.
+- "title" is the paper or part, e.g. "Paper 1" or "Paper 2". Use "" if there isn't one.
+- A subject written more than once (several papers) must appear once per exam.
+- Today is ${todayISO()}. If the timetable shows no year, assume the next occurrence of that date on or after today.
+- Skip rows with no readable date.`;
+    const text = await gemini(prompt, images);
+    const clean = text.replace(/```json|```/g,"").trim();
+    const a = clean.indexOf("["), b = clean.lastIndexOf("]");
+    if(a<0 || b<0) throw new Error("Couldn't find any exams in that file. Try a clearer photo.");
+    const arr = JSON.parse(clean.slice(a, b+1));
+    let added = 0, subjectsBefore = data.subjects.length;
+    arr.forEach(x=>{
+      if(!x || !/^\d{4}-\d{2}-\d{2}$/.test(String(x.date||""))) return;
+      const s = findOrCreateSubject(x.subject);
+      if(s && addExam(s.id, x.date, x.title)) added++;
+    });
+    save();
+    if(!added) throw new Error("No new exams were found in that file.");
+    const newSubj = data.subjects.length - subjectsBefore;
+    toast(`Imported ${added} exam${added===1?"":"s"}${newSubj?` · ${newSubj} new folder${newSubj===1?"":"s"}`:""}`);
+    openExamScheduleModal();
+  }catch(e){
+    setStatus(`<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`);
+  }
+  if(input) input.value = "";
+}
+async function getStudyAdvice(){
+  const out = document.getElementById("studyAdvice");
+  if(!out) return;
+  out.innerHTML = `<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Thinking…</div>`;
+  const lines = data.subjects.map(s=>{
+    const ex = upcomingExams(s.id);
+    const due = data.decks.filter(x=>x.subjectId===s.id).reduce((a,x)=>a+dueCards(x.id).length,0);
+    const exTxt = ex.length ? ex.map(e=>`${e.title||"exam"} in ${daysUntil(e.date)} day(s)`).join("; ") : "no upcoming exams scheduled";
+    return `${s.name}: ${exTxt}, ${due} cards due`;
+  }).join("\n");
+  try{
+    const text = cleanAiText(await gemini("Given this student's subjects, exam countdowns, and due flashcard counts, write a short prioritized study plan for the next few days (4-6 sentences). Be specific about which subject to focus on first and why. You may use Markdown (**bold**, - bullets) but no LaTeX.\n\n"+lines));
+    out.innerHTML = `<div class="panel md" style="margin-top:.75rem;font-size:.85rem;line-height:1.5">${md(text)}</div>`;
+  }catch(e){
+    out.innerHTML = `<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`;
+  }
+}
+function openKeyModal(){
+  modal(`<h2 style="font-size:1rem">Gemini API key</h2>
+    <p class="muted" style="margin:.4rem 0 1rem">Needed only for the AI features. Get a free key at aistudio.google.com/apikey. Stored on this device only.</p>
+    <input class="input" id="keyField" placeholder="AIza…" value="${esc(getKey())}">
+    <div class="row" style="justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" onclick="localStorage.setItem('${KEY_KEY}',document.getElementById('keyField').value.trim());closeModal();toast('Key saved')">Save</button>
+    </div>`);
+}
+
+/* ============================== FLASHCARD SESSION ============================== */
+/* Shared session used by BOTH deck study and "Study all" — fixes the bug where
+   cards wouldn't advance/flip in the Study tab. State lives in one object and
+   every interaction re-renders from it. */
+let session = null; // {cards, idx, flipped, back, title}
+
+function startSession(cards, title, back){
+  if(!cards.length) return;
+  session = { cards:[...cards].sort(()=>Math.random()-.5), idx:0, flipped:false, back, title };
+  renderSession();
+}
+function rate(r){
+  const card = session.cards[session.idx];
+  rateCard(card.id, r);
+  const deck = data.decks.find(d=>d.id===card.deckId);
+  if(deck && deck.subjectId){
+    data.studyFreq = data.studyFreq || {};
+    data.studyFreq[deck.subjectId] = (data.studyFreq[deck.subjectId]||0) + 1;
+    save();
+  }
+  session.idx++;
+  session.flipped = false;
+  renderSession();
+}
+
+/* ============================== VIEWS ============================== */
+// ---------- analytics / mastery radar chart ----------
+function polygonPoints(n, cx, cy, r, scale){
+  const pts = [];
+  for(let i=0;i<n;i++){
+    const angle = -Math.PI/2 + i*(2*Math.PI/n);
+    pts.push([cx + r*scale*Math.cos(angle), cy + r*scale*Math.sin(angle)]);
+  }
+  return pts;
+}
+// Mastery 0-100 for a subject: the latest evaluation score if there is one,
+// otherwise estimated from how well its flashcards are known (spaced-repetition
+// interval), so the chart fills in as you study even before you run an evaluation.
+function masteryOf(s){
+  const ev = data.subjectScores[s.id];
+  if(ev && typeof ev.score === "number") return ev.score;
+  const cards = data.decks.filter(d=>d.subjectId===s.id).flatMap(d=>deckCards(d.id));
+  if(!cards.length) return 0;
+  const sum = cards.reduce((a,c)=> a + (c.repetitions>0 ? 0.25 + 0.75*Math.min(c.interval/21,1) : 0), 0);
+  return Math.round(sum/cards.length*100);
+}
+function renderRadarSVG(subjects){
+  const n = subjects.length;
+  const cx=130, cy=130, R=96;
+  const pcts = subjects.map(masteryOf);
+  // Keep a small visible floor so even a 0% subject doesn't collapse the shape to a point.
+  const scores = pcts.map(p => Math.max(p, 4)/100);
+  const outerPts = polygonPoints(n, cx, cy, R, 1);
+  const dataPts = outerPts.map((p,i)=>{
+    const angle = -Math.PI/2 + i*(2*Math.PI/n);
+    return [cx + R*scores[i]*Math.cos(angle), cy + R*scores[i]*Math.sin(angle)];
+  });
+  const gridPolys = [0.25,0.5,0.75,1].map(lvl =>
+    polygonPoints(n,cx,cy,R,lvl).map(p=>p.join(",")).join(" ")
+  );
+  const axisLines = outerPts.map(p=>`<line x1="${cx}" y1="${cy}" x2="${p[0].toFixed(1)}" y2="${p[1].toFixed(1)}" stroke="var(--border)" stroke-width="1"/>`).join("");
+  const dataPoly = dataPts.map(p=>p.map(v=>v.toFixed(1)).join(",")).join(" ");
+  const labels = outerPts.map((p,i)=>{
+    const angle = -Math.PI/2 + i*(2*Math.PI/n);
+    const lx = cx + (R+20)*Math.cos(angle);
+    const ly = cy + (R+20)*Math.sin(angle);
+    const label = (subjects[i].name||"").trim().slice(0,3).toUpperCase() + " " + pcts[i] + "%";
+    return `<text x="${lx.toFixed(1)}" y="${ly.toFixed(1)}" font-size="10" font-weight="700" fill="${pcts[i]>0?"var(--foreground)":"var(--muted-fg)"}" text-anchor="middle" dominant-baseline="middle">${esc(label)}</text>`;
+  }).join("");
+  // Square, outlined vertices like a pixel-style stat chart.
+  const dots = dataPts.map(p=>`<rect x="${(p[0]-4.5).toFixed(1)}" y="${(p[1]-4.5).toFixed(1)}" width="9" height="9" fill="var(--foreground)" stroke="var(--background)" stroke-width="2"/>`).join("");
+  return `<svg viewBox="-10 -4 280 270" style="width:100%;max-width:340px;display:block;margin:0 auto">
+    ${gridPolys.map(gp=>`<polygon points="${gp}" fill="none" stroke="var(--border)" stroke-width="1.5"/>`).join("")}
+    ${axisLines}
+    <polygon points="${dataPoly}" fill="color-mix(in oklab, var(--primary) 45%, transparent)" stroke="var(--primary)" stroke-width="3" stroke-linejoin="round"/>
+    ${dots}
+    ${labels}
+  </svg>`;
+}
+function renderAnalytics(){
+  const subjects = data.subjects;
+  const freq = data.studyFreq || {};
+  const ranked = [...subjects].sort((a,b)=>(freq[b.id]||0)-(freq[a.id]||0));
+  const top = ranked.filter(s=>(freq[s.id]||0)>0).slice(0,3);
+  const chartHtml = subjects.length>=3
+    ? renderRadarSVG(subjects)
+    : `<div class="empty">Create at least 3 folders in Library to unlock your mastery chart.</div>`;
+  const rows = subjects.length ? subjects.map(s=>{
+    const sc = data.subjectScores[s.id];
+    const subjDecks = data.decks.filter(d=>d.subjectId===s.id);
+    const cardsN = subjDecks.reduce((a,d)=>a+deckCards(d.id).length,0);
+    const dueN = subjDecks.reduce((a,d)=>a+dueCards(d.id).length,0);
+    return `<div class="panel" style="margin-top:.6rem">
+      <div class="row" style="justify-content:space-between">
+        <div class="deck-title">${esc(s.name)}</div>
+        <button class="btn btn-secondary" style="padding:0 .7rem;min-height:30px;font-size:.72rem" onclick="startEvaluation('${s.id}')">Evaluate</button>
+      </div>
+      <div class="muted" style="font-size:.78rem;margin-top:.4rem">
+        ${sc ? `${sc.score}% mastery · evaluated ${sc.date}` : `${masteryOf(s)}% est. mastery · not evaluated yet`}
+        · ${subjDecks.length} deck${subjDecks.length===1?"":"s"} · ${cardsN} card${cardsN===1?"":"s"}${dueN?` · ${dueN} due`:""}
+        · studied ${freq[s.id]||0}×
+      </div>
+    </div>`;
+  }).join("") : `<div class="empty">Create folders in Library to start tracking your subjects.</div>`;
+  return `
+    <h2 class="label">Your mastery</h2>
+    <div class="panel" style="margin-top:.5rem">${chartHtml}</div>
+    ${top.length ? `<div class="muted" style="margin-top:.6rem;font-size:.8rem">Most studied: ${top.map(s=>esc(s.name)).join(", ")}</div>` : ""}
+    ${subjects.length ? `<h2 class="label">By subject</h2>${rows}` : ""}`;
+}
+
+// ---------- external test-prep / course search ----------
+const EXTERNAL_TEST_SITES = [
+  { match: /\bsat\b/, label: "Official SAT Practice", sub: "College Board — free practice tests", url: "https://satsuite.collegeboard.org/sat/practice-preparation/practice-tests" },
+  { match: /\bact\b/, label: "Official ACT Test Prep", sub: "act.org — free practice tests", url: "https://www.act.org/content/act/en/products-and-services/the-act/test-preparation.html" },
+  { match: /\b(ap|advanced placement)\b/, label: "AP Exam Practice", sub: "College Board — free AP practice", url: "https://apstudents.collegeboard.org/exam-practice" },
+  { match: /\bgre\b/, label: "Official GRE Practice", sub: "ETS — free practice test", url: "https://www.ets.org/gre/test-takers/general-test/prepare.html" },
+  { match: /\bgmat\b/, label: "Official GMAT Practice", sub: "mba.com — free practice exam", url: "https://www.mba.com/exam-prep" },
+  { match: /\blsat\b/, label: "Official LSAT Practice", sub: "LSAC — free practice test", url: "https://www.lsac.org/lsat/taking-lsat/test-prep" },
+  { match: /\bmcat\b/, label: "Official MCAT Practice", sub: "AAMC — free practice materials", url: "https://students-residents.aamc.org/prepare-mcat-exam/prepare-mcat-exam" },
+  { match: /\btoefl\b/, label: "Official TOEFL Practice", sub: "ETS — free practice test", url: "https://www.ets.org/toefl/test-takers/ibt/prepare.html" },
+  { match: /\bielts\b/, label: "Official IELTS Practice", sub: "ielts.org — free practice tests", url: "https://ielts.org/take-a-test/prepare-for-your-test" }
+];
+const EXTERNAL_COURSE_SITES = [
+  { match: /harvard/, label: "Harvard Free Online Courses", sub: "pll.harvard.edu — free courses from Harvard", url: "https://pll.harvard.edu/catalog/free" },
+  { match: /\bmit\b/, label: "MIT OpenCourseWare", sub: "ocw.mit.edu — free MIT course materials", url: "https://ocw.mit.edu/" },
+  { match: /\bedx\b/, label: "edX Free Courses", sub: "edx.org — free courses from top universities", url: "https://www.edx.org/search?tab=course&learning_type=course&price=Free" },
+  { match: /khan\s?academy/, label: "Khan Academy", sub: "khanacademy.org — free lessons & practice", url: "https://www.khanacademy.org/" },
+  { match: /\bcoursera\b/, label: "Coursera Free Courses", sub: "coursera.org — audit courses for free", url: "https://www.coursera.org/courses?query=free" }
+];
+const PRACTICE_TEST_HINT = /practice tests?|test prep|exam prep|study guide|\bcourses?\b|online class(es)?|free lectures?/;
+function detectExternalSearch(rawQuery) {
+  const q = rawQuery.toLowerCase();
+  for (const site of EXTERNAL_TEST_SITES) { if (site.match.test(q)) return site; }
+  for (const site of EXTERNAL_COURSE_SITES) { if (site.match.test(q)) return site; }
+  if (PRACTICE_TEST_HINT.test(q)) {
+    return { label: `Search the web for "${rawQuery.trim()}"`, sub: "Opens results in a new tab", url: "https://www.google.com/search?q=" + encodeURIComponent(rawQuery.trim()) };
+  }
+  return null;
+}
+
+/* ============================== DECK PAGE ============================== */
+let quizState = null;
+function saveNote(id){
+  const el = document.getElementById("noteText");
+  if(!el.value.trim()){ toast("Write something first"); return; }
+  data.notes.unshift({ id:uid(), deckId:id, content:el.value.trim(), createdAt: todayISO() });
+  save(); closeModal(); deckTab="note"; route(); toast("Note saved");
+}
+function addManualCard(id){
+  const q = document.getElementById("cardQ").value, a = document.getElementById("cardA").value;
+  if(!addCards(id,[{question:q,answer:a}])){ toast("Fill in both question and answer"); return; }
+  route(); toast("Card added");
+}
+async function aiAct(id, kind){
+  const out = document.getElementById("aiOut");
+  out.innerHTML = `<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Working…</div>`;
+  const notes = deckNotes(id).map(n=>n.content).join("\n\n");
+  const mdRule = " Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.). Use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O.";
+  const plainTextRule = " Write in plain text only — no Markdown formatting (no ** for bold, no # headings), and no LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.). Use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O.";
+  try{
+    if(kind==="improve" || kind==="summarize"){
+      const src = notes;
+      if(!src.trim()) throw new Error("Add some notes first.");
+      const prompt = (kind==="improve"
+        ? "Improve and expand these study notes. Make them clear, structured, and complete for a student. Return only the improved notes."
+        : "Summarize these study notes for a student who will study from the summary alone, so it must be COMPLETE. Do not leave out anything that could be tested: keep every key fact, definition, term, name, date, number, formula, rule, cause and effect, step in a process, example, comparison and exception. Shorten the notes only by removing filler, repetition and long-winded wording, never by dropping a point. Cover every topic and section in the notes in their original order, using a ## heading for each, with bullet points under it. The summary should be as long as it needs to be: longer or denser notes must give a longer summary. Before you answer, go back through the notes once more and add anything important you missed. Return only the summary.") + mdRule + "\n\n"+src;
+      const text = cleanAiText(await gemini(prompt));
+      data.notes.unshift({ id:uid(), deckId:id, content:text, createdAt: todayISO() });
+      save(); route(); toast(kind==="improve"?"Improved note saved":"Summary saved");
+    } else if(kind==="cards"){
+      const text = await gemini(
+        "Create flashcards from these study notes. Return ONLY a JSON array of objects with \"question\" and \"answer\" strings, no markdown fences. Make as many cards as needed to cover every important fact, term, definition and concept in the notes. Do not stop at a fixed number: longer or denser notes should produce many more cards."+plainTextRule+"\n\n"+notes);
+      const clean = text.replace(/```json|```/g,"").trim();
+      let arr;
+      try{ arr = JSON.parse(clean.slice(clean.indexOf("["), clean.lastIndexOf("]")+1)); }
+      catch(_){ arr = JSON.parse(clean.slice(clean.indexOf("["), clean.lastIndexOf("}")+1) + "]"); } // reply was cut off: keep every complete card
+      arr = arr.map(c => ({ question: stripMd(c.question), answer: stripMd(c.answer) }));
+      const n = addCards(id, arr);
+      route(); toast(`${n} flashcards added`);
+    }
+  }catch(e){
+    out.innerHTML = `<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`;
+  }
+}
+async function scanImage(deckId, fileList){
+  const files = Array.from(fileList || []);
+  if(!files.length) return;
+  const out = document.getElementById("aiOut");
+  out.innerHTML = `<div class="panel" style="margin-top:.75rem"><span class="spin"></span> Reading ${files.length>1?files.length+" pages…":"your document…"}</div>`;
+  try{
+    const encoded = await filesToImages(files); // photos + PDF pages, max 8 images
+    if(!encoded.length) throw new Error("Couldn't read that file.");
+    const pageNote = encoded.length > 1 ? ` These are ${encoded.length} pages of the same document, in order — combine them into one continuous set of notes.` : "";
+    const prompt = `Transcribe the study notes in this document into clean, structured text.${pageNote} Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.). Use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O. Return only the notes.`;
+    const text = cleanAiText(await gemini(prompt, encoded));
+    if(text){
+      data.notes.unshift({ id:uid(), deckId, content:text, createdAt: todayISO() });
+      save(); route(); toast("Scanned note saved");
+    }
+  }catch(e){
+    out.innerHTML = `<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`;
+  }
+  document.getElementById("imgInput").value = "";
+}
+
+/* ============================== QUIZ ============================== */
+// Build a shuffled list of question types so a quiz mixes multiple-choice,
+// typed-recall, and fill-in-the-blank questions instead of always MCQ.
+function buildQuizTypes(n){
+  const base = ["mcq","typed","fillblank"];
+  const types = [];
+  while(types.length < n) types.push(...base);
+  types.length = n;
+  for(let i=types.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [types[i],types[j]]=[types[j],types[i]]; }
+  return types;
+}
+// Pick the longest word in an answer to blank out for a fill-in-the-blank question.
+function pickBlankWord(answer){
+  const words = (answer||"").split(/\s+/).filter(Boolean);
+  if(!words.length) return { masked:"_____", blank: answer||"" };
+  let target = words[0];
+  for(const w of words){
+    const cw = w.replace(/[^A-Za-z0-9]/g,"");
+    const ct = target.replace(/[^A-Za-z0-9]/g,"");
+    if(cw.length > ct.length) target = w;
+  }
+  const idx = words.indexOf(target);
+  const maskedWords = words.slice();
+  maskedWords[idx] = "_____";
+  const blank = target.replace(/^[^A-Za-z0-9]+|[^A-Za-z0-9]+$/g,"");
+  return { masked: maskedWords.join(" "), blank };
+}
+function startQuiz(deckId){
+  const cards = [...deckCards(deckId)].sort(()=>Math.random()-.5); // every card in the deck, shuffled
+  if(!cards.length) return;
+  const others = data.cards.filter(c=>c.deckId!==deckId);
+  const types = buildQuizTypes(cards.length);
+  const questions = cards.map((c,i)=>{
+    const type = types[i];
+    if(type === "mcq"){
+      const pool = [...others, ...deckCards(deckId).filter(x=>x.id!==c.id)];
+      const wrong = [...new Set(pool.map(x=>x.answer))].filter(a=>a!==c.answer).sort(()=>Math.random()-.5).slice(0,3);
+      if(wrong.length < 1){
+        // Not enough other answers in the library to build a multiple-choice
+        // question — fall back to typed recall instead.
+        return { type:"typed", q:c.question, correct:c.answer };
+      }
+      return { type, q:c.question, correct:c.answer, options:[...wrong, c.answer].sort(()=>Math.random()-.5) };
+    }
+    if(type === "fillblank"){
+      const {masked, blank} = pickBlankWord(c.answer);
+      return { type, q:c.question, correct:c.answer, masked, blank };
+    }
+    return { type:"typed", q:c.question, correct:c.answer };
+  });
+  quizState = { questions, idx:0, score:0, deckId, mode:"deck" };
+  renderQuiz();
+}
+function nextQuizQuestion(){ quizState.idx++; renderQuiz(); }
+function exitQuiz(deckId){
+  quizState = null;
+  location.hash = "#/deck/" + deckId;
+  renderDeck(deckId);
+  window.scrollTo(0,0);
+}
+// Evaluation: the person picks which decks in a subject folder to be tested on
+// (or "Select all"), gets one question per flashcard in those decks, and, when
+// every deck was chosen, the score updates the mastery shown on the radar chart.
+function startEvaluation(subjectId){
+  const subj = data.subjects.find(s=>s.id===subjectId);
+  if(!subj) return;
+  const decks = data.decks.filter(d=>d.subjectId===subjectId && deckCards(d.id).length);
+  if(!decks.length){ toast("Add some flashcards to this folder first."); return; }
+  modal(`<h2 style="font-size:1rem">Evaluate ${esc(subj.name)}</h2>
+    <div class="muted" style="margin-top:.4rem">Choose the decks you want to be questioned on.</div>
+    <div class="row" style="justify-content:space-between;margin-top:1rem">
+      <button class="btn btn-secondary" id="evalAllBtn" style="min-height:36px;font-size:.8rem" onclick="toggleEvalAll()">Select all</button>
+      <span class="muted" id="evalCount" style="font-size:.8rem"></span>
+    </div>
+    <div id="evalDecks" style="margin-top:.75rem;max-height:50vh;overflow-y:auto">
+      ${decks.map(d=>`<label class="quiz-opt" style="display:flex;align-items:center;gap:.75rem;cursor:pointer">
+        <input type="checkbox" value="${d.id}" data-n="${deckCards(d.id).length}" onchange="updateEvalCount()" style="width:1.1rem;height:1.1rem;accent-color:var(--primary);flex:none">
+        <span style="flex:1;min-width:0;overflow-wrap:anywhere">${esc(d.title)}</span>
+        <span class="muted" style="flex:none;font-size:.75rem">${deckCards(d.id).length} cards</span>
+      </label>`).join("")}
+    </div>
+    <div class="row" style="justify-content:flex-end;margin-top:1rem">
+      <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-primary" id="evalStartBtn" onclick="beginEvaluation('${subjectId}')">Start evaluation</button>
+    </div>`);
+  updateEvalCount();
+}
+function evalBoxes(){ return Array.from(document.querySelectorAll("#evalDecks input[type=checkbox]")); }
+function toggleEvalAll(){
+  const boxes = evalBoxes();
+  const all = boxes.every(b=>b.checked);
+  boxes.forEach(b=>b.checked = !all);
+  updateEvalCount();
+}
+function updateEvalCount(){
+  const boxes = evalBoxes(), on = boxes.filter(b=>b.checked);
+  const cards = on.reduce((a,b)=>a+Number(b.dataset.n),0);
+  const cnt = document.getElementById("evalCount");
+  if(cnt) cnt.textContent = on.length ? `${on.length} deck${on.length===1?"":"s"} · ${cards} cards` : "None selected";
+  const all = document.getElementById("evalAllBtn");
+  if(all) all.textContent = boxes.length && on.length===boxes.length ? "Deselect all" : "Select all";
+  const start = document.getElementById("evalStartBtn");
+  if(start) start.disabled = cards < 4;
+}
+function beginEvaluation(subjectId){
+  const ids = evalBoxes().filter(b=>b.checked).map(b=>b.value);
+  closeModal();
+  runEvaluation(subjectId, ids);
+}
+function runEvaluation(subjectId, deckIds){
+  const subj = data.subjects.find(s=>s.id===subjectId);
+  if(!subj) return;
+  const allDecks = data.decks.filter(d=>d.subjectId===subjectId && deckCards(d.id).length);
+  const subjDecks = allDecks.filter(d=>deckIds.includes(d.id));
+  const updatesMastery = subjDecks.length === allDecks.length;
+  const pool = subjDecks.flatMap(d=>deckCards(d.id));
+  if(pool.length < 4){ toast("Pick decks with at least 4 flashcards in total."); return; }
+  const cards = [...pool].sort(()=>Math.random()-.5); // every card in the chosen decks, shuffled
+  const others = data.cards.filter(c=>!subjDecks.some(d=>d.id===c.deckId));
+  const types = buildQuizTypes(cards.length);
+  const questions = cards.map((c,i)=>{
+    const type = types[i];
+    if(type === "mcq"){
+      const localPool = [...others, ...pool.filter(x=>x.id!==c.id)];
+      const wrong = [...new Set(localPool.map(x=>x.answer))].filter(a=>a!==c.answer).sort(()=>Math.random()-.5).slice(0,3);
+      if(wrong.length < 1) return { type:"typed", q:c.question, correct:c.answer };
+      return { type, q:c.question, correct:c.answer, options:[...wrong, c.answer].sort(()=>Math.random()-.5) };
+    }
+    if(type === "fillblank"){
+      const {masked, blank} = pickBlankWord(c.answer);
+      return { type, q:c.question, correct:c.answer, masked, blank };
+    }
+    return { type:"typed", q:c.question, correct:c.answer };
+  });
+  quizState = { questions, idx:0, score:0, mode:"evaluation", subjectId, subjectName:subj.name, updatesMastery };
+  renderQuiz();
+}
+function exitEvaluation(){
+  quizState = null;
+  location.hash = "#/";
+  renderHome();
+  window.scrollTo(0,0);
+}
+const QUIZ_TYPE_LABEL = { mcq:"Multiple choice", typed:"Type the answer", fillblank:"Fill in the blank" };
+function quizEnterHandler(e){
+  if(e.key==="Enter" && document.getElementById("blankInput")){
+    e.preventDefault(); answerBlank();
+  }
+}
+function answerMcq(btn, idx){
+  const s = quizState, q = s.questions[s.idx];
+  const picked = q.options[idx];
+  const opts = document.querySelectorAll(".quiz-opt");
+  opts.forEach(b=>b.disabled = true);
+  const correct = picked === q.correct;
+  btn.classList.add(correct ? "correct" : "wrong");
+  if(!correct) opts.forEach(b=>{ if(b.textContent === q.correct) b.classList.add("correct"); });
+  if(correct) s.score++;
+  setTimeout(nextQuizQuestion, 900);
+}
+function answerBlank(){
+  document.removeEventListener("keydown", quizEnterHandler);
+  const s = quizState, q = s.questions[s.idx];
+  const input = document.getElementById("blankInput");
+  const typed = (input.value||"").trim().toLowerCase();
+  const correct = typed.length>0 && typed === q.blank.trim().toLowerCase();
+  input.disabled = true;
+  document.getElementById("blankCheckBtn")?.setAttribute("disabled","disabled");
+  const fb = document.getElementById("quizFeedback");
+  fb.innerHTML = (correct
+    ? `<div class="panel" style="border-color:var(--success)"><span style="color:var(--success);font-weight:600">Correct!</span> ${esc(q.blank)}</div>`
+    : `<div class="panel" style="border-color:var(--destructive)"><span style="color:var(--destructive);font-weight:600">Not quite.</span> The missing word was "<strong>${esc(q.blank)}</strong>".</div>`)
+    + `<button class="btn btn-secondary" style="margin-top:.75rem;width:100%" onclick="nextQuizQuestion()">Next</button>`;
+  if(correct) s.score++;
+}
+function revealTyped(){
+  const q = quizState.questions[quizState.idx];
+  document.getElementById("typedInput").disabled = true;
+  document.getElementById("typedRevealBtn")?.setAttribute("disabled","disabled");
+  document.getElementById("quizFeedback").innerHTML = `
+    <div class="panel"><div class="muted" style="font-size:.75rem;margin-bottom:.3rem">Correct answer</div><div style="font-weight:600">${esc(q.correct)}</div></div>
+    <div class="row" style="margin-top:.75rem;gap:.5rem">
+      <button class="btn btn-success" style="flex:1" onclick="gradeTyped(true)">I got it right</button>
+      <button class="btn btn-danger" style="flex:1" onclick="gradeTyped(false)">I got it wrong</button>
+    </div>`;
+}
+function gradeTyped(correct){
+  if(correct) quizState.score++;
+  nextQuizQuestion();
+}
+
+/* ============================== KNOWT-STYLE SCREENS ============================== */
+const sv = (p, x="") => `<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" ${x}>${p}</svg>`;
+const IC = {
+  home: sv('<path d="M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z"/>'),
+  route: sv('<circle cx="6" cy="19" r="2.5"/><circle cx="18" cy="5" r="2.5"/><path d="M8.5 19H17a3.5 3.5 0 0 0 0-7H7a3.5 3.5 0 0 1 0-7h8.5"/>'),
+  plus: sv('<path d="M12 5v14M5 12h14"/>', 'width="22" height="22"'),
+  lib: sv('<path d="M5 4h14v16H7a2 2 0 0 1-2-2z"/><path d="M14 4v6l-2-1.5L10 10V4"/>'),
+  pres: sv('<path d="M3 4h18M5 4v10h14V4M12 14v3M8 21l4-4 4 4"/>'),
+  search: sv('<circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/>'),
+  back: sv('<path d="M19 12H5M11 6l-6 6 6 6"/>'),
+  fire: sv('<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z" fill="currentColor"/>', 'width="18" height="18"'),
+  card: sv('<rect x="7" y="4" width="11" height="15" rx="2" fill="#7ff5cf" stroke="none"/><rect x="5" y="6" width="11" height="15" rx="2" fill="#14b886" stroke="none"/>'),
+  doc: sv('<rect x="6" y="3" width="12" height="18" rx="2" fill="#2f6fd6" stroke="none"/><path d="M9 8h6M9 11h6M9 14h6" stroke="#fff" stroke-width="1.4"/>'),
+  map: sv('<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14" stroke="#f59a23"/>'),
+  folder: c => sv(`<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="${c}" stroke="none"/>`, 'width="22" height="22"'),
+  word: sv('<rect x="5" y="3" width="14" height="18" rx="2" fill="#2f6fd6" stroke="none"/><path d="M8.5 9l1.3 6 2.2-5 2.2 5 1.3-6" stroke="#fff" stroke-width="1.4"/>')
+};
+const FCOL = ["#2de2a6","#5b8cff","#ffb547","#ff6b9a","#7aa2ff","#9be564"];
+const NAVS = [["#/","home","#12372f","#2de2a6"],["#/study","route","#13294d","#6ea0ff"],["+"],["#/library","lib","#33400f","#b6f25c"],["#/progress","pres","#4a1d3d","#ff7ab8"]];
+document.querySelector("nav.bottom").innerHTML = NAVS.map(n => n[0]==="+"
+  ? `<button class="plusbtn" aria-label="Create" onclick="openPlusMenu()">${IC.plus}</button>`
+  : `<button class="navitem" data-nav="${n[0]}" style="--pl:${n[2]};--pi:${n[3]}" onclick="go('${n[0]}')">${IC[n[1]]}</button>`).join("");
+function ago(d){
+  const n = Math.max(0, Math.floor((Date.now() - new Date(d||todayISO())) / 864e5));
+  if(n < 1) return "today"; if(n === 1) return "a day ago"; if(n < 30) return n + "d ago";
+  const m = Math.floor(n / 30); if(m < 2) return "a month ago"; if(m < 12) return m + " months ago";
+  return Math.floor(m / 12) === 1 ? "a year ago" : Math.floor(m / 12) + " years ago";
+}
+const tileFor = d => deckCards(d.id).length
+  ? `<span class="tile" style="background:#0f3b38">${IC.card}</span>` : `<span class="tile" style="background:#12284a">${IC.doc}</span>`;
+const deckRow = (d, i) => `<button class="row2" style="animation-delay:${i*45}ms" onclick="go('#/deck/${d.id}')">${tileFor(d)}<span class="t"><b>${esc(d.title)}</b><small>${ago(d.createdAt)}</small></span>${/^#\/(library|folder)/.test(location.hash)?`<span class="more" onclick="event.stopPropagation();deckMenu('${d.id}')">⋯</span>`:""}</button>`;
+const hdr = (title, back, right="") => `<div class="kh">${back ? `<button onclick="go('${back}')" aria-label="Back">${IC.back}</button>` : ""}<h1>${esc(title)}</h1>${right}</div>`;
+const empty2 = (icon, t, p) => `<div class="empty2"><div class="ec">${icon}</div><h3>${t}</h3><p>${p}</p></div>`;
+const EMPTYI = '<svg viewBox="0 0 24 24" width="38" height="38"><rect x="4" y="5" width="11" height="15" rx="1.5" fill="#6fb7ff"/><rect x="6" y="3" width="11" height="15" rx="1.5" fill="#ffd54a"/><rect x="8" y="2" width="11" height="15" rx="1.5" fill="#f4f4f4" stroke="#999" stroke-width=".6"/><path d="M10 7h7M10 10h7M10 13h5" stroke="#999"/></svg>';
+let homeTab = "files";
+function renderHome(){
+  const due = dueCards(), dueIds = new Set(due.map(c => c.deckId));
+  const list = (homeTab === "files" ? data.decks : data.decks.filter(d => dueIds.has(d.id))).slice(0, 6);
+  const qa = (c, ic, label, fn) => `<button onclick="${fn}"><span class="c" style="background:${c}">${ic}</span>${label}</button>`;
+  view.innerHTML = `<div class="kh home">
+      <button class="avatar" onclick="openKeyModal()" aria-label="AI key">Q</button>
+      <span class="wm">Quick<b>Learn</b></span><div class="stats"><span>${IC.fire}${due.length}</span><span style="color:#7aa2ff">◆ ${data.decks.length}</span><span style="color:#f5a623">● ${data.cards.length}</span></div>
+      <button class="sp" onclick="go('#/search')">${IC.search} Search for anything</button>
+      <div class="qa">
+        ${qa("#12284a", IC.doc, "Notebook", "notebookSheet()")}<i class="dv"></i>
+        ${qa("#33400f", IC.map, "Predict Exam", "go('#/study')")}
+        ${qa("linear-gradient(135deg,#8a3fd0,#4f6fe0)", sv('<path d="M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z" fill="#fff" stroke="none"/>'), "Summarize", "pickFiles('image/*,application/pdf',false,f=>newFromFiles(f,'summarize'))")}
+        ${qa("#3a1d28", IC.mic, "Live Record", "liveRecord()")}
+      </div></div>
+    <div class="chips"><button class="chip2 ${homeTab==="files"?"on":""}" onclick="homeTab='files';renderHome()">${IC.lib.replace("<svg","<svg width='18' height='18'")} Recent Files</button>
+      <button class="chip2 ${homeTab==="due"?"on":""}" onclick="homeTab='due';renderHome()">${IC.route.replace("<svg","<svg width='18' height='18'")} Due Today</button></div>
+    <div class="rows">${list.length ? list.map(deckRow).join("") : `<div class="empty2" style="padding:3rem 1rem"><p>${homeTab==="due" ? "Nothing due today 🎉" : "Tap the + below to create your first deck."}</p></div>`}</div>
+    ${data.decks.length > 5 ? `<button class="viewall" onclick="go('#/library')">View all →</button>` : ""}`;
+}
+function renderLibrary(){
+  const loose = data.decks.filter(d => !d.subjectId || !data.subjects.some(s => s.id === d.subjectId));
+  const folders = data.subjects.map((s, i) => `<button class="row2" style="animation-delay:${i*45}ms" onclick="go('#/folder/${s.id}')"><span class="tile" style="background:none">${IC.folder(FCOL[i % FCOL.length])}</span><span class="t"><b>${esc(s.name)}</b><small>${ago(s.createdAt)}</small></span><span class="more" onclick="event.stopPropagation();folderMenu('${s.id}')">⋯</span></button>`).join("");
+  view.innerHTML = hdr("Library", "", `<button onclick="go('#/search')" aria-label="Search">${IC.search}</button>`) +
+    `<div class="chips" style="padding-top:.3rem"><button class="chip2 on">${IC.lib.replace("<svg","<svg width='18' height='18'")} My materials</button></div>
+    <div class="rows">${folders}${loose.map((d, i) => deckRow(d, i + data.subjects.length)).join("")}</div>` +
+    (folders || loose.length ? "" : empty2(EMPTYI, "No materials yet", "Create your own notes and flashcards by clicking on the + below.")) + `<button class="fab" onclick="openPlusMenu()">${IC.plus}</button>`;
+}
+function renderFolder(id){
+  const s = data.subjects.find(x => x.id === id);
+  if(!s){ go("#/library"); return; }
+  const decks = data.decks.filter(d => d.subjectId === id);
+  view.innerHTML = hdr(s.name, "#/library", `<button onclick="folderMenu('${id}')" aria-label="More">⋯</button>`) +
+    `<div class="rows">${decks.map(deckRow).join("")}</div>` +
+    (decks.length ? "" : empty2(EMPTYI, "No materials yet", "Create your own notes and flashcards by clicking on the + below.")) +
+    `<button class="fab" onclick="openCreateDeckModal()">${IC.plus}</button>`;
+}
+function folderMenu(id){
+  modal(`<div class="sh"><h2>Folder</h2>
+    <button class="sr" onclick="closeModal();renameFolder('${id}')">Rename folder</button>
+    <button class="sr" style="color:#ff6b6b" onclick="closeModal();if(confirm('Delete this folder? Decks stay, they just become unfiled.')){deleteSubject('${id}');go('#/library');route()}">Delete folder</button></div>`);
+}
+function newFolderSheet(){
+  modal(`<div class="sh"><h2>Create Folder</h2><input class="input" id="nf" placeholder="Folder name" style="width:100%">
+    <button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="const v=document.getElementById('nf').value;if(v.trim()){createSubject(v);closeModal();route()}">Create</button></div>`);
+  setTimeout(() => document.getElementById("nf")?.focus(), 320);
+}
+let _prevH = "#/", _sk;
+const depthOf = h => /^#\/(deck|folder)\//.test(h) ? 2 : 1;
+function route(){
+  session = null;
+  const h = location.hash || "#/";
+  document.querySelectorAll(".navitem").forEach(n => n.classList.toggle("active", n.dataset.nav === "#/" ? (h === "#/" || h === "#/create") : h.startsWith(n.dataset.nav)));
+  const draw = () => {
+    if(h.startsWith("#/deck/")) renderDeck(h.slice(7));
+    else if(h.startsWith("#/folder/")) renderFolder(h.slice(9));
+    else if(h.startsWith("#/search")) renderSearch();
+    else if(h.startsWith("#/library")) renderLibrary();
+    else if(h.startsWith("#/study")) renderStudy();
+    else if(h.startsWith("#/progress")) view.innerHTML = hdr("Progress") + `<div style="padding:0 1.1rem">${renderAnalytics()}</div>`;
+    else renderHome();
+    window.scrollTo(0, 0);
+  };
+  const a = depthOf(h), b = depthOf(_prevH);
+  const cls = a > b ? "goR" : a < b ? "goL" : "";
+  _prevH = h; clearTimeout(_sk);
+  view.className = cls; document.querySelector("nav.bottom").style.display = /^#\/deck\//.test(h) ? "none" : "";
+  if(/^#\/(library|folder\/)/.test(h)){
+    view.innerHTML = '<div class="kh"><h1>&nbsp;</h1></div>' + '<div class="sk"></div>'.repeat(6);
+    _sk = setTimeout(draw, 650);
+  } else draw();
+  if(cls) setTimeout(() => { view.classList.remove("goR", "goL"); }, 320);
+}
+
+
+/* ============================== KNOWT 1:1 SCREENS (deck, exams, search, flashcards, quiz) ============================== */
+Object.assign(IC,{
+  pen:sv('<path d="M4 20l1-4L16 5l3 3L8 19z"/>'),
+  dots:sv('<circle cx="12" cy="5" r="1.6" fill="currentColor"/><circle cx="12" cy="12" r="1.6" fill="currentColor"/><circle cx="12" cy="19" r="1.6" fill="currentColor"/>'),
+  crown:sv('<path d="M4 8l4 4 4-7 4 7 4-4-2 10H6z" fill="#b69cff" stroke="none"/>'),
+  tool:sv('<path d="M14.7 6.3a4 4 0 0 0-5 5L3.5 17.5l3 3 6.2-6.2a4 4 0 0 0 5-5l-2.4 2.4-2.1-.5-.5-2.1z"/>'),
+  test:sv('<rect x="6" y="3" width="12" height="18" rx="2" fill="#e5484d" stroke="none"/><path d="M9 8h6M9 11h6M9 14h4" stroke="#fff" stroke-width="1.4"/>'),
+  spark:sv('<path d="M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z" fill="#b69cff" stroke="none"/>')
+});
+const PREP=[["👑","AP"],["🏛️","SAT"],["🏫","PSAT 8/9"],["🏛️","PSAT 10"],["🏤","ACT"],["🏫","CTE"],["⚖️","LSAT"]];
+const topRow=()=>`<div class="kh"><button class="avatar" onclick="openKeyModal()" aria-label="AI key">Q</button><div class="stats"><span>${IC.fire}${dueCards().length}</span><span style="color:#7aa2ff">◆ ${data.decks.length}</span><span style="color:#f5a623">● ${data.cards.length}</span></div></div>`;
+const sheetRow=(bg,ic,label,fn,red)=>`<button class="sr" ${red?'style="color:#ff6b6b"':""} onclick="closeModal();${fn}"><span class="tile" style="background:${bg}">${ic}</span>${label}</button>`;
+const listRow=(bg,ic,b,s,fn)=>`<button class="row2" onclick="${fn}"><span class="tile" style="background:${bg}">${ic}</span><span class="t"><b>${b}</b><small>${s}</small></span></button>`;
+function prepUrl(n){const u=detectExternalSearch(n)||detectExternalSearch(n+" practice test");return u?u.url:"https://www.google.com/search?q="+encodeURIComponent(n+" practice test");}
+
+/* ---- Search ---- */
+function renderSearch(){
+  const L=[["🎓","Khan Academy","Free courses","https://www.khanacademy.org"],["🏛️","Harvard","Free online courses","https://pll.harvard.edu/catalog/free"],["📖","Coursera","Free courses","https://www.coursera.org/courses?query=free"],["📝","Practice tests","Search the web","https://www.google.com/search?q=free+practice+tests"]];
+  view.innerHTML=`<div class="kh"><button onclick="go('#/')" aria-label="Back">${IC.back}</button><div class="sp" style="margin:0;background:#0f1729">${IC.search}<input id="q" placeholder="Search for anything" oninput="renderSearchResults(this.value)" style="flex:1;min-width:0;background:none;border:0;outline:0;color:#fff;font:inherit"></div></div><div class="rows" id="results"></div><div class="lbl">Free study resources</div><div class="rows" style="padding-top:0">${L.map(r=>`<a class="row2" href="${r[3]}" target="_blank" rel="noopener"><span class="tile" style="background:#18233a;font-size:1.4rem">${r[0]}</span><span class="t"><b>${r[1]}</b><small>${r[2]}</small></span></a>`).join("")}</div>`;
+}
+function renderSearchResults(q){
+  const el=document.getElementById("results"); if(!q.trim()){el.innerHTML="";return;}
+  const nd=q.toLowerCase(),ext=detectExternalSearch(q);
+  const cn=data.notes.filter(n=>n.content.toLowerCase().includes(nd)),cc=data.cards.filter(c=>c.question.toLowerCase().includes(nd)||c.answer.toLowerCase().includes(nd));
+  const tt=id=>esc(data.decks.find(x=>x.id===id)?.title||"");
+  let h="";
+  if(ext) h+=`<a class="row2" href="${esc(ext.url)}" target="_blank" rel="noopener"><span class="tile" style="background:#18233a;font-size:1.3rem">🔗</span><span class="t"><b>${esc(ext.label)}</b><small>${esc(ext.sub)}</small></span></a>`;
+  h+=cn.map(n=>listRow("#12284a",IC.doc,esc(stripMd(n.content).slice(0,60)),"Note · "+tt(n.deckId),`go('#/deck/${n.deckId}')`)).join("")+cc.map(c=>listRow("#0f3b38",IC.card,esc(c.question),"Card · "+tt(c.deckId),`go('#/deck/${c.deckId}')`)).join("");
+  if(!h) h=`<div class="empty2" style="padding:3rem 1rem"><p>Nothing found for “${esc(q)}”.</p></div>`;
+  el.innerHTML=h;
+}
+
+/* ---- Exams (Study tab) ---- */
+let exTab="mine";
+function studyDue(id){const d=data.decks.find(x=>x.id===id);startSession(window.__byDeckCards[id],d?d.title:"Deck","#/study");}
+function renderStudy(){
+  data.examSchedule=data.examSchedule||{};
+  const withExam=data.subjects.flatMap(s=>upcomingExams(s.id).map(e=>({s,e,days:daysUntil(e.date)}))).sort((a,b)=>a.days-b.days);
+  const has=withExam.length>0;
+  const urgent=has?new Set(withExam.filter(x=>x.days<=withExam[0].days+2).map(x=>x.s.id)):null;
+  const subjOf=c=>{const d=data.decks.find(x=>x.id===c.deckId);return d?d.subjectId:null;};
+  const isUrgent=c=>{if(!has)return true;const sid=subjOf(c);if(!sid||!upcomingExams(sid).length)return true;return urgent.has(sid);};
+  const allDue=dueCards(),dueNow=allDue.filter(isUrgent),deferred=allDue.filter(c=>!isUrgent(c));
+  const byDeck=data.decks.map(d=>({deck:d,due:dueCards(d.id).filter(isUrgent).length})).filter(x=>x.due>0);
+  window.__dueNowCards=dueNow;window.__deferredCards=deferred;window.__byDeckCards={};
+  byDeck.forEach(x=>{window.__byDeckCards[x.deck.id]=dueCards(x.deck.id).filter(isUrgent);});
+  const chip=(k,l)=>`<button class="chip2 ${exTab===k?"on":""}" onclick="exTab='${k}';renderStudy()">${l}</button>`;
+  const col=d=>d<=1?"#ff7b7b":d<=4?"#f5b84a":"#aaa";
+  let body;
+  if(exTab==="prep") body=`<div class="lbl">Exams</div><div class="ex">${PREP.map(p=>`<a class="ext" href="${esc(prepUrl(p[1]))}" target="_blank" rel="noopener"><span class="e">${p[0]}</span>${p[1]}</a>`).join("")}</div>`;
+  else body=`<div class="lbl">Exams</div><div class="ex">${withExam.map(x=>`<button class="ext" onclick="openExamScheduleModal()"><span class="e">📝</span><span style="min-width:0"><span style="display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(x.s.name)}${x.e.title?" · "+esc(x.e.title):""}</span><small style="color:${col(x.days)}">${x.days===0?"Today":x.days===1?"Tomorrow":"In "+x.days+" days"}</small></span></button>`).join("")}<button class="ext" onclick="openExamScheduleModal()"><span class="e">＋</span>${has?"Edit schedule":"Add exam"}</button></div>
+    <div class="lbl">Study</div><div class="rows" style="padding-top:0">
+    ${dueNow.length?listRow("#0f3b38",IC.card,`${dueNow.length} card${dueNow.length===1?"":"s"} due`,has?"for your closest exam":"today","startSession(window.__dueNowCards,'Study all due cards','#/study')"):`<div class="empty2" style="padding:1.5rem 1rem"><p>All caught up 🎉</p></div>`}
+    ${deferred.length?listRow("#18233a","⏭️",`${deferred.length} deferred`,"Study them anyway","startSession(window.__deferredCards,'Deferred subjects','#/study')"):""}
+    ${has?listRow("#33400f",IC.map,"Predict exam & study plan","Ask Gemini how to prioritize","getStudyAdvice()"):""}
+    <div id="studyAdvice"></div>
+    ${byDeck.map(x=>listRow("#12284a",IC.doc,esc(x.deck.title),x.due+" due",`studyDue('${x.deck.id}')`)).join("")}</div>`;
+  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 AP, SAT, & ACT Prep")}</div>`+body;
+}
+
+/* ---- Deck = note page ---- */
+let deckTab="note";
+function renderDeck(id){
+  const d=data.decks.find(x=>x.id===id); if(!d){go("#/");return;}
+  const notes=deckNotes(id),cards=deckCards(id),due=dueCards(id),cv=deckTab==="cards";
+  const head=`<div class="kh"><button onclick="history.back()" aria-label="Back">${IC.back}</button><div class="mid"><button class="pill" onclick="deckTab='${cv?"note":"cards"}';renderDeck('${id}')">${cv?IC.doc:IC.card} ${cv?"Notes":"Flashcards"}</button></div><button onclick="notePick('${id}')" aria-label="Edit note">${IC.pen}</button><button onclick="deckMenu('${id}')" aria-label="More">${IC.dots}</button></div>`;
+  const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${esc(subjectName(d))} · ${cards.length} cards · ${due.length} due</div></div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
+  let main;
+  if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
+  else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md">${md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
+  const bar=`<div class="bar"><button class="rf" onclick="refineSheet('${id}')">${IC.crown} Refine this note</button><button class="brain" aria-label="Study methods" title="Study methods" onclick="studyMethodsSheet('${id}')">🧠</button><button class="ai" onclick="learnSheet('${id}')">${IC.tool} AI tools</button></div>`;
+  view.innerHTML=head+title+main+bar;
+  document.getElementById("imgInput").onchange=e=>scanImage(id,e.target.files);
+}
+function studyDeck(id){const d=data.decks.find(x=>x.id===id),c=dueCards(id);if(!c.length){toast("No cards due");return;}startSession(c,d.title,"#/deck/"+id);}
+function quizDeck(id){if(deckCards(id).length<4){toast("Add at least 4 flashcards first");return;}startQuiz(id);}
+function aiDeck(id,kind){if(!deckNotes(id).length){toast("Add a note first");return;}aiAct(id,kind);}
+let blurtingInterval=null, blurtingRemaining=0, blurtingSection="";
+function studyMethodsSheet(id){
+  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span></button><button class="ob" disabled style="opacity:.45;cursor:default"><span style="font-size:1.5rem">＋</span><span><b>More methods coming soon</b><small style="display:block;color:#aaa;margin-top:.2rem">New study techniques will appear here</small></span></button></div>`);
+}
+function startBlurtingSetup(id){
+  const notes=deckNotes(id); if(!notes.length){toast("Add a note first");return;}
+  const content=notes.map(n=>stripMd(n.content)).join("\n\n");
+  modal(`<div class="sh"><h2>Blurting</h2><p class="muted" style="text-align:center">Choose the section you want to learn, then read it before the timer ends.</p><label class="label" for="blurtingSource">Study section</label><textarea class="input" id="blurtingSource" style="min-height:10rem">${esc(content)}</textarea><label class="label" for="blurtingMinutes">Reading time</label><select class="input" id="blurtingMinutes"><option value="1">1 minute</option><option value="2" selected>2 minutes</option><option value="3">3 minutes</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option></select><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="beginBlurting()">Start reading timer</button></div>`);
+}
+function beginBlurting(){
+  blurtingSection=document.getElementById("blurtingSource")?.value.trim()||"";
+  if(!blurtingSection){toast("Choose a section to study");return;}
+  blurtingRemaining=(Number(document.getElementById("blurtingMinutes")?.value)||2)*60;
+  renderBlurtingReading();
+  clearInterval(blurtingInterval);
+  blurtingInterval=setInterval(()=>{blurtingRemaining--;const el=document.getElementById("blurtingCountdown");if(el)el.textContent=formatBlurtingTime(blurtingRemaining);const pb=document.getElementById("blurtingProgress");if(pb)pb.style.width=Math.max(0,blurtingRemaining/((Number(document.getElementById("blurtingMinutes")?.value)||2)*60)*100)+"%";if(blurtingRemaining<=0){clearInterval(blurtingInterval);blurtingInterval=null;showBlurtingRecall();}},1000);
+}
+function formatBlurtingTime(n){n=Math.max(0,n);return Math.floor(n/60)+":"+String(n%60).padStart(2,"0");}
+function renderBlurtingReading(){
+  modal(`<div class="sh"><h2>Read & remember</h2><div id="blurtingCountdown" style="font-size:2.5rem;font-weight:700;text-align:center;margin:.8rem 0">${formatBlurtingTime(blurtingRemaining)}</div><div class="progress"><div id="blurtingProgress" style="width:100%;transition:width 1s linear"></div></div><div class="rec" style="margin-top:1rem;white-space:pre-wrap">${esc(blurtingSection)}</div><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="clearInterval(blurtingInterval);blurtingInterval=null;showBlurtingRecall()">I’m ready — start recall</button></div>`);
+  const total=blurtingRemaining;const bar=document.getElementById("blurtingProgress");const tick=()=>{if(bar)bar.style.width=(total?Math.max(0,blurtingRemaining/total*100):0)+"%";};tick();
+}
+function showBlurtingRecall(){
+  clearInterval(blurtingInterval);blurtingInterval=null;
+  modal(`<div class="sh"><h2>Blurting time</h2><p class="muted" style="text-align:center">No peeking. Type everything you can remember from the section.</p><textarea class="input" id="blurtingAnswer" placeholder="Write everything you remember…" style="min-height:45vh"></textarea><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="reviewBlurting()">Finish & compare</button></div>`);
+  setTimeout(()=>document.getElementById("blurtingAnswer")?.focus(),100);
+}
+function reviewBlurting(){
+  const answer=document.getElementById("blurtingAnswer")?.value.trim()||"";
+  modal(`<div class="sh"><h2>Compare your recall</h2><div class="label">Your answer</div><div class="rec" style="white-space:pre-wrap">${esc(answer||"You didn’t write anything this round.")}</div><div class="label">Original section</div><div class="rec" style="white-space:pre-wrap">${esc(blurtingSection)}</div><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal();toast('Blurting session complete')">Done</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="startBlurtingSetup('${(location.hash.split('/').pop()||'').replace(/[^a-zA-Z0-9_-]/g,'')}')">Try another round</button></div>`);
+}
+
+function learnSheet(id){
+  const lc=(bg,ic,t,s,fn)=>`<button class="lc" onclick="closeModal();${fn}"><span class="tile" style="background:${bg}">${ic}</span><b>${t}</b><small>${s}</small></button>`;
+  modal(`<div class="sh"><h2>Learn</h2><div class="lg">${lc("#0f3b38",IC.card,"Flashcards","Mark as learned or not learned",`studyDeck('${id}')`)}${lc("#4a1d3d",IC.test,"Practice Test","Take a test on your notes",`quizDeck('${id}')`)}${lc("#26306b",IC.spark,"Make Cards","Create flashcards from notes",`aiDeck('${id}','cards')`)}${lc("#26306b",IC.spark,"Summarize","Turn notes into a summary",`aiDeck('${id}','summarize')`)}</div></div>`);
+}
+function deckMenu(id){
+  modal(`<div class="sh"><h2>Options</h2>${sheetRow("#26306b",IC.spark,"Improve note",`aiDeck('${id}','improve')`)}${sheetRow("#12284a",IC.doc,"Scan photo or PDF","document.getElementById('imgInput').click()")}${sheetRow("#18233a","📋","Copy all notes",`copyAllNotes('${id}')`)}${sheetRow("#12284a",IC.word,"Make Word doc","openWordDocModal()")}${sheetRow("#18233a",IC.folder("#fbca6d"),"Move to folder",`moveSheet('${id}')`)}${sheetRow("#18233a",IC.pen,"Rename deck",`renameDeck('${id}')`)}${sheetRow("#3a1d1d","🗑️","Delete deck",`if(confirm('Delete this deck and all its notes and cards?')){deleteDeck('${id}');go('#/')}`,true)}</div>`);
+}
+function notePick(id){
+  const ns=deckNotes(id); if(!ns.length){newNote(id);return;}
+  modal(`<div class="sh"><h2>Notes</h2>${ns.map(n=>sheetRow("#12284a",IC.doc,esc(stripMd(n.content).slice(0,34))+"…",`editNote('${n.id}')`)).join("")}${sheetRow("#18233a",IC.plus,"New note",`newNote('${id}')`)}</div>`);
+}
+function newNote(id){
+  modal(`<h2>New note</h2><textarea class="input" id="noteText" placeholder="Paste or type your notes here…" style="min-height:40vh"></textarea><div class="row" style="justify-content:flex-end;margin-top:1rem"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveNote('${id}')">Save note</button></div>`);
+}
+function editNote(id){
+  const n=data.notes.find(x=>x.id===id); if(!n) return;
+  modal(`<h2>Edit note</h2><textarea class="input" id="editNoteField" style="min-height:40vh">${esc(n.content)}</textarea><div class="row" style="margin-top:1rem"><button class="btn btn-ghost" style="margin-right:auto;color:#ff7b7b" onclick="data.notes=data.notes.filter(x=>x.id!=='${id}');save();closeModal();route()">Delete</button><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEdit('${id}')">Save</button></div>`);
+}
+function saveEdit(id){const n=data.notes.find(x=>x.id===id);if(n){n.content=document.getElementById("editNoteField").value;save();}closeModal();route();}
+function refineSheet(id){
+  if(!deckNotes(id).length){toast("Add a note first");return;}
+  modal(`<div class="sh"><h2>Refine this note</h2><input class="input" id="refineTxt" placeholder="e.g. make it shorter, add examples" style="width:100%"><button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="aiRefine('${id}')">Refine</button></div>`);
+  setTimeout(()=>document.getElementById("refineTxt")?.focus(),320);
+}
+async function aiRefine(id){
+  const ins=document.getElementById("refineTxt").value.trim(); if(!ins){toast("Say how to refine it");return;}
+  closeModal();
+  const out=document.getElementById("aiOut"); if(out) out.innerHTML=`<div class="panel"><span class="spin"></span> Refining…</div>`;
+  try{
+    const text=cleanAiText(await gemini("Revise these study notes following this instruction: "+ins+". Format with Markdown: use ## for section headings, **bold** for key terms, and - for bullet points. No LaTeX or math notation. Return only the revised notes.\n\n"+deckNotes(id).map(n=>n.content).join("\n\n")));
+    data.notes.unshift({id:uid(),deckId:id,content:text,createdAt:todayISO()}); save(); route(); toast("Refined note saved");
+  }catch(e){ if(out) out.innerHTML=`<div class="panel" style="color:var(--destructive);font-size:.85rem">${esc(e.message)}</div>`; }
+}
+
+/* ---- Flashcard session ---- */
+function renderSession(){
+  const s=session; if(!s) return;
+  document.querySelector("nav.bottom").style.display="none";
+  const hd=(t,r="")=>`<div class="kh"><button onclick="session=null;go('${s.back}')" aria-label="Close">${IC.back}</button><h1>${t}</h1>${r}</div>`;
+  if(s.idx>=s.cards.length){
+    view.innerHTML=hd("Session complete")+empty2("🎉","Nice work",`You reviewed ${s.cards.length} card${s.cards.length===1?"":"s"}.`)+`<div style="padding:0 1.1rem"><button class="btn btn-primary" style="width:100%" onclick="go('${s.back}')">Done</button></div>`;
+    return;
+  }
+  const c=s.cards[s.idx],dk=data.decks.find(x=>x.id===c.deckId),pct=Math.round(s.idx/s.cards.length*100);
+  view.innerHTML=hd(esc(s.title),`<span class="muted">${s.idx+1} / ${s.cards.length}</span>`)+`<div class="progress" style="margin:0 1.1rem"><div style="width:${pct}%"></div></div><div style="padding:1.1rem"><div class="flashcard" onclick="session.flipped=!session.flipped;renderSession()">${dk?`<span class="tag">${esc(dk.title)}</span>`:""}<div class="q">${esc(s.flipped?c.answer:c.question)}</div><span class="hint">${s.flipped?"How well did you know it?":"Tap to flip"}</span></div>${s.flipped?`<div class="ratings"><button class="btn btn-danger" onclick="rate('again')">Again</button><button class="btn btn-warning" onclick="rate('hard')">Hard</button><button class="btn btn-success" onclick="rate('good')">Good</button><button class="btn btn-primary" onclick="rate('easy')">Easy</button></div>`:""}</div>`;
+}
+
+/* ---- Quiz / evaluation ---- */
+function renderQuiz(){
+  const s=quizState,isEval=s.mode==="evaluation";
+  const back=isEval?"exitEvaluation()":`exitQuiz('${s.deckId}')`;
+  document.querySelector("nav.bottom").style.display="none";
+  const hd=(t,r="")=>`<div class="kh"><button onclick="${back}" aria-label="Close">${IC.back}</button><h1>${t}</h1>${r}</div>`;
+  if(s.idx>=s.questions.length){
+    let line=`You scored ${s.score} / ${s.questions.length}`;
+    if(isEval){
+      const pct=Math.round(s.score/s.questions.length*100);
+      if(s.updatesMastery){data.subjectScores=data.subjectScores||{};data.subjectScores[s.subjectId]={score:pct,date:todayISO(),count:s.questions.length};save();line+=` (${pct}% — ${esc(s.subjectName)} mastery updated)`;}
+      else line+=` (${pct}% — selected decks only, so ${esc(s.subjectName)} mastery wasn't changed)`;
+    }
+    view.innerHTML=hd(isEval?"Evaluation done":"Test done")+empty2("🧠",`${s.score} / ${s.questions.length}`,line)+`<div style="padding:0 1.1rem"><button class="btn btn-primary" style="width:100%" onclick="${back}">${isEval?"Back to home":"Back to deck"}</button></div>`;
+    return;
+  }
+  const q=s.questions[s.idx],pct=Math.round(s.idx/s.questions.length*100);
+  const head=hd(isEval?esc(s.subjectName):"Practice Test",`<span class="muted">${s.idx+1} / ${s.questions.length}</span>`)+`<div class="progress" style="margin:0 1.1rem"><div style="width:${pct}%"></div></div><div style="padding:1.1rem"><div class="muted" style="font-size:.8rem;margin-bottom:.5rem">${QUIZ_TYPE_LABEL[q.type]}</div><div class="panel" style="font-size:1.1rem;line-height:1.5;font-family:DM Sans,system-ui,sans-serif">${esc(q.q)}</div>`;
+  let body;
+  if(q.type==="mcq") body=`<div style="margin-top:1rem" id="quizOpts">${q.options.map((o,i)=>`<button class="quiz-opt" onclick="answerMcq(this, ${i})">${esc(o)}</button>`).join("")}</div>`;
+  else if(q.type==="fillblank") body=`<div class="panel" style="margin-top:1rem;line-height:1.6">${esc(q.masked)}</div><input class="input" id="blankInput" placeholder="Type the missing word…" style="margin-top:.75rem" autocomplete="off"><button class="btn btn-primary" style="margin-top:.75rem;width:100%" id="blankCheckBtn" onclick="answerBlank()">Check</button><div id="quizFeedback" style="margin-top:.75rem"></div>`;
+  else body=`<textarea class="input" id="typedInput" placeholder="Type what you remember…" style="margin-top:.75rem;min-height:5rem"></textarea><button class="btn btn-primary" style="margin-top:.75rem;width:100%" id="typedRevealBtn" onclick="revealTyped()">Reveal answer</button><div id="quizFeedback" style="margin-top:.75rem"></div>`;
+  view.innerHTML=head+body+`</div>`;
+  if(q.type==="fillblank"){setTimeout(()=>document.getElementById("blankInput")?.focus(),50);document.addEventListener("keydown",quizEnterHandler);}
+}
+
+
+/* ============================== NOTEBOOK + CREATE SHEETS ============================== */
+Object.assign(IC,{
+  file:sv('<path d="M7 3h7l4 4v14H7z"/><path d="M14 3v4h4"/>'),
+  image:sv('<rect x="4" y="4" width="16" height="16" rx="2"/><circle cx="9" cy="9" r="1.5"/><path d="M5 18l5-5 4 4 2-2 3 3"/>'),
+  camera:sv('<path d="M4 8h3l2-3h6l2 3h3v11H4z"/><circle cx="12" cy="13" r="3.5"/>'),
+  wave:sv('<path d="M4 10v4M8 7v10M12 4v16M16 8v8M20 11v3"/>'),
+  kbd:sv('<rect x="3" y="6" width="18" height="12" rx="2"/><path d="M7 10h.01M11 10h.01M15 10h.01M7 14h10"/>'),
+  mic:sv('<rect x="9" y="3" width="6" height="11" rx="3" fill="#ff5a5f" stroke="none"/><path d="M6 11a6 6 0 0 0 12 0M12 17v4" stroke="#ff5a5f"/>')
+});
+function pickFiles(accept,cam,cb){
+  const i=document.createElement("input"); i.type="file"; i.accept=accept; i.multiple=!cam; if(cam) i.capture="environment";
+  i.onchange=()=>{const f=Array.from(i.files||[]); if(f.length) cb(f);};
+  i.click();
+}
+async function newFromFiles(files,mode,title){
+  const base=(files[0].name||"").replace(/\.[^.]+$/,"").trim();
+  const d=createDeck(title||base||(mode==="summarize"?"Summary":"New notes"),null);
+  location.hash="#/deck/"+d.id;
+  await new Promise(r=>setTimeout(r,80));
+  await scanImage(d.id,files);
+  if(mode==="summarize"&&deckNotes(d.id).length) await aiAct(d.id,"summarize");
+}
+async function manualNotes(){
+  const v=await askText("Name your notes","","e.g. Biology — Chapter 4"); if(v===null) return;
+  const d=createDeck(v.trim()||"Untitled notes",null);
+  location.hash="#/deck/"+d.id; setTimeout(()=>newNote(d.id),80);
+}
+function notebookSheet(){
+  const ob=(ic,l,fn)=>`<button class="ob" onclick="closeModal();${fn}">${ic}${l}</button>`;
+  modal(`<div class="sh"><h2>Notes</h2><div class="sub">Choose how to create your notes</div>${ob(IC.file,"Upload file from device","pickFiles('image/*,application/pdf',false,f=>newFromFiles(f,'notes'))")}${ob(IC.image,"Choose Photo","pickFiles('image/*',false,f=>newFromFiles(f,'notes'))")}${ob(IC.camera,"Take Photo","pickFiles('image/*',true,f=>newFromFiles(f,'notes','Photo notes'))")}${ob(IC.wave,"Create from live recording","liveRecord()")}${ob(IC.kbd,"Create manually","manualNotes()")}</div>`);
+}
+function liveRecord(){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){toast("Live recording isn't supported in this browser");return;}
+  const r=new SR(); r.continuous=true; r.interimResults=true; r.lang=navigator.language||"en-US";
+  let fin="",run=true;
+  const box=()=>document.getElementById("lrTxt");
+  modal(`<div class="sh"><h2>Record Lecture</h2><div class="panel rec" id="lrTxt">Listening…</div><button class="btn btn-primary" style="width:100%;margin-top:.8rem" id="lrStop">Stop &amp; save as notes</button></div>`);
+  r.onresult=e=>{let interim="";for(let k=e.resultIndex;k<e.results.length;k++){const s=e.results[k][0].transcript;if(e.results[k].isFinal)fin+=s+" ";else interim+=s;}if(box())box().textContent=(fin+interim).trim()||"Listening…";};
+  r.onend=()=>{if(run&&box()){try{r.start();}catch(_){}}else run=false;};
+  r.onerror=e=>{if(e.error==="not-allowed"){run=false;closeModal();toast("Microphone permission denied");}};
+  document.getElementById("lrStop").onclick=()=>{
+    run=false; try{r.stop();}catch(_){}
+    const txt=(box()?.textContent||"").trim(); closeModal();
+    if(!txt||txt==="Listening…"){toast("Nothing was recorded");return;}
+    const d=createDeck("Lecture "+todayISO(),null);
+    data.notes.unshift({id:uid(),deckId:d.id,content:txt,createdAt:todayISO()}); save();
+    go("#/deck/"+d.id); toast("Recording saved as notes");
+  };
+  try{r.start();}catch(_){}
+}
+function openPlusMenu(){
+  const r=(bg,ic,label,fn)=>`<button class="sr" onclick="closeModal();${fn}"><span class="tile" style="background:${bg}">${ic}</span>${label}</button>`;
+  modal(`<div class="sh"><h2>Create</h2>${r("#33400f",IC.map,"Predict exam &amp; study plan","go('#/study')")}${r("#1d2a5e",IC.spark,"Summarize File &amp; Pictures","pickFiles('image/*,application/pdf',false,f=>newFromFiles(f,'summarize'))")}${r("#4a1d3d",IC.mic,"Record Lecture","liveRecord()")}${r("#12284a",IC.doc,"Create Notes","notebookSheet()")}${r("#0f3b38",IC.card,"Create Flashcards","openCreateDeckModal()")}${r("#555",IC.folder("#fbca6d"),"Create Folder","newFolderSheet()")}${r("#12284a",IC.word,"Make Word doc from notes","openWordDocModal()")}</div>`);
+}
+
+
+/* ============================== MOVE DECK BETWEEN FOLDERS ============================== */
+function moveSheet(id){
+  const d=data.decks.find(x=>x.id===id); if(!d) return;
+  const row=(sid,label,ic)=>`<button class="sr" onclick="moveDeck('${id}','${sid}')"><span class="tile" style="background:#18233a">${ic}</span><span style="flex:1">${label}</span>${(d.subjectId||"")===sid?"✓":""}</button>`;
+  modal(`<div class="sh"><h2>Move to folder</h2>${data.subjects.length?"":`<div class="sub">No folders yet. Use + to create one.</div>`}${data.subjects.map((s,i)=>row(s.id,esc(s.name),IC.folder(FCOL[i%FCOL.length]))).join("")}${row("","No folder",IC.folder("#888"))}</div>`);
+}
+function moveDeck(id,sid){
+  const d=data.decks.find(x=>x.id===id); if(!d) return;
+  const s=data.subjects.find(x=>x.id===sid);
+  d.subjectId=s?s.id:null; d.subject=s?s.name:"General";
+  save(); closeModal(); route(); toast(s?"Moved to "+s.name:"Removed from folder");
+}
+
+window.addEventListener("hashchange", route);
+route();
+
+/* ============================== OFFLINE ============================== */
+// A service worker (sw.js, same folder as this page) keeps a copy of the app on the device
+// so it opens without internet. Needs https; silently skipped otherwise (e.g. opened as a file).
+if("serviceWorker" in navigator && /^https?:$/.test(location.protocol)){
+  window.addEventListener("load", ()=>{
+    navigator.serviceWorker.register("sw.js").then(()=> navigator.serviceWorker.ready).then(()=>{
+      // Make sure this exact page is saved too, even on the very first visit.
+      return caches.open("quicklearn-cache").then(c => c.add(location.pathname + location.search).catch(()=>{}));
+    }).catch(()=>{});
+  });
+}
+window.addEventListener("offline", ()=>toast("You're offline — your notes and cards still work"));
+window.addEventListener("online", ()=>toast("Back online"));
+</script>
+</body>
+</html>
