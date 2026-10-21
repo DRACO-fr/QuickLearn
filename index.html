@@ -2618,22 +2618,82 @@ function renderAnalytics(){const S=data.subjects;
 /* ---------- AI courses (Duolingo-style) ---------- */
 const courseOf=id=>(data.courses=data.courses||{})[id];
 function jparse(t){t=String(t).replace(/```json|```/g,"");const a=t.search(/[\[{]/),b=Math.max(t.lastIndexOf("}"),t.lastIndexOf("]"));return JSON.parse(t.slice(a,b+1))}
+function validCourseQuestion(q){
+  if(!q || typeof q!=="object" || typeof q.q!=="string" || !q.q.trim()) return false;
+  if(!["mc","tf","fb"].includes(q.t)) return false;
+  if(typeof q.e!=="string") q.e="";
+  if(q.t==="tf") return typeof q.a==="boolean";
+  if(!Array.isArray(q.o)) return false;
+  q.o=q.o.map(x=>typeof x==="string"?x.trim():"").filter(Boolean);
+  if(q.o.length<2 || !Number.isInteger(q.a) || q.a<0 || q.a>=q.o.length) return false;
+  if(q.t==="fb" && !q.q.includes("____")) return false;
+  return true;
+}
+function validCourseLesson(l){
+  if(!l || typeof l.title!=="string" || !l.title.trim() || !Array.isArray(l.qs)) return false;
+  l.qs=l.qs.filter(validCourseQuestion);
+  return l.qs.length>0;
+}
 async function genCourse(id){
   const d=data.decks.find(x=>x.id===id),txt=deckNotes(id).map(n=>stripMd(n.content)).join("\n\n").slice(0,14000);
+  if(!d){toast("Couldn't find this deck");return}
   if(txt.length<80){toast("Add more to your note first");return}
   let stop=false,c=null; window.__cc=()=>{stop=true;closeModal()};
-  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your course</h2><p class="muted">${m}</p><div class="progress"><div style="width:${p}%"></div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
+  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${m}</p><div class="progress"><div style="width:${p}%"></div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
+  const prompt=`You are an expert instructional designer. Generate the ENTIRE course in ONE response. Use ONLY the NOTES below; do not invent facts. Return ONLY valid JSON in exactly this structure:
+{"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}]}
+REQUIREMENTS:
+- Produce the full course now: 5-7 units, each with 3 lessons, each lesson with 6 questions. Do not return an outline or lesson titles only.
+- Cover the main topics, headings, definitions, terms, processes and important details in the notes in a sensible learning order.
+- Every unit, lesson and question must be complete in this single JSON response.
+- Every question MUST contain a visible, non-empty "q" string. Never place the question only in an answer or explanation.
+- Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must contain exactly a visible ____ blank.
+- For mc and fb, provide 3-4 non-empty options and set "a" to the zero-based index of the correct option in that exact options array. For tf, "a" must be true or false.
+- Every question must be answerable from the notes. Start with recall and progress to understanding/application. Avoid duplicates.
+- Keep explanations short and grounded in the notes. Use plain strings, no markdown fences, no commentary.
+- Before returning, verify the JSON parses and that every lesson has 6 valid questions with non-empty q fields and valid answers.
+
+NOTES:
+${txt}`;
   try{
-    prog("Reading your note…",5);
-    const o=jparse(await gemini(`You design Duolingo-style courses. From the NOTES below return ONLY JSON: {"title":"...","units":[{"title":"...","lessons":["lesson title"]}]}. Cover EVERY section, heading, term and idea in the notes, in order. 5-10 units, 3-5 lessons each. No markdown.\n\nNOTES:\n${txt}`));
-    if(stop)return; c={title:o.title||d.title,units:[],done:{}}; (data.courses=data.courses||{})[id]=c;
-    for(let u=0;u<o.units.length;u++){
-      prog(`Unit ${u+1} of ${o.units.length}: ${esc(o.units[u].title)}`,10+u/o.units.length*88);
-      const ls=jparse(await gemini(`Using ONLY the NOTES, write lessons for the unit "${o.units[u].title}" with these lesson titles: ${JSON.stringify(o.units[u].lessons)}. Return ONLY a JSON array, one item per lesson: {"title":"","qs":[...]} with 8 questions each, mixing {"t":"mc","q":"question","o":["A","B","C","D"],"a":0,"e":"one-sentence explanation"}, {"t":"tf","q":"statement","a":true,"e":"explanation"} and {"t":"fb","q":"sentence with ____ blank","o":["w1","w2","w3"],"a":1,"e":"explanation"}. Start easy, get harder. Every question must be answerable from the notes. "a" is the correct option index for mc/fb.\n\nNOTES:\n${txt}`));
-      if(stop)return; c.units.push({title:o.units[u].title,lessons:ls.filter(l=>l.qs&&l.qs.length)}); save();
+    prog("Planning the units, lessons and questions together…",12);
+    let o=jparse(await gemini(prompt));
+    if(stop)return;
+    if(!o||!Array.isArray(o.units)||!o.units.length) throw new Error("The AI didn't return a complete course. Please try again.");
+    prog("Checking the complete course…",78);
+    const buildCourse=raw=>{
+      const units=[];
+      for(const unit of (raw.units||[])){
+        if(!unit||typeof unit.title!=="string"||!unit.title.trim()||!Array.isArray(unit.lessons))continue;
+        const lessons=[];
+        for(const lesson of unit.lessons){
+          if(!lesson||typeof lesson.title!=="string"||!lesson.title.trim()||!Array.isArray(lesson.qs))continue;
+          const qs=lesson.qs.filter(validCourseQuestion);
+          if(qs.length)lessons.push({title:lesson.title.trim(),qs});
+        }
+        if(lessons.length)units.push({title:unit.title.trim(),lessons});
+      }
+      return {title:typeof raw.title==="string"&&raw.title.trim()?raw.title.trim():d.title,units,done:{}};
+    };
+    c=buildCourse(o);
+    const questionCount=c.units.reduce((sum,u)=>sum+u.lessons.reduce((n,l)=>n+l.qs.length,0),0);
+    if(!c.units.length||!questionCount) {
+      prog("Repairing the course as one complete response…",55);
+      o=jparse(await gemini(prompt+"\n\nFINAL CHECK: The previous result was incomplete or malformed. Return the entire course again in the exact schema, with all units and lessons and all questions populated. Do not omit any q text or valid answer.") );
+      if(stop)return;
+      c=buildCourse(o);
     }
+    const finalCount=c.units.reduce((sum,u)=>sum+u.lessons.reduce((n,l)=>n+l.qs.length,0),0);
+    if(!c.units.length||!finalCount) throw new Error("No complete lessons were returned. Please try again.");
+    (data.courses=data.courses||{})[id]=c; save();
     closeModal();haptic("complete");renderCourse(id);
-  }catch(e){ if(stop)return; closeModal(); if(c&&c.units.length){toast("Course partly built · "+(e.message||"error"));renderCourse(id)}else{if(c)delete data.courses[id];toast(e.message||"Couldn't build the course")} }
+    toast(`Complete course ready · ${c.units.length} units, ${c.units.reduce((n,u)=>n+u.lessons.length,0)} lessons`);
+  }catch(e){
+    if(stop)return;
+    closeModal();
+    if(c&&c.units&&c.units.length){(data.courses=data.courses||{})[id]=c;save();toast("Course created with valid lessons · "+(e.message||"some content was incomplete"));renderCourse(id)}
+    else toast(e.message||"Couldn't build the course");
+  }
 }
 function renderCourse(id){
   const d=data.decks.find(x=>x.id===id); if(!d){go("#/");return}
