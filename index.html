@@ -270,6 +270,32 @@ body{background:#130c08;background-image:radial-gradient(60rem 30rem at 85% -10%
 .empty2 .ec{background:#4a1d12}
 .empty2 h3{color:#a78975}
 
+/* ===== course generation delight pack ===== */
+.method-card{animation:methodIn .42s cubic-bezier(.2,1.2,.3,1) both;transition:transform .22s,border-color .22s,background .22s}
+.method-card:nth-of-type(2){animation-delay:.08s}
+.method-card:hover{transform:translateY(-2px);border-color:#e29a2d;background:rgba(226,154,45,.08)}
+.course-method{background:linear-gradient(110deg,rgba(226,154,45,.12),rgba(255,124,91,.07));}
+.study-tip{margin-top:1rem;padding:1rem;border-radius:1rem;background:linear-gradient(130deg,#30200f,#261a12);border:1px solid #63431e;animation:tipIn .5s .15s both}
+.study-tip .tip-spark{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:#e29a2d;color:#130d04;margin-right:.45rem;animation:sparkSpin 5s linear infinite}
+.study-tip b{color:#ffc66d}.study-tip p{margin:.55rem 0 0;color:#e5d5c8;font-size:.88rem;line-height:1.5}
+.genorb{width:4.2rem;height:4.2rem;margin:.6rem auto 1rem;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 25%,#ffd88a,#e29a2d 45%,#6e3214 80%);box-shadow:0 0 0 8px #e29a2d12,0 0 38px #e29a2d55;animation:orbFloat 2s ease-in-out infinite}
+.genorb:after{content:"✦";font-size:2rem;color:#241407;animation:sparkSpin 7s linear infinite}
+.gen-tip{margin:.8rem 0 0;padding:.8rem 1rem;border:1px solid #63431e;border-radius:.9rem;background:linear-gradient(100deg,#30200f,#25170f);text-align:left;animation:tipIn .4s both}
+.gen-tip b{color:#ffc66d;font-size:.8rem}.gen-tip p{margin:.3rem 0 0;color:#dfcbb8;font-size:.82rem;line-height:1.45}
+.unit{animation:unitBloom .5s cubic-bezier(.2,1.1,.3,1) both}
+.node{transition:transform .22s cubic-bezier(.2,1.5,.3,1),filter .22s}
+.node:not(:disabled):hover{transform:translateY(-3px) scale(1.025);filter:drop-shadow(0 5px 12px #e29a2d30)}
+.node.cur{animation:currentPulse 2.4s ease-in-out infinite}
+.cprog .progress>div{background-size:200% 100%;animation:progressShine 2s linear infinite}
+@keyframes methodIn{from{opacity:0;transform:translateY(12px) scale(.97)}to{opacity:1;transform:none}}
+@keyframes tipIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+@keyframes sparkSpin{to{transform:rotate(360deg)}}
+@keyframes orbFloat{0%,100%{transform:translateY(0) rotate(-5deg);filter:saturate(1)}50%{transform:translateY(-7px) rotate(5deg);filter:saturate(1.3)}}
+@keyframes unitBloom{from{opacity:0;transform:translateY(18px) scale(.985)}to{opacity:1;transform:none}}
+@keyframes currentPulse{0%,100%{filter:drop-shadow(0 0 0 #e29a2d00)}50%{filter:drop-shadow(0 0 10px #e29a2d70)}}
+@keyframes progressShine{to{background-position:200% 0}}
+@media(prefers-reduced-motion:reduce){.genorb,.genorb:after,.node.cur,.study-tip .tip-spark{animation:none!important}}
+
 /* ===== background jobs ===== */
 #jobs-root{position:fixed;left:0;right:0;bottom:calc(5.4rem + env(safe-area-inset-bottom));z-index:55;display:flex;flex-direction:column;align-items:center;gap:.45rem;padding:0 1rem;pointer-events:none}
 .jobpill{pointer-events:auto;display:flex;align-items:center;gap:.6rem;max-width:min(30rem,100%);background:#261a12;color:#fff;border:1.5px solid #e29a2d;border-radius:999px;padding:.55rem .95rem;font-size:.85rem;font-weight:500;box-shadow:0 10px 30px -10px rgba(0,0,0,.7);cursor:pointer;animation:jpin .25s ease}
@@ -1440,7 +1466,7 @@ function askFallback(status){
 }
 
 // files = [{ dataUrl }] (JPEG data URLs from filesToImages)
-async function gemini(prompt, files){
+async function gemini(prompt, files, options={}){
   const key = getKey();
   if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
   if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
@@ -1469,6 +1495,12 @@ async function gemini(prompt, files){
       if(res && !RETRYABLE.includes(res.status)){
         const t = await res.text();
         if(res.status===400||res.status===403) throw new Error("API key rejected — check it in the AI key dialog.");
+        if(options.autoFallback && model !== GEMINI_FALLBACK_MODEL){
+          model = GEMINI_FALLBACK_MODEL;
+          toast("Course creation is switching to the backup AI automatically…");
+          attempt = -1;
+          continue;
+        }
         throw new Error("Gemini error " + res.status + ": " + t.slice(0,120));
       }
       lastStatus = res ? res.status : 0;
@@ -1477,8 +1509,13 @@ async function gemini(prompt, files){
         await sleep(RETRY_DELAYS[attempt]);
       }
     }
-    // All automatic retries failed.
+    // All automatic retries failed. Course generation alone may switch models silently.
     if(model === GEMINI_FALLBACK_MODEL) throw new Error("Gemini is still too busy even on the backup model. Please try again in a few minutes.");
+    if(options.autoFallback){
+      model = GEMINI_FALLBACK_MODEL;
+      toast("Course creation is switching to the backup AI automatically…");
+      continue;
+    }
     const choice = await askFallback(lastStatus);
     if(choice === "fallback") model = GEMINI_FALLBACK_MODEL;
     else if(choice !== "retry") throw new Error("Cancelled — Gemini's servers are busy right now. Try again in a few minutes.");
@@ -2385,7 +2422,7 @@ function renderDeck(id){
   let main;
   if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more flg${isHard(c)?" on":""}" onclick="event.stopPropagation();toggleHard('${c.id}');renderDeck('${id}')" aria-label="Mark as hard">${IC.flag}</span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
   else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md">${md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
-  const bar=`<div class="bar"><button class="rf" onclick="refineSheet('${id}')">${IC.crown} Refine this note</button><button class="brain" aria-label="Study methods" title="Study methods" onclick="studyMethodsSheet('${id}')">🧠</button><button class="brain" aria-label="Course" title="Course" onclick="go('#/course/${id}')">🎓</button><button class="ai" onclick="learnSheet('${id}')">${IC.tool} AI tools</button></div>`;
+  const bar=`<div class="bar"><button class="rf" style="flex:1;min-width:0" onclick="refineSheet('${id}')">${IC.crown} Refine this note</button><button class="brain" aria-label="Study methods" title="Study methods" onclick="studyMethodsSheet('${id}')">🧠</button><button class="ai" onclick="learnSheet('${id}')">${IC.tool} AI tools</button></div>`;
   view.innerHTML=head+title+main+bar;
   document.getElementById("imgInput").onchange=e=>scanImage(id,e.target.files);
 }
@@ -2394,7 +2431,7 @@ function quizDeck(id){if(deckCards(id).length<4){toast("Add at least 4 flashcard
 function aiDeck(id,kind){if(!deckNotes(id).length){toast("Add a note first");return;}aiAct(id,kind);}
 let blurtingInterval=null, blurtingRemaining=0, blurtingSection="";
 function studyMethodsSheet(id){
-  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span></button><button class="ob" disabled style="opacity:.45;cursor:default"><span style="font-size:1.5rem">＋</span><span><b>More methods coming soon</b><small style="display:block;color:#aaa;margin-top:.2rem">New study techniques will appear here</small></span></button></div>`);
+  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob method-card" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card course-method" onclick="closeModal();go('#/course/${id}')"><span style="font-size:1.5rem">🎓</span><span><b>Course learning</b><small style="display:block;color:#aaa;margin-top:.2rem">Learn the entire note in bite-size lessons</small></span><span style="margin-left:auto">→</span></button><div class="study-tip"><span class="tip-spark">✦</span><b>Study tip</b><p>Try recalling an idea before rereading it. The effort to retrieve it helps strengthen memory.</p></div></div>`);
 }
 function startBlurtingSetup(id){
   const notes=deckNotes(id); if(!notes.length){toast("Add a note first");return;}
@@ -2641,7 +2678,15 @@ async function genCourse(id){
   if(!notes.length||notes.every(n=>n.text.trim().length<40)){toast("Add more to your notes first");return}
   let stop=false,activeCourse=null;
   window.__cc=()=>{stop=true;closeModal()};
-  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${esc(m)}</p><div class="progress"><div style="width:${Math.max(2,Math.min(100,p))}%"></div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
+  const genInsights=[
+    ["TIP & TRICK","Short, focused lessons make it easier to practise active recall without feeling overwhelmed."],
+    ["FUN FACT","Testing yourself can improve later recall more than simply rereading the same material."],
+    ["QUICK STUDY HACK","After each lesson, explain the idea in your own words as if teaching a friend."],
+    ["YOU'VE GOT THIS","The course is being built from your notes in sections so large notes are less likely to get cut off."],
+    ["MEMORY BOOST","Mix definitions, examples and application questions when revising a topic."]
+  ];
+  let insightIndex=0;
+  const prog=(m,p)=>{const tip=genInsights[insightIndex++%genInsights.length];modal(`<div class="sh gen-progress" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${esc(m)}</p><div class="progress"><div style="width:${Math.max(2,Math.min(100,p))}%"></div></div><div class="gen-tip"><b>✦ ${tip[0]}</b><p>${tip[1]}</p></div><p class="muted" style="font-size:.75rem;margin-top:.65rem">Preparing your next learning step…</p><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`)};
   const pause=ms=>new Promise(r=>setTimeout(r,ms));
   const splitNotes=(arr,maxChars=18000)=>{
     const chunks=[];let cur="";
@@ -2669,7 +2714,7 @@ async function genCourse(id){
     let last;
     for(let attempt=0;attempt<3;attempt++){
       if(stop)throw new Error("Cancelled");
-      try{const out=await gemini(prompt);if(!out.trim())throw new Error("The AI returned an empty response");return out}
+      try{const out=await gemini(prompt, undefined, {autoFallback:true});if(!out.trim())throw new Error("The AI returned an empty response");return out}
       catch(e){last=e;if(stop)throw e;if(attempt<2){prog(`${label} · retrying (${attempt+1}/2)…`,30);await pause(700*(attempt+1))}}
     }
     throw last||new Error("Couldn't generate this batch");
@@ -2693,10 +2738,15 @@ async function genCourse(id){
     if(!plan.length)throw new Error("Couldn't create a course plan from these notes.");
     const plannedLessons=plan.reduce((n,u)=>n+u.lessons.length,0);
     activeCourse={title:d.title,units:plan.map(u=>({title:u.title,lessons:[],_source:u.source})),done:{}};
+    // Course is organised into unit batches of two. Within each unit, lesson content
+    // is requested in small pairs to keep each individual AI response under its limits.
     const batches=[];
-    for(let ui=0;ui<plan.length;ui++){
-      for(let li=0;li<plan[ui].lessons.length;li+=3){
-        batches.push({ui,start:li,lessons:plan[ui].lessons.slice(li,li+3),source:plan[ui].source});
+    for(let unitStart=0;unitStart<plan.length;unitStart+=2){
+      const unitEnd=Math.min(unitStart+2,plan.length);
+      for(let ui=unitStart;ui<unitEnd;ui++){
+        for(let li=0;li<plan[ui].lessons.length;li+=2){
+          batches.push({ui,unitStart,unitEnd,start:li,lessons:plan[ui].lessons.slice(li,li+2),source:plan[ui].source});
+        }
       }
     }
     let completed=0,failed=[];
@@ -2704,7 +2754,7 @@ async function genCourse(id){
       if(stop)return;
       const b=batches[bi],u=plan[b.ui];
       const pct=28+Math.round((bi/Math.max(1,batches.length))*65);
-      prog(`Writing lessons ${Math.min(completed+1,plannedLessons)}–${Math.min(completed+b.lessons.length,plannedLessons)} of ${plannedLessons} · batch ${bi+1}/${batches.length}`,pct);
+      prog(`Building unit batch ${b.unitStart+1}–${b.unitEnd} · unit ${b.ui+1} lessons ${b.start+1}–${Math.min(b.start+b.lessons.length,plan[b.ui].lessons.length)} · batch ${bi+1}/${batches.length}`,pct);
       const lessonList=b.lessons.map((l,i)=>`${i+1}. ${l.title}${l.focus?` — focus: ${l.focus}`:""}`).join("\n");
       const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create 5 questions per lesson, or more if needed to properly cover its focus. Every question must have visible, non-empty q text. Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation e. Questions must be distinct, answerable from the notes, and cover the requested focus. Never put a question only in an answer or explanation. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
       try{
