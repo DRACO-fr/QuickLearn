@@ -2654,7 +2654,35 @@ function renderAnalytics(){const S=data.subjects;
 
 /* ---------- AI courses (Duolingo-style) ---------- */
 const courseOf=id=>(data.courses=data.courses||{})[id];
-function jparse(t){t=String(t).replace(/```json|```/g,"");const a=t.search(/[\[{]/),b=Math.max(t.lastIndexOf("}"),t.lastIndexOf("]"));return JSON.parse(t.slice(a,b+1))}
+function jparse(t){
+  // AI replies can include a short intro, Markdown fences, or text after the JSON.
+  // Extract the first complete JSON object/array instead of parsing through trailing text.
+  const src=String(t??"").replace(/^\uFEFF/,"").replace(/```(?:json)?/gi,"").trim();
+  let lastError=null;
+  for(let start=0;start<src.length;start++){
+    const first=src[start];if(first!=="{"&&first!=="[")continue;
+    const stack=[];let inString=false,escaped=false,end=-1;
+    for(let i=start;i<src.length;i++){
+      const ch=src[i];
+      if(inString){if(escaped)escaped=false;else if(ch==="\\")escaped=true;else if(ch==='"')inString=false;continue;}
+      if(ch==='"'){inString=true;continue;}
+      if(ch==="{"||ch==="[")stack.push(ch);
+      else if(ch==="}"||ch==="]"){
+        const expected=ch==="}"?"{":"[";
+        if(stack.pop()!==expected)break;
+        if(!stack.length){end=i+1;break;}
+      }
+    }
+    if(end<0)continue;
+    const candidate=src.slice(start,end);
+    try{return JSON.parse(candidate)}catch(e){
+      lastError=e;
+      // Some models emit a trailing comma; safely retry after removing commas before closers.
+      try{return JSON.parse(candidate.replace(/,\s*([}\]])/g,"$1"))}catch(e2){lastError=e2;}
+    }
+  }
+  throw new Error("The AI response wasn't valid complete JSON. Please retry this batch."+(lastError?" ("+lastError.message+")":""));
+}
 function validCourseQuestion(q){
   if(!q || typeof q!=="object" || typeof q.q!=="string" || !q.q.trim()) return false;
   if(!["mc","tf","fb"].includes(q.t)) return false;
@@ -2736,16 +2764,41 @@ async function genCourse(id){
     }
     if(stop)return;
     if(!plan.length)throw new Error("Couldn't create a course plan from these notes.");
+
+    // Coverage audit: compare every source section against the lesson plan and add
+    // targeted lessons for details that are not explicitly represented yet.
+    // This is intentionally conservative: when unsure, preserve the detail.
+    for(let ci=0;ci<sourceChunks.length;ci++){
+      if(stop)return;
+      const related=plan.filter(u=>u.source===sourceChunks[ci]);
+      const listed=related.flatMap(u=>u.lessons.map(l=>`- ${l.title}: ${l.focus||"(focus not specified)"}`)).join("\n");
+      prog(`Checking notes coverage · section ${ci+1} of ${sourceChunks.length}…`,27);
+      const auditPrompt=`You are a meticulous source-coverage auditor. Compare the source notes with the proposed lesson plan. The goal is that NO source detail is omitted. Check every heading, subheading, definition, named term, list item, classification, step, cause/effect, contrast, example, formula, number, date, exception, condition, and small factual statement. A detail counts as covered only when a lesson title/focus explicitly says it will teach that detail; broad vague labels do not count. Do not use outside knowledge. Return ONLY valid JSON: {"missing":[{"title":"Specific lesson title for uncovered material","focus":"Precise list of source details this lesson must cover"}]}. If all source details are explicitly covered, return {"missing":[]}. Combine closely related omissions into sensible lessons, but do not omit any distinct detail. If uncertain whether something is covered, include it as missing rather than assume.
+PROPOSED LESSON PLAN:
+${listed || "(no lessons listed)"}
+SOURCE NOTES:
+${sourceChunks[ci]}`;
+      const auditRaw=await askWithRetry(auditPrompt,`Checking coverage section ${ci+1}`);
+      const missing=parseArray(auditRaw,"missing");
+      const target=related[0];
+      if(missing.length){
+        const extras=missing.filter(l=>l&&typeof l.title==="string"&&l.title.trim()).map(l=>({title:l.title.trim(),focus:typeof l.focus==="string"?l.focus.trim():"Cover all source details identified in this coverage audit."}));
+        if(extras.length){
+          if(target) target.lessons.push(...extras);
+          else plan.push({title:`Additional details — section ${ci+1}`,lessons:extras,source:sourceChunks[ci]});
+        }
+      }
+    }
     const plannedLessons=plan.reduce((n,u)=>n+u.lessons.length,0);
     activeCourse={title:d.title,units:plan.map(u=>({title:u.title,lessons:[],_source:u.source})),done:{}};
-    // Course is organised into unit batches of two. Within each unit, lesson content
-    // is requested in small pairs to keep each individual AI response under its limits.
+    // Course planning is unlimited; lesson content is generated in larger four-lesson batches.
+    // Four lessons with five questions each aims for high throughput while leaving room for valid JSON.
     const batches=[];
     for(let unitStart=0;unitStart<plan.length;unitStart+=2){
       const unitEnd=Math.min(unitStart+2,plan.length);
       for(let ui=unitStart;ui<unitEnd;ui++){
-        for(let li=0;li<plan[ui].lessons.length;li+=2){
-          batches.push({ui,unitStart,unitEnd,start:li,lessons:plan[ui].lessons.slice(li,li+2),source:plan[ui].source});
+        for(let li=0;li<plan[ui].lessons.length;li+=4){
+          batches.push({ui,unitStart,unitEnd,start:li,lessons:plan[ui].lessons.slice(li,li+4),source:plan[ui].source});
         }
       }
     }
@@ -2754,9 +2807,9 @@ async function genCourse(id){
       if(stop)return;
       const b=batches[bi],u=plan[b.ui];
       const pct=28+Math.round((bi/Math.max(1,batches.length))*65);
-      prog(`Building unit batch ${b.unitStart+1}–${b.unitEnd} · unit ${b.ui+1} lessons ${b.start+1}–${Math.min(b.start+b.lessons.length,plan[b.ui].lessons.length)} · batch ${bi+1}/${batches.length}`,pct);
+      prog(`Building units ${b.unitStart+1}–${b.unitEnd} · unit ${b.ui+1}, lessons ${b.start+1}–${Math.min(b.start+b.lessons.length,plan[b.ui].lessons.length)} · batch ${bi+1}/${batches.length}`,pct);
       const lessonList=b.lessons.map((l,i)=>`${i+1}. ${l.title}${l.focus?` — focus: ${l.focus}`:""}`).join("\n");
-      const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create 5 questions per lesson, or more if needed to properly cover its focus. Every question must have visible, non-empty q text. Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation e. Questions must be distinct, answerable from the notes, and cover the requested focus. Never put a question only in an answer or explanation. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
+      const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create 5 questions per lesson, or more if needed to properly cover its focus. Every question must have visible, non-empty q text. Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation e. Questions must be distinct, answerable from the notes, and cover EVERY individual fact and sub-detail in the requested focus, not just the broad topic. Across the five questions, test definitions, parts of lists, steps, exceptions, examples, numbers, formulas, and contrasts where present. Do not skip a detail because it seems minor. Never put a question only in an answer or explanation. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
       try{
         let raw=await askWithRetry(lp,`Generating batch ${bi+1}`);
         let ls=parseArray(raw,"lessons");
@@ -2796,7 +2849,7 @@ async function genCourse(id){
     if(!lessonCount||!questionCount)throw new Error("The AI couldn't generate valid lessons. Check your notes and try again.");
     (data.courses=data.courses||{})[id]=activeCourse;save();
     closeModal();haptic("complete");renderCourse(id);
-    toast(failed.length?`Course ready · ${lessonCount} lessons; ${failed.length} need retry`:`Complete course ready · ${activeCourse.units.length} units, ${lessonCount} lessons`);
+    toast(failed.length?`Course partly ready · ${lessonCount} lessons; ${failed.length} lesson(s) still need retry`:`Course generated · ${activeCourse.units.length} units, ${lessonCount} lessons. Review the coverage in your source notes.`);
   }catch(e){
     if(stop)return;
     closeModal();
