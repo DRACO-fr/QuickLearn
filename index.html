@@ -2635,64 +2635,126 @@ function validCourseLesson(l){
   return l.qs.length>0;
 }
 async function genCourse(id){
-  const d=data.decks.find(x=>x.id===id),txt=deckNotes(id).map(n=>stripMd(n.content)).join("\n\n").slice(0,14000);
+  const d=data.decks.find(x=>x.id===id);
+  const notes=deckNotes(id).map(n=>({title:stripMd(n.title||""),text:stripMd(n.content||"")})).filter(n=>n.text.trim());
   if(!d){toast("Couldn't find this deck");return}
-  if(txt.length<80){toast("Add more to your note first");return}
-  let stop=false,c=null; window.__cc=()=>{stop=true;closeModal()};
-  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${m}</p><div class="progress"><div style="width:${p}%"></div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
-  const prompt=`You are an expert instructional designer. Generate the ENTIRE course in ONE response. Use ONLY the NOTES below; do not invent facts. Return ONLY valid JSON in exactly this structure:
-{"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}]}
-REQUIREMENTS:
-- Produce the full course now: 5-7 units, each with 3 lessons, each lesson with 6 questions. Do not return an outline or lesson titles only.
-- Cover the main topics, headings, definitions, terms, processes and important details in the notes in a sensible learning order.
-- Every unit, lesson and question must be complete in this single JSON response.
-- Every question MUST contain a visible, non-empty "q" string. Never place the question only in an answer or explanation.
-- Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must contain exactly a visible ____ blank.
-- For mc and fb, provide 3-4 non-empty options and set "a" to the zero-based index of the correct option in that exact options array. For tf, "a" must be true or false.
-- Every question must be answerable from the notes. Start with recall and progress to understanding/application. Avoid duplicates.
-- Keep explanations short and grounded in the notes. Use plain strings, no markdown fences, no commentary.
-- Before returning, verify the JSON parses and that every lesson has 6 valid questions with non-empty q fields and valid answers.
-
-NOTES:
-${txt}`;
-  try{
-    prog("Planning the units, lessons and questions together…",12);
-    let o=jparse(await gemini(prompt));
-    if(stop)return;
-    if(!o||!Array.isArray(o.units)||!o.units.length) throw new Error("The AI didn't return a complete course. Please try again.");
-    prog("Checking the complete course…",78);
-    const buildCourse=raw=>{
-      const units=[];
-      for(const unit of (raw.units||[])){
-        if(!unit||typeof unit.title!=="string"||!unit.title.trim()||!Array.isArray(unit.lessons))continue;
-        const lessons=[];
-        for(const lesson of unit.lessons){
-          if(!lesson||typeof lesson.title!=="string"||!lesson.title.trim()||!Array.isArray(lesson.qs))continue;
-          const qs=lesson.qs.filter(validCourseQuestion);
-          if(qs.length)lessons.push({title:lesson.title.trim(),qs});
+  if(!notes.length||notes.every(n=>n.text.trim().length<40)){toast("Add more to your notes first");return}
+  let stop=false,activeCourse=null;
+  window.__cc=()=>{stop=true;closeModal()};
+  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${esc(m)}</p><div class="progress"><div style="width:${Math.max(2,Math.min(100,p))}%"></div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
+  const pause=ms=>new Promise(r=>setTimeout(r,ms));
+  const splitNotes=(arr,maxChars=18000)=>{
+    const chunks=[];let cur="";
+    for(const note of arr){
+      const block=(note.title?`NOTE: ${note.title}\n`:"")+note.text;
+      const paras=block.split(/\n\s*\n/);
+      for(let para of paras){
+        para=para.trim();if(!para)continue;
+        while(para.length>maxChars){
+          if(cur){chunks.push(cur);cur=""}
+          let cut=para.lastIndexOf(" ",maxChars);if(cut<maxChars*.55)cut=maxChars;
+          chunks.push(para.slice(0,cut));para=para.slice(cut).trim();
         }
-        if(lessons.length)units.push({title:unit.title.trim(),lessons});
+        if(cur.length+para.length+2>maxChars&&cur){chunks.push(cur);cur=""}
+        cur+=(cur?"\n\n":"")+para;
       }
-      return {title:typeof raw.title==="string"&&raw.title.trim()?raw.title.trim():d.title,units,done:{}};
-    };
-    c=buildCourse(o);
-    const questionCount=c.units.reduce((sum,u)=>sum+u.lessons.reduce((n,l)=>n+l.qs.length,0),0);
-    if(!c.units.length||!questionCount) {
-      prog("Repairing the course as one complete response…",55);
-      o=jparse(await gemini(prompt+"\n\nFINAL CHECK: The previous result was incomplete or malformed. Return the entire course again in the exact schema, with all units and lessons and all questions populated. Do not omit any q text or valid answer.") );
-      if(stop)return;
-      c=buildCourse(o);
     }
-    const finalCount=c.units.reduce((sum,u)=>sum+u.lessons.reduce((n,l)=>n+l.qs.length,0),0);
-    if(!c.units.length||!finalCount) throw new Error("No complete lessons were returned. Please try again.");
-    (data.courses=data.courses||{})[id]=c; save();
+    if(cur)chunks.push(cur);return chunks;
+  };
+  const sourceChunks=splitNotes(notes);
+  const parseArray=(raw,key)=>{
+    let o=jparse(raw);if(Array.isArray(o))return o;if(o&&Array.isArray(o[key]))return o[key];throw new Error("The AI returned an incomplete response. Please try again.");
+  };
+  const askWithRetry=async(prompt,label)=>{
+    let last;
+    for(let attempt=0;attempt<3;attempt++){
+      if(stop)throw new Error("Cancelled");
+      try{const out=await gemini(prompt);if(!out.trim())throw new Error("The AI returned an empty response");return out}
+      catch(e){last=e;if(stop)throw e;if(attempt<2){prog(`${label} · retrying (${attempt+1}/2)…`,30);await pause(700*(attempt+1))}}
+    }
+    throw last||new Error("Couldn't generate this batch");
+  };
+  const plan=[];
+  try{
+    for(let ci=0;ci<sourceChunks.length;ci++){
+      const pct=5+Math.round((ci/sourceChunks.length)*22);
+      prog(`Analysing notes section ${ci+1} of ${sourceChunks.length}…`,pct);
+      const pp=`You are an instructional designer. Based ONLY on the source notes below, make a comprehensive course plan. Return ONLY valid JSON: {"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Specific lesson title","focus":"Concepts from these notes that this lesson must teach"}]}]}. There is NO fixed or maximum number of units or lessons. Create enough appropriately sized lessons to cover every distinct topic, heading, definition, term, process, example, formula, date, and testable idea in this source. Do not pad with duplicates, but do not skip details. Usually each lesson should have one clear learning goal. Do not create questions yet. Preserve source terminology and do not add outside facts. Every unit must contain at least one lesson; every lesson must have a specific title and a useful focus.\nSOURCE NOTES:\n${sourceChunks[ci]}`;
+      const raw=await askWithRetry(pp,`Planning section ${ci+1}`);
+      const units=parseArray(raw,"units");
+      if(!units.length)throw new Error(`No course plan was returned for notes section ${ci+1}.`);
+      for(const u of units){
+        if(!u||typeof u.title!=="string"||!u.title.trim()||!Array.isArray(u.lessons))continue;
+        const lessons=u.lessons.filter(l=>l&&typeof l.title==="string"&&l.title.trim()).map(l=>({title:l.title.trim(),focus:typeof l.focus==="string"?l.focus.trim():""}));
+        if(lessons.length)plan.push({title:u.title.trim(),lessons,source:sourceChunks[ci]});
+      }
+    }
+    if(stop)return;
+    if(!plan.length)throw new Error("Couldn't create a course plan from these notes.");
+    const plannedLessons=plan.reduce((n,u)=>n+u.lessons.length,0);
+    activeCourse={title:d.title,units:plan.map(u=>({title:u.title,lessons:[],_source:u.source})),done:{}};
+    const batches=[];
+    for(let ui=0;ui<plan.length;ui++){
+      for(let li=0;li<plan[ui].lessons.length;li+=3){
+        batches.push({ui,start:li,lessons:plan[ui].lessons.slice(li,li+3),source:plan[ui].source});
+      }
+    }
+    let completed=0,failed=[];
+    for(let bi=0;bi<batches.length;bi++){
+      if(stop)return;
+      const b=batches[bi],u=plan[b.ui];
+      const pct=28+Math.round((bi/Math.max(1,batches.length))*65);
+      prog(`Writing lessons ${Math.min(completed+1,plannedLessons)}–${Math.min(completed+b.lessons.length,plannedLessons)} of ${plannedLessons} · batch ${bi+1}/${batches.length}`,pct);
+      const lessonList=b.lessons.map((l,i)=>`${i+1}. ${l.title}${l.focus?` — focus: ${l.focus}`:""}`).join("\n");
+      const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create 5 questions per lesson, or more if needed to properly cover its focus. Every question must have visible, non-empty q text. Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation e. Questions must be distinct, answerable from the notes, and cover the requested focus. Never put a question only in an answer or explanation. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
+      try{
+        let raw=await askWithRetry(lp,`Generating batch ${bi+1}`);
+        let ls=parseArray(raw,"lessons");
+        const byTitle=new Map(ls.filter(x=>x&&typeof x.title==="string").map(x=>[x.title.trim().toLowerCase(),x]));
+        let good=[];
+        for(const wanted of b.lessons){
+          let got=byTitle.get(wanted.title.toLowerCase())||ls.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase().includes(wanted.title.toLowerCase()))||null;
+          if(!got||!Array.isArray(got.qs))continue;
+          const qs=got.qs.filter(validCourseQuestion);
+          if(qs.length)good.push({title:wanted.title,qs});
+        }
+        // One targeted repair request for any missing/invalid lesson in this batch.
+        const missing=b.lessons.filter(w=>!good.some(g=>g.title===w.title));
+        if(missing.length){
+          const rp=`Return ONLY valid JSON {"lessons":[{"title":"Exact lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C"],"a":0,"e":"Explanation"}]}]}. Repair and generate complete question sets for these missing lessons only. Include 5 distinct questions per lesson, all with visible q text; valid mc/tf/fb types and correct answer formats; fb q must contain ____. Use only these notes.\nMISSING LESSONS:\n${missing.map(l=>l.title+(l.focus?" — "+l.focus:"")).join("\n")}\nNOTES:\n${b.source}`;
+          try{
+            const rr=parseArray(await askWithRetry(rp,`Repairing batch ${bi+1}`),"lessons");
+            for(const wanted of missing){const got=rr.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase()===wanted.title.toLowerCase());if(got&&Array.isArray(got.qs)){const qs=got.qs.filter(validCourseQuestion);if(qs.length)good.push({title:wanted.title,qs})}}
+          }catch(re){if(stop)return;}
+        }
+        const ordered=b.lessons.map(w=>good.find(g=>g.title===w.title)).filter(Boolean);
+        activeCourse.units[b.ui].lessons.push(...ordered);
+        completed+=b.lessons.length;
+        if(ordered.length!==b.lessons.length)failed.push(...b.lessons.filter(w=>!ordered.some(g=>g.title===w.title)).map(w=>w.title));
+        // Persist progress after each successful batch so an interruption doesn't lose generated lessons.
+        const snapshot={title:activeCourse.title,units:activeCourse.units.map(x=>({title:x.title,lessons:x.lessons})),done:{}};
+        if(snapshot.units.some(x=>x.lessons.length)){(data.courses=data.courses||{})[id]=snapshot;save()}
+      }catch(e){
+        if(stop)return;
+        failed.push(...b.lessons.map(l=>l.title));
+      }
+    }
+    if(stop)return;
+    activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
+    const lessonCount=activeCourse.units.reduce((n,u)=>n+u.lessons.length,0);
+    const questionCount=activeCourse.units.reduce((n,u)=>n+u.lessons.reduce((q,l)=>q+l.qs.length,0),0);
+    if(!lessonCount||!questionCount)throw new Error("The AI couldn't generate valid lessons. Check your notes and try again.");
+    (data.courses=data.courses||{})[id]=activeCourse;save();
     closeModal();haptic("complete");renderCourse(id);
-    toast(`Complete course ready · ${c.units.length} units, ${c.units.reduce((n,u)=>n+u.lessons.length,0)} lessons`);
+    toast(failed.length?`Course ready · ${lessonCount} lessons; ${failed.length} need retry`:`Complete course ready · ${activeCourse.units.length} units, ${lessonCount} lessons`);
   }catch(e){
     if(stop)return;
     closeModal();
-    if(c&&c.units&&c.units.length){(data.courses=data.courses||{})[id]=c;save();toast("Course created with valid lessons · "+(e.message||"some content was incomplete"));renderCourse(id)}
-    else toast(e.message||"Couldn't build the course");
+    if(activeCourse&&activeCourse.units.some(u=>u.lessons.length)){
+      activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
+      (data.courses=data.courses||{})[id]=activeCourse;save();renderCourse(id);
+      toast("Saved the lessons generated so far. Rebuild to retry missing content.");
+    }else toast(e.message||"Couldn't build the course");
   }
 }
 function renderCourse(id){
