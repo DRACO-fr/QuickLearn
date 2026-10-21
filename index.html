@@ -457,6 +457,40 @@ html[data-theme="light"] .sumlv .lvname{color:#0b1222}
 html[data-theme="light"] .lvscreen{--lv-text:#1b1440;--lv-card:#fff;--lv-sub:#6b5fa0;--lv-bar:#e1dcf5;--lv-go:#1b1440;background:linear-gradient(180deg,#e4dcff 0%,#eee9ff 40%,#f3f6fb 100%)}
 html[data-theme="light"] .lvst,html[data-theme="light"] .lvcard,html[data-theme="light"] .lvrow{box-shadow:0 1px 3px rgba(60,40,120,.08)}
 
+
+/* ===== Study momentum & tactile feedback upgrade ===== */
+:root{--ql-orange:#ff9f43;--ql-orange-dark:#d96d19}
+.btn,.quiz-opt,.row2,.lc,.ext,.navitem,.chip2,.ob,.flashcard,.plusbtn,.fab{
+  transition:transform .32s cubic-bezier(.2,1.45,.35,1),box-shadow .22s ease,background-color .2s ease,border-color .2s ease;
+}
+.btn,.plusbtn,.fab{position:relative;transform:translateY(0);box-shadow:0 4px 0 color-mix(in srgb,var(--primary) 58%,#10202a),0 7px 16px #0002}
+.btn:active,.plusbtn:active,.fab:active{transform:translateY(4px) scale(.98);box-shadow:0 0 0 transparent}
+.quiz-opt:active,.row2:active,.lc:active,.ext:active,.ob:active{transform:scale(.965)}
+.quiz-opt.correct{animation:answerBounce .48s cubic-bezier(.2,1.5,.35,1)}
+@keyframes answerBounce{0%{transform:scale(.97)}55%{transform:scale(1.035)}100%{transform:scale(1)}}
+.streak-pill{display:inline-flex;align-items:center;gap:.32rem;background:linear-gradient(135deg,#40200f,#251629);border:1px solid #a94d2a;border-radius:999px;padding:.32rem .58rem;color:#ffb15f;font-weight:800;font-size:.86rem;white-space:nowrap;cursor:pointer}
+.streak-pill .flame{display:inline-block;filter:drop-shadow(0 0 7px #ff782b88);animation:flameWiggle 1.8s ease-in-out infinite}
+@keyframes flameWiggle{0%,100%{transform:rotate(-5deg) scale(1)}50%{transform:rotate(6deg) scale(1.12)}}
+.quiz-report{padding:1rem 1.1rem 2rem;animation:reportIn .45s cubic-bezier(.2,1.2,.3,1) both}
+@keyframes reportIn{from{opacity:0;transform:translateY(22px) scale(.97)}to{opacity:1;transform:none}}
+.report-hero{position:relative;overflow:hidden;text-align:center;padding:1.4rem 1rem 1.2rem;border-radius:1.35rem;background:linear-gradient(145deg,#123d36,#122744 75%);border:1px solid #24574e}
+.report-hero:after{content:"";position:absolute;width:13rem;height:13rem;border-radius:50%;background:#2de2a61a;right:-5rem;top:-7rem}
+.report-emoji{font-size:2.7rem;animation:badgein .55s cubic-bezier(.2,1.4,.3,1) both}
+.report-score{font-family:Sora,sans-serif;font-weight:800;font-size:2.5rem;line-height:1.2;margin:.25rem 0}
+.report-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:.55rem;margin:.8rem 0}
+.report-metric{background:#0f1729;border:1px solid #223152;border-radius:1rem;padding:.8rem .35rem;text-align:center;min-width:0}
+.report-metric b{display:block;font-family:Sora,sans-serif;font-size:1.15rem}
+.report-metric small{color:#aab6d3;font-size:.72rem}
+.report-bars{background:#0f1729;border:1px solid #223152;border-radius:1rem;padding:1rem;margin:.8rem 0}
+.report-bar{display:flex;align-items:center;gap:.65rem;margin:.7rem 0;font-size:.8rem}
+.report-bar span:first-child{width:4.6rem;color:#aab6d3}
+.report-bar-track{flex:1;height:.55rem;border-radius:999px;background:#223152;overflow:hidden}
+.report-bar-track i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#2de2a6,#5b8cff);transform-origin:left;animation:barGrow .85s cubic-bezier(.2,.8,.2,1) both}
+@keyframes barGrow{from{transform:scaleX(0)}}
+.report-note{font-size:.82rem;color:#aab6d3;text-align:center;margin:.8rem 0}
+.mascot-pop{display:inline-block;animation:mascotHop .8s cubic-bezier(.2,1.6,.3,1) both}
+@keyframes mascotHop{0%{transform:translateY(35px) scale(.5);opacity:0}55%{transform:translateY(-10px) scale(1.15);opacity:1}75%{transform:translateY(4px) scale(.95)}100%{transform:none;opacity:1}}
+@media(prefers-reduced-motion:reduce){*,*:before,*:after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important}}
 </style>
 </head>
 <body>
@@ -511,6 +545,34 @@ function load(){
   }catch{ return structuredClone(EMPTY); }
 }
 function save(){ localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+function localISODate(){
+  const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+}
+function dayDiff(a,b){
+  if(!a||!b)return 999;
+  const [ay,am,ad]=a.split("-").map(Number),[by,bm,bd]=b.split("-").map(Number);
+  return Math.round((Date.UTC(by,bm-1,bd)-Date.UTC(ay,am-1,ad))/86400000);
+}
+function practiceStreak(){
+  const g=data.game||(data.game={});
+  const today=localISODate(), last=g.lastPracticeDate||"";
+  if(last===today)return Math.max(1,g.streak||1);
+  if(dayDiff(last,today)===1)return Math.max(1,g.streak||0)+1;
+  return 1;
+}
+function markPractice(){
+  const g=data.game||(data.game={});
+  const today=localISODate();
+  if(g.lastPracticeDate===today)return;
+  g.streak=dayDiff(g.lastPracticeDate,today)===1?(g.streak||0)+1:1;
+  g.lastPracticeDate=today; save();
+}
+function streakBadge(){
+  const g=data.game||{},today=localISODate(),last=g.lastPracticeDate||"";
+  const n=last===today||dayDiff(last,today)===1?(g.streak||0):0;
+  return `<button class="streak-pill" title="Consecutive practice days" onclick="toast('${n?`${n} day${n===1?"":"s"} in a row — keep it going!`:"Start your streak today!"}')" aria-label="${n} day practice streak"><span class="flame">🔥</span><span>${n}</span></button>`;
+}
+
 const uid = () => Math.random().toString(36).slice(2,10);
 const todayISO = () => new Date().toISOString().slice(0,10);
 function addDays(d,n){ const dt=new Date(d); dt.setDate(dt.getDate()+n); return dt.toISOString().slice(0,10); }
@@ -1620,6 +1682,7 @@ function flipCard(){
 }
 function toggleHardInSession(id){ toggleHard(id); renderSession(); }
 function rate(r){
+  markPractice();
   const card = session.cards[session.idx];
   const res = rateCard(card.id, r);
   const g = data.game;
@@ -1865,7 +1928,7 @@ function startQuiz(deckId){
     }
     return { type:"typed", q:c.question, correct:c.answer };
   });
-  quizState = { questions, idx:0, score:0, deckId, mode:"deck" };
+  quizState = { questions, idx:0, score:0, deckId, mode:"deck", startedAt:Date.now(), answered:0 };
   renderQuiz();
 }
 function nextQuizQuestion(){ quizState.idx++; renderQuiz(); }
@@ -1949,7 +2012,7 @@ function runEvaluation(subjectId, deckIds){
     }
     return { type:"typed", q:c.question, correct:c.answer };
   });
-  quizState = { questions, idx:0, score:0, mode:"evaluation", subjectId, subjectName:subj.name, updatesMastery };
+  quizState = { questions, idx:0, score:0, mode:"evaluation", subjectId, subjectName:subj.name, updatesMastery, startedAt:Date.now(), answered:0 };
   renderQuiz();
 }
 function exitEvaluation(){
@@ -1974,6 +2037,7 @@ function answerMcq(btn, idx){
   btn.classList.add(correct ? "correct" : "wrong");
   if(!correct) opts.forEach(b=>{ if(b.textContent === q.correct) b.classList.add("correct"); });
   if(correct) s.score++;
+  s.answered=(s.answered||0)+1;
   setTimeout(nextQuizQuestion, 900);
 }
 function answerBlank(){
@@ -1991,6 +2055,7 @@ function answerBlank(){
     : `<div class="panel" style="border-color:var(--destructive)"><span style="color:var(--destructive);font-weight:600">Not quite.</span> The missing word was "<strong>${esc(q.blank)}</strong>".</div>`)
     + `<button class="btn btn-secondary" style="margin-top:.75rem;width:100%" onclick="nextQuizQuestion()">Next</button>`;
   if(correct) s.score++;
+  s.answered=(s.answered||0)+1;
 }
 function revealTyped(){
   const q = quizState.questions[quizState.idx];
@@ -2006,6 +2071,7 @@ function revealTyped(){
 function gradeTyped(correct){
   haptic(correct ? "good" : "again");
   if(correct) quizState.score++;
+  quizState.answered=(quizState.answered||0)+1;
   nextQuizQuestion();
 }
 
@@ -2050,7 +2116,7 @@ function renderHome(){
   const qa = (c, ic, label, fn) => `<button onclick="${fn}"><span class="c" style="background:${c}">${ic}</span>${label}</button>`;
   view.innerHTML = `<div class="kh home">
       <button class="avatar" onclick="openKeyModal()" aria-label="AI key">Q</button>
-      <span class="wm">Quick<b>Learn</b></span><div class="stats"><span>${IC.fire}${due.length}</span>${lvlChip()}<span style="color:#f5a623">● ${data.cards.length}</span></div>
+      <span class="wm">Quick<b>Learn</b></span><div class="stats">${streakBadge()}<span>${IC.fire}${due.length}</span>${lvlChip()}<span style="color:#f5a623">● ${data.cards.length}</span></div>
       <button class="gear" onclick="openSettings()" aria-label="Settings">${IC.gear}</button>
       <button class="sp" onclick="go('#/search')">${IC.search} Search for anything</button>
       <div class="qa">
@@ -2303,7 +2369,22 @@ function renderQuiz(){
       if(s.updatesMastery){data.subjectScores=data.subjectScores||{};data.subjectScores[s.subjectId]={score:pct,date:todayISO(),count:s.questions.length};save();line+=` (${pct}% — ${esc(s.subjectName)} mastery updated)`;}
       else line+=` (${pct}% — selected decks only, so ${esc(s.subjectName)} mastery wasn't changed)`;
     }
-    view.innerHTML=hd(isEval?"Evaluation done":"Test done")+empty2("🧠",`${s.score} / ${s.questions.length}`,line)+`<div style="padding:0 1.1rem"><button class="btn btn-primary" style="width:100%" onclick="${back}">${isEval?"Back to home":"Back to deck"}</button></div>`;
+    const total=s.questions.length, pct=Math.round(s.score/total*100);
+    const elapsed=Math.max(1,Math.round((Date.now()-(s.startedAt||Date.now()))/1000));
+    const mins=Math.floor(elapsed/60),secs=elapsed%60;
+    const speed=`${mins?mins+"m ":""}${secs}s`;
+    if(!s.streakRecorded){markPractice();s.streakRecorded=true;}
+    view.innerHTML=hd(isEval?"Evaluation done":"Round complete")+`<section class="quiz-report">
+      <div class="report-hero"><div class="report-emoji mascot-pop">${pct>=80?"🎉":pct>=50?"👏":"🌱"}</div>
+        <div class="report-score">${pct}%</div><div style="font-weight:700">${pct>=80?"Brilliant work!":pct>=50?"Good progress!":"Every round makes you stronger."}</div>
+        <div class="muted" style="margin-top:.35rem">${s.score} correct out of ${total}</div></div>
+      <div class="report-grid"><div class="report-metric"><b>${s.score}</b><small>Correct</small></div><div class="report-metric"><b>${total-s.score}</b><small>To review</small></div><div class="report-metric"><b>${speed}</b><small>Time taken</small></div></div>
+      <div class="report-bars"><div style="font-weight:700;margin-bottom:.7rem">Round breakdown</div>
+        <div class="report-bar"><span>Accuracy</span><div class="report-bar-track"><i style="width:${pct}%"></i></div><b>${pct}%</b></div>
+        <div class="report-bar"><span>Needs review</span><div class="report-bar-track"><i style="width:${100-pct}%;background:linear-gradient(90deg,#ffb15f,#ff6b9a)"></i></div><b>${total-s.score}</b></div>
+      </div><div class="report-note">${isEval?esc(line):`${streakBadge()} Nice consistency — your progress is saved on this device.`}</div>
+      <button class="btn btn-primary" style="width:100%;margin-top:.4rem" onclick="${back}">${isEval?"Back to home":"Back to deck"}</button></section>`;
+    if(!s.reportFx){s.reportFx=true;haptic("complete");}
     return;
   }
   const q=s.questions[s.idx],pct=Math.round(s.idx/s.questions.length*100);
