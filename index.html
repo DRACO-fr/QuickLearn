@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
+<script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light")}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>QuickLearn — Notes, AI Flashcards & Smart Revision</title>
 <meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
@@ -278,6 +279,184 @@ body{background:#070b14;background-image:radial-gradient(60rem 30rem at 85% -10%
 .jobpill .jx{margin-left:.3rem;background:transparent;color:#ff6b9a;border:1px solid #ff6b9a;border-radius:999px;padding:.15rem .6rem;font:inherit;font-size:.78rem;cursor:pointer;flex:none}
 .jobpill .x{margin-left:.2rem;opacity:.7;font-size:1rem;line-height:1}
 @keyframes jpin{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}
+
+/* ===== levels · hard cards · settings · haptics UI ===== */
+.kh.home .wm{flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.kh.home .stats{margin-left:0;gap:.8rem}
+.stats .lvl{display:flex;align-items:center;gap:.3rem;color:#b69cff;font-weight:600;cursor:pointer}
+.kh .stats .lvl svg{width:1rem;height:1.15rem}
+.kh .gear{display:grid;place-items:center;padding:.3rem;border-radius:50%;transition:transform .35s cubic-bezier(.3,1.4,.5,1)}
+.kh .gear svg{width:1.4rem;height:1.4rem}
+.kh .gear:active{transform:rotate(70deg) scale(.9)}
+.shield{position:relative;display:inline-grid;place-items:center;width:var(--sz);height:calc(var(--sz)*1.16);flex:none}
+.shield svg{position:absolute;inset:0;width:100%;height:100%;filter:drop-shadow(0 4px 12px rgba(124,92,255,.5))}
+.shield b{position:relative;color:#fff;font-family:Sora,sans-serif;font-weight:800;font-size:calc(var(--sz)*.42);margin-top:-2%}
+
+/* level screen */
+.lvscreen{--lv-text:#fff;--lv-card:rgba(14,14,26,.72);--lv-sub:#cfc8ee;--lv-bar:#2b2b3d;--lv-go:#000;--lv-go-fg:#fff;margin-bottom:-6.5rem;min-height:100vh;min-height:100dvh;padding-bottom:3rem;background:linear-gradient(180deg,#2d1f73 0%,#1d1550 42%,#110c2e 100%);color:var(--lv-text);font-family:'DM Sans',system-ui,sans-serif}
+.lvhd{display:flex;align-items:center;justify-content:space-between;padding:calc(.9rem + env(safe-area-inset-top)) 1.1rem .4rem}
+.lvhd h1{font-size:1.15rem;font-weight:400;font-family:'DM Sans',system-ui,sans-serif}
+.lvhd button{background:none;border:0;color:var(--lv-text);font-size:1.3rem;width:2.2rem;padding:.3rem 0;cursor:pointer}
+.lvh2{font-family:'DM Sans',system-ui,sans-serif;font-weight:400;font-size:1.55rem;line-height:1.25;padding:.6rem 1.1rem 1.1rem;letter-spacing:-.01em}
+.lvcard,.lvrow,.lvst{background:var(--lv-card)}
+.lvcard{margin:0 1.1rem .8rem;border-radius:1.15rem;padding:1.1rem 1rem;display:flex;align-items:center;gap:1rem}
+.lvl-l{flex:1;min-width:0}
+.lvname{font-size:1.05rem;color:var(--lv-text,currentColor)}
+.lvbar{height:.65rem;border-radius:999px;background:var(--lv-bar,#18233a);margin:.55rem 0 .45rem;overflow:hidden}
+.lvbar i{display:block;height:100%;border-radius:999px;background:linear-gradient(90deg,#8b6cf0,#b69cff);transition:width .9s cubic-bezier(.2,.8,.2,1)}
+.lvsub{font-size:.9rem;color:var(--lv-sub,#aab6d3)}
+.lvrow{display:flex;align-items:center;gap:1rem;width:calc(100% - 2.2rem);margin:0 1.1rem .65rem;border:0;border-radius:1.15rem;padding:.9rem;color:var(--lv-text);text-align:left;font:inherit;cursor:pointer;transition:transform .15s}
+.lvrow:active{transform:scale(.98)}
+.lvic{width:3rem;height:3rem;border-radius:50%;display:grid;place-items:center;font-size:1.35rem;flex:none}
+.lvt{flex:1;min-width:0;font-size:.98rem;line-height:1.3}
+.lvt small{display:block;color:var(--lv-sub);font-size:.82rem;margin-top:.15rem}
+.lvgo{width:2rem;height:2rem;border-radius:50%;background:var(--lv-go);color:var(--lv-go-fg);display:grid;place-items:center;flex:none}
+.lvstats{display:grid;grid-template-columns:repeat(3,1fr);gap:.55rem;margin:.9rem 1.1rem .6rem}
+.lvst{border-radius:1rem;padding:.85rem .4rem;text-align:center}
+.lvst b{display:block;font-family:Sora,sans-serif;font-size:1.3rem}
+.lvst small{color:var(--lv-sub);font-size:.75rem}
+.lvnote{margin:.4rem 1.4rem 0;color:var(--lv-sub);font-size:.85rem;line-height:1.45;text-align:center}
+
+/* session extras */
+.flagbtn{position:absolute;top:.8rem;right:.8rem;display:flex;align-items:center;gap:.3rem;background:rgba(255,255,255,.06);border:1px solid #2c3d63;color:#aab6d3;border-radius:999px;padding:.4rem .7rem;font:inherit;font-size:.78rem;cursor:pointer;transition:all .2s}
+.flagbtn svg{width:1rem;height:1rem}
+.flagbtn.on{background:rgba(255,138,61,.16);border-color:#ff8a3d;color:#ffa45f}
+.flagbtn.on svg path{fill:currentColor}
+.flagbtn:active{transform:scale(.92)}
+.flipanim{animation:flipin .28s cubic-bezier(.2,.8,.2,1)}
+@keyframes flipin{from{transform:perspective(900px) rotateY(80deg);opacity:.2}}
+.more.flg{color:#6f84ad}.more.flg svg{width:1.15rem;height:1.15rem}
+.more.flg.on{color:#ffa45f}.more.flg.on svg path{fill:currentColor}
+.xpfloat{position:fixed;left:50%;top:30%;transform:translateX(-50%);z-index:90;pointer-events:none;font-family:Sora,sans-serif;font-weight:800;font-size:1.4rem;color:#2de2a6;text-shadow:0 4px 18px rgba(45,226,166,.5);white-space:nowrap;animation:xpup .95s ease-out forwards}
+@keyframes xpup{0%{opacity:0;transform:translate(-50%,10px) scale(.7)}20%{opacity:1;transform:translate(-50%,0) scale(1.1)}100%{opacity:0;transform:translate(-50%,-70px) scale(1)}}
+.sdone{padding:1rem 1.1rem .4rem;text-align:center}
+.sdone .sbig{font-size:3.6rem;animation:pop .35s both}
+.sdone h2{font-size:1.5rem;margin:.3rem 0 .9rem}
+.sumchips{display:flex;flex-wrap:wrap;gap:.5rem;justify-content:center}
+.sumchip{background:#0f1729;border:1px solid #223152;border-radius:999px;padding:.45rem .85rem;font-size:.9rem}
+.sumlv{display:flex;align-items:center;gap:1rem;text-align:left;background:#0f1729;border:1px solid #1a2744;border-radius:1.15rem;padding:1rem;margin:1.1rem 0 .6rem}
+
+/* level-up celebration */
+.celeb{position:fixed;inset:0;z-index:100;background:radial-gradient(circle at 50% 35%,#4a2fb0 0%,#241a66 45%,#0d0a26 100%);display:flex;align-items:center;justify-content:center;animation:fade .25s both;overflow:hidden;color:#fff}
+.celeb-in{position:relative;z-index:2;width:min(22rem,88%);text-align:center;display:flex;flex-direction:column;align-items:center;gap:.9rem}
+.celeb-k{font-family:Sora,sans-serif;font-weight:800;letter-spacing:.22em;font-size:1rem;color:#d9ccff;animation:rise .5s .1s both}
+.celeb-badge{position:relative;z-index:0;animation:badgein .7s cubic-bezier(.2,1.4,.3,1) both}
+.celeb-badge::before{content:"";position:absolute;inset:-35%;border-radius:50%;background:radial-gradient(circle,rgba(167,139,250,.6),transparent 65%);animation:glow 1.5s ease-in-out infinite alternate;z-index:-1}
+.celeb-badge.bump{animation:bump .5s cubic-bezier(.2,1.6,.3,1)}
+@keyframes badgein{from{transform:scale(.2) rotate(-25deg);opacity:0}}
+@keyframes bump{0%{transform:scale(1)}40%{transform:scale(1.3)}100%{transform:scale(1)}}
+@keyframes glow{from{opacity:.55;transform:scale(.92)}to{opacity:1;transform:scale(1.08)}}
+.celeb-t{font-family:Sora,sans-serif;font-weight:700;font-size:1.6rem;animation:rise .5s .45s both}
+.celeb-s{color:#cfc8ee;animation:rise .5s .6s both}
+.celeb .btn{animation:rise .5s .8s both;margin-top:.6rem}
+.confetti{position:absolute;inset:0;pointer-events:none;z-index:1}
+.confetti i{position:absolute;top:-24px;border-radius:2px;animation-name:confall;animation-timing-function:cubic-bezier(.3,.6,.5,1);animation-fill-mode:forwards}
+@keyframes confall{to{transform:translateY(112vh) rotate(900deg)}}
+
+/* settings sheet */
+.setrow{display:flex;align-items:center;gap:.9rem;width:100%;background:none;border:0;color:#fff;font:inherit;text-align:left;padding:.65rem 0;cursor:pointer}
+.seti{width:2.9rem;height:2.9rem;border-radius:.8rem;background:#18233a;display:grid;place-items:center;font-size:1.3rem;flex:none}
+.sett{flex:1;min-width:0}
+.sett b{display:block;font-weight:500}
+.sett small{display:block;color:#aab6d3;font-size:.8rem;margin-top:.15rem;line-height:1.3}
+.sw{position:relative;width:3.1rem;height:1.8rem;border-radius:999px;background:#2c3d63;border:0;flex:none;cursor:pointer;transition:background .2s;padding:0}
+.sw i{position:absolute;top:.2rem;left:.2rem;width:1.4rem;height:1.4rem;border-radius:50%;background:#fff;transition:transform .22s cubic-bezier(.3,1.4,.5,1);box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.sw.on{background:#2de2a6}
+.sw.on i{transform:translateX(1.3rem)}
+.seg{display:flex;background:#18233a;border-radius:999px;padding:.2rem;margin:.1rem 0 .5rem}
+.seg button{flex:1;border:0;background:none;color:#aab6d3;font:inherit;font-size:.9rem;padding:.55rem .75rem;border-radius:999px;cursor:pointer;transition:all .2s;white-space:nowrap}
+.seg button.on{background:#2de2a6;color:#04130e;font-weight:600}
+
+/* ===== DAY MODE ===== */
+html[data-theme="light"]{color-scheme:light;--background:#f3f6fb;--foreground:#0b1222;--surface:#fff;--surface-2:#e9eff8;--border:#d5deee;--muted-fg:#5b6b86;--accent:#e3ebf8}
+html[data-theme="light"] body{background:#f3f6fb;background-image:radial-gradient(60rem 30rem at 85% -10%,rgba(45,226,166,.16),transparent 60%),radial-gradient(50rem 30rem at -10% 10%,rgba(91,140,255,.14),transparent 60%);color:#0b1222}
+html[data-theme="light"] .wm{color:#0b1222}
+html[data-theme="light"] .wm b{color:#0aa67a}
+html[data-theme="light"] .kh.home{background:linear-gradient(180deg,#fff 0%,#eef3fb 100%)}
+html[data-theme="light"] .kh button,html[data-theme="light"] .kh .ib{color:#0b1222}
+html[data-theme="light"] .stats .lvl{color:#6a47e0}
+html[data-theme="light"] .stats .lvl svg path{stroke:#6a47e0}
+html[data-theme="light"] .sp{background:#e9eff8!important;border:1px solid #d5deee!important;color:#5b6b86}
+html[data-theme="light"] .sp input{color:#0b1222!important}
+html[data-theme="light"] .qa button{color:#0b1222}
+html[data-theme="light"] .qa i.dv{background:#c5d0e4}
+html[data-theme="light"] .qa .c:not([style*="gradient"]){background:#e0e9f9!important}
+html[data-theme="light"] .chip2{background:#fff;border:1px solid #d5deee;color:#0b1222}
+html[data-theme="light"] .chip2.on{background:var(--ql-mint);border-color:var(--ql-mint);color:var(--ql-ink)}
+html[data-theme="light"] .row2{background:#fff;color:#0b1222;border:1px solid #e0e7f3;box-shadow:0 1px 2px rgba(20,40,80,.04)}
+html[data-theme="light"] .row2:active{background:#eef3fb}
+html[data-theme="light"] .row2 .t small{color:#5b6b86}
+html[data-theme="light"] .more{color:#0b1222}
+html[data-theme="light"] .more.flg{color:#9aa8c2}
+html[data-theme="light"] .more.flg.on{color:#e8741f}
+html[data-theme="light"] a.row2,html[data-theme="light"] a.ext{color:#0b1222}
+html[data-theme="light"] .tile:not([style*="background:none"]){background:#e3ecfa!important}
+html[data-theme="light"] .viewall{background:#fff;color:#0b1222;border-color:#d5deee}
+html[data-theme="light"] .empty2 .ec{background:#e0e9f9}
+html[data-theme="light"] .empty2 h3{color:#6b7c99}
+html[data-theme="light"] .empty2 p{color:#3d4b66}
+html[data-theme="light"] .sk{background:linear-gradient(90deg,#e3e9f4 0%,#f2f5fb 50%,#e3e9f4 100%) 0 0/200% 100%}
+html[data-theme="light"] nav.bottom{background:#fff;border-top:1px solid #dbe3f0!important}
+html[data-theme="light"] .navitem{color:#0b1222}
+html[data-theme="light"] .navitem.active{background:color-mix(in oklab,var(--pi) 24%,#fff);color:color-mix(in oklab,var(--pi) 50%,#000)}
+html[data-theme="light"] .modal{background:#fff;border-top:1px solid #d5deee;color:#0b1222}
+html[data-theme="light"] .modal::before{background:#c5d0e4}
+html[data-theme="light"] .modal-bg{background:rgba(10,20,40,.42)}
+html[data-theme="light"] .modal .quiz-opt{background:#eef3fb}
+html[data-theme="light"] .sr{color:#0b1222}
+html[data-theme="light"] .btn-secondary{background:#e9eff8;color:#0b1222}
+html[data-theme="light"] .btn-secondary:hover{background:#dde6f5}
+html[data-theme="light"] .btn-ghost{color:#5b6b86}
+html[data-theme="light"] .btn-danger{background:#fde4e4;color:#c0392b}
+html[data-theme="light"] .btn-warning{background:#fdf0d6;color:#a86a00}
+html[data-theme="light"] .btn-success{background:#dff5e6;color:#1d8a47}
+html[data-theme="light"] .input{background:#eef3fb;color:#0b1222}
+html[data-theme="light"] .input:focus{box-shadow:0 0 0 2px rgba(18,184,134,.4)}
+html[data-theme="light"] .panel{background:#fff;border-color:#e0e7f3}
+html[data-theme="light"] .empty{background:#fff;color:#5b6b86}
+html[data-theme="light"] .muted{color:#5b6b86}
+html[data-theme="light"] .label,html[data-theme="light"] .lbl{color:#0b1222}
+html[data-theme="light"] .quiz-opt{background:#fff;border:1px solid #e0e7f3;color:#0b1222}
+html[data-theme="light"] .quiz-opt.correct{background:#e3f6ea;box-shadow:inset 0 0 0 1.5px #2fb463}
+html[data-theme="light"] .quiz-opt.wrong{background:#fde6e6;box-shadow:inset 0 0 0 1.5px #e5484d}
+html[data-theme="light"] .progress{background:#dfe7f5}
+html[data-theme="light"] .flashcard{background:linear-gradient(160deg,#fff,#f1f5fc);border:1px solid #d5deee;color:#0b1222;box-shadow:0 14px 34px -22px rgba(20,40,80,.35)}
+html[data-theme="light"] .flagbtn{background:#eef3fb;border-color:#d5deee;color:#5b6b86}
+html[data-theme="light"] .flagbtn.on{background:#fff0e3;border-color:#ff9a4d;color:#d9650f}
+html[data-theme="light"] .doc{color:#1a2438}
+html[data-theme="light"] .doc h1,html[data-theme="light"] .doc .md h3{color:#0b1222}
+html[data-theme="light"] .doc .md strong{color:#0a8f6a}
+html[data-theme="light"] .doc .md code{background:#e9eff8}
+html[data-theme="light"] .nsep{border-top-color:#d5deee}
+html[data-theme="light"] .bar{background:#fff;border-top:1px solid #dbe3f0}
+html[data-theme="light"] .bar .rf{background:#eef3fb;color:#5b6b86}
+html[data-theme="light"] .bar .brain{background:#eef3fb;color:#0b1222;border-color:#d5deee}
+html[data-theme="light"] .bar .ai{background:linear-gradient(135deg,#e6ecff,#d8e3ff);color:#0b1222;border:1px solid #c8d6f5}
+html[data-theme="light"] .kh .pill{border-color:#c5d0e4}
+html[data-theme="light"] .lc,html[data-theme="light"] .ob{border-color:#d5deee;color:#0b1222}
+html[data-theme="light"] .lc small{color:#5b6b86}
+html[data-theme="light"] .ob:active{background:#eef3fb}
+html[data-theme="light"] .sub{color:#5b6b86}
+html[data-theme="light"] .rec{color:#2a3550}
+html[data-theme="light"] .ext{background:#fff;color:#0b1222;border:1px solid #e0e7f3}
+html[data-theme="light"] .jobpill{background:#fff;color:#0b1222}
+html[data-theme="light"] .jobpill.ok{background:#e3f6ee}
+html[data-theme="light"] .setrow{color:#0b1222}
+html[data-theme="light"] .seti{background:#e9eff8}
+html[data-theme="light"] .sett small{color:#5b6b86}
+html[data-theme="light"] .sw{background:#c5d0e4}
+html[data-theme="light"] .sw.on{background:#12b886}
+html[data-theme="light"] .seg{background:#e9eff8}
+html[data-theme="light"] .seg button{color:#5b6b86}
+html[data-theme="light"] .seg button.on{background:#12b886;color:#fff}
+html[data-theme="light"] .sumchip{background:#fff;border-color:#d5deee}
+html[data-theme="light"] .sumlv{background:#fff;border-color:#e0e7f3}
+html[data-theme="light"] .sumlv .lvbar{background:#e1e8f5}
+html[data-theme="light"] .sumlv .lvsub{color:#5b6b86}
+html[data-theme="light"] .sumlv .lvname{color:#0b1222}
+html[data-theme="light"] .lvscreen{--lv-text:#1b1440;--lv-card:#fff;--lv-sub:#6b5fa0;--lv-bar:#e1dcf5;--lv-go:#1b1440;background:linear-gradient(180deg,#e4dcff 0%,#eee9ff 40%,#f3f6fb 100%)}
+html[data-theme="light"] .lvst,html[data-theme="light"] .lvcard,html[data-theme="light"] .lvrow{box-shadow:0 1px 3px rgba(60,40,120,.08)}
+
 </style>
 </head>
 <body>
@@ -310,7 +489,7 @@ const GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"; // lighter backup mode
 const RETRY_DELAYS = [2000, 5000, 10000];     // wait before retry 1, 2, 3 (ms)
 const RETRYABLE = [429, 500, 502, 503, 504];  // busy / temporary errors worth retrying
 
-const EMPTY = { decks: [], subjects: [], notes: [], cards: [], examSchedule: {}, subjectScores: {}, studyFreq: {} };
+const EMPTY = { decks: [], subjects: [], notes: [], cards: [], examSchedule: {}, subjectScores: {}, studyFreq: {}, game: { level:1, xp:0, day:"", base:0, conquered:0 } };
 let data = load();
 
 function load(){
@@ -326,7 +505,8 @@ function load(){
     });
     return {
       decks:d.decks||[], subjects:d.subjects||[], notes:d.notes||[], cards:d.cards||[],
-      examSchedule:sched, subjectScores:d.subjectScores||{}, studyFreq:d.studyFreq||{}
+      examSchedule:sched, subjectScores:d.subjectScores||{}, studyFreq:d.studyFreq||{},
+      game:Object.assign({ level:1, xp:0, day:"", base:0, conquered:0 }, d.game||{})
     };
   }catch{ return structuredClone(EMPTY); }
 }
@@ -363,7 +543,12 @@ const esc = s => String(s??"").replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;'
 
 const deckCards = id => data.cards.filter(c => c.deckId === id);
 const deckNotes = id => data.notes.filter(n => n.deckId === id);
-const dueCards = id => data.cards.filter(c => c.nextReview <= todayISO() && (id ? c.deckId === id : true));
+// A card is "hard" when you flagged it yourself, or when you keep missing it (see rateCard).
+const isHard = c => !!(c.manualHard || c.autoHard);
+const hardScore = c => (c.manualHard ? 50 : 0) + (c.autoHard ? 20 : 0) + (c.struggle || 0) * 8;
+const hardCards = id => data.cards.filter(c => isHard(c) && (id ? c.deckId === id : true)).sort((a,b) => hardScore(b) - hardScore(a));
+// Due cards, hardest first — so the cards you struggle with are always at the front of the queue.
+const dueCards = id => data.cards.filter(c => c.nextReview <= todayISO() && (id ? c.deckId === id : true)).sort((a,b) => hardScore(b) - hardScore(a));
 const subjectName = d => d.subjectId ? (data.subjects.find(s=>s.id===d.subjectId)?.name || d.subject) : d.subject;
 const tone = i => "tone" + (i % 5);
 
@@ -396,20 +581,207 @@ function addCards(deckId, cards){
   if(made.length){ data.cards = [...made, ...data.cards]; save(); }
   return made.length;
 }
+/* Spaced repetition + "struggle" tracking.
+   Every card carries a struggle score: Again +2, Hard +1, Good -1, Easy -2.
+   At 3+ it becomes an auto-hard card (cleared again once the score falls to 1 or less).
+   Hard cards (auto or flagged by you) get short intervals, so they come due the most. */
 function rateCard(cardId, rating){
+  const out = { wasHard:false, nowHard:false };
   data.cards = data.cards.map(c=>{
     if(c.id!==cardId) return c;
+    out.wasHard = isHard(c);
     let {interval, ease, repetitions} = c;
-    if(rating==="again"){ repetitions=0; interval=1; ease=Math.max(1.3, ease-0.2); }
+    let struggle = c.struggle||0, lapses = c.lapses||0, hardCount = c.hardCount||0, autoHard = !!c.autoHard;
+    let nextIn;
+    if(rating==="again"){ repetitions=0; interval=1; ease=Math.max(1.3, ease-0.2); lapses++; struggle+=2; nextIn=0; }   // missed = still due today
     else{
       repetitions++;
-      if(rating==="hard"){ interval=Math.max(1, Math.round(interval*1.2)); ease=Math.max(1.3, ease-0.05); }
-      else if(rating==="good"){ interval=Math.round(interval*ease); }
-      else { interval=Math.round(interval*ease*1.3); ease=ease+0.1; }
+      if(rating==="hard"){ interval=Math.max(1, Math.round(interval*1.2)); ease=Math.max(1.3, ease-0.05); hardCount++; struggle+=1; }
+      else if(rating==="good"){ interval=Math.round(interval*ease); struggle=Math.max(0, struggle-1); }
+      else { interval=Math.round(interval*ease*1.3); ease=ease+0.1; struggle=Math.max(0, struggle-2); }
+      nextIn = interval;
     }
-    return {...c, interval, ease, repetitions, nextReview: addDays(todayISO(), interval)};
+    if(struggle>=3) autoHard = true; else if(struggle<=1) autoHard = false;
+    const next = { ...c, interval, ease, repetitions, struggle, lapses, hardCount, autoHard };
+    if(isHard(next)){                                   // hard cards never drift far away
+      const cap = next.manualHard ? 3 : 2;
+      if(nextIn>cap) nextIn = cap;
+      if(next.interval>cap*2) next.interval = cap*2;
+    }
+    next.nextReview = addDays(todayISO(), nextIn);
+    out.nowHard = isHard(next);
+    return next;
   });
   save();
+  return out;
+}
+function toggleHard(id){
+  const c = data.cards.find(x=>x.id===id); if(!c) return;
+  c.manualHard = !c.manualHard;
+  save();
+  haptic(c.manualHard ? "hard" : "select");
+  toast(c.manualHard ? "Marked hard · it'll show up more often" : isHard(c) ? "Flag removed · still hard from recent misses" : "Hard flag removed");
+}
+
+/* ============================== SETTINGS · HAPTICS · THEME ============================== */
+const SETTINGS_KEY = "quicklearn-settings-v1";
+let settings = (()=>{ try{ return { haptics:true, theme:"dark", ...JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") }; }catch{ return { haptics:true, theme:"dark" }; } })();
+function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(_){} }
+function applyTheme(){
+  const light = settings.theme === "light";
+  document.documentElement.setAttribute("data-theme", light ? "light" : "dark");
+  const m = document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content", light ? "#f3f6fb" : "#070b14");
+}
+applyTheme();
+
+// Haptic vocabulary. Patterns are [buzz, pause, buzz, …] in ms. Short, crisp pulses with tiny gaps feel like a *tap*
+// rather than a buzz: rising pulses = success, a firm double-thud = a miss, a long crescendo = level up.
+const HAP = {
+  tap:[7], select:[10], flip:[9,22,7],
+  good:[12,34,22], easy:[10,28,13,28,17,28,30],
+  hard:[26,60,14], again:[66,48,66,48,34],
+  buildup:[8,34,10,32,12,30,15,28,19,26,24,24,30,22],
+  levelhit:[46,36,110,50,150], sparkle:[9,46,9,46,9,46,14],
+  complete:[14,48,14,48,40]
+};
+let _iosSwitch = null;
+function iosTick(){   // iPhone Safari has no Vibration API; on iOS 17.4+ toggling a hidden switch gives a light tick
+  try{
+    if(!_iosSwitch){
+      const l = document.createElement("label");
+      l.setAttribute("aria-hidden","true");
+      l.style.cssText = "position:fixed;left:-200px;top:-200px;width:1px;height:1px;opacity:0;pointer-events:none";
+      const i = document.createElement("input"); i.type = "checkbox"; i.setAttribute("switch","");
+      l.appendChild(i); document.body.appendChild(l); _iosSwitch = l;
+    }
+    _iosSwitch.click();
+  }catch(_){}
+}
+function haptic(name){
+  if(!settings.haptics) return;
+  const p = HAP[name]; if(!p) return;
+  try{
+    if(navigator.vibrate){ navigator.vibrate(p); return; }
+    let t = 0;
+    p.forEach((ms,i)=>{ if(i%2===0){ t===0 ? iosTick() : setTimeout(iosTick, t); } t += ms; });
+  }catch(_){}
+}
+function hapticLevelUp(){
+  haptic("buildup");
+  setTimeout(()=>haptic("levelhit"), 650);
+  setTimeout(()=>haptic("sparkle"), 1250);
+}
+
+function openSettings(){
+  const light = settings.theme === "light";
+  modal(`<div class="sh"><h2>Settings</h2>
+    <div class="setrow"><span class="seti">📳</span><span class="sett"><b>Vibrations</b><small id="hapSub">${hapSub()}</small></span>
+      <button id="swHap" data-nohap class="sw${settings.haptics?" on":""}" role="switch" aria-checked="${settings.haptics}" aria-label="Vibrations" onclick="toggleHaptics()"><i></i></button></div>
+    <div class="setrow" style="cursor:default"><span class="seti" id="themeIc">${light?"☀️":"🌙"}</span><span class="sett"><b>Appearance</b><small id="themeSub">${light?"Day mode":"Night mode"}</small></span></div>
+    <div class="seg full" data-nohap><button id="thNight" class="${light?"":"on"}" onclick="setTheme('dark')">🌙 Night</button><button id="thDay" class="${light?"on":""}" onclick="setTheme('light')">☀️ Day</button></div>
+    <button class="setrow" onclick="closeModal();openKeyModal()"><span class="seti">🔑</span><span class="sett"><b>AI key</b><small>Needed for the AI features</small></span><span style="opacity:.5">›</span></button>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Done</button></div>`);
+}
+function hapSub(){
+  if(!settings.haptics) return "Off";
+  return navigator.vibrate ? "Taps, answers and level-ups feel satisfying" : "Light taps on iPhone (iOS 17.4+); full patterns on Android";
+}
+function toggleHaptics(){
+  settings.haptics = !settings.haptics; saveSettings();
+  const sw = document.getElementById("swHap");
+  if(sw){ sw.classList.toggle("on", settings.haptics); sw.setAttribute("aria-checked", settings.haptics); }
+  const sub = document.getElementById("hapSub"); if(sub) sub.textContent = hapSub();
+  if(settings.haptics) haptic("good"); else { try{ navigator.vibrate && navigator.vibrate(0); }catch(_){} }
+}
+function setTheme(t){
+  if(settings.theme === t) return;
+  settings.theme = t; saveSettings(); applyTheme();
+  const light = t === "light";
+  document.getElementById("thNight")?.classList.toggle("on", !light);
+  document.getElementById("thDay")?.classList.toggle("on", light);
+  const sub = document.getElementById("themeSub"); if(sub) sub.textContent = light ? "Day mode" : "Night mode";
+  const ic = document.getElementById("themeIc"); if(ic) ic.textContent = light ? "☀️" : "🌙";
+  haptic("select");
+}
+
+/* ============================== LEVELS ============================== */
+/* Clear every due card in a session and you level up. The bar on the Level screen shows how much of
+   today's due pile you've cleared; XP is a running total on top (bonuses for conquering hard cards). */
+const XP_FOR = { again:2, hard:6, good:10, easy:12 };
+function syncBase(){
+  const g = data.game, due = dueCards().length, t = todayISO();
+  let changed = false;
+  if(g.day !== t){ g.day = t; g.base = due; changed = true; }
+  else if(due > g.base){ g.base = due; changed = true; }
+  if(changed) save();
+  return due;
+}
+function levelProgress(){
+  const due = syncBase(), base = data.game.base, done = Math.max(0, base - due);
+  return { due, base, done, pct: base ? Math.min(100, Math.round(done/base*100)) : 0 };
+}
+function finishSession(s){
+  const g = data.game, due = syncBase();
+  const res = { xp:s.xp||0, reviewed:s.reviewed||0, right:s.right||0, conq:s.conq||0, leveled:false, from:g.level, level:g.level };
+  if(s.dueAtStart>0 && due===0 && res.reviewed>0){      // the whole due pile is cleared → level up
+    g.level++; res.level = g.level; res.leveled = true;
+    g.xp += 50; res.xp += 50;                            // level-up bonus
+    g.base = 0; g.day = todayISO();
+  }
+  save();
+  return res;
+}
+const SHIELD_PATH = "M24 3l19 7v16c0 12-8 21-19 27C13 47 5 38 5 26V10z";
+function shieldBadge(n, size){
+  return `<span class="shield" style="--sz:${size}px"><svg viewBox="0 0 48 56" aria-hidden="true"><defs><linearGradient id="shg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#b79cff"/><stop offset="1" stop-color="#6a47e0"/></linearGradient></defs><path d="${SHIELD_PATH}" fill="url(#shg)" stroke="#d6c9ff" stroke-width="2.5" stroke-linejoin="round"/></svg><b>${n}</b></span>`;
+}
+const lvlChip = () => `<span class="lvl" role="button" aria-label="Level ${data.game.level}" onclick="go('#/level')"><svg viewBox="0 0 48 56" aria-hidden="true"><path d="${SHIELD_PATH}" fill="none" stroke="#b69cff" stroke-width="5" stroke-linejoin="round"/></svg>${data.game.level}</span>`;
+
+function startHardSession(back){
+  const c = hardCards();
+  if(!c.length){ toast("No hard cards yet · they appear when you miss cards or flag them"); return; }
+  startSession(c, "Hard cards", back || "#/level");
+}
+function renderLevel(){
+  const g = data.game, lp = levelProgress(), hard = hardCards();
+  const row = (bg, ic, t, sub, fn) => `<button class="lvrow" onclick="${fn}"><span class="lvic" style="background:${bg}">${ic}</span><span class="lvt">${t}<small>${sub}</small></span><span class="lvgo">→</span></button>`;
+  view.innerHTML = `<div class="lvscreen">
+    <div class="lvhd"><button onclick="go('#/')" aria-label="Close">✕</button><h1>Level</h1><span style="width:2.2rem"></span></div>
+    <h2 class="lvh2">Elevate your game and keep leveling up</h2>
+    <div class="lvcard"><div class="lvl-l"><div class="lvname">Level ${g.level}</div><div class="lvbar"><i style="width:0"></i></div><div class="lvsub">${lp.base ? `${lp.done}/${lp.base} due cards cleared` : "No cards due right now"}</div></div>${shieldBadge(g.level+1, 56)}</div>
+    ${row("linear-gradient(135deg,#8a3fd0,#4f6fe0)", "🎯", lp.due ? `Clear your ${lp.due} due card${lp.due===1?"":"s"}` : "Clear your due cards", `Finish them all to reach Level ${g.level+1}`, "go('#/study')")}
+    ${row("#5a2a3c", "🔥", "Crush your hard cards", hard.length ? `${hard.length} card${hard.length===1?"":"s"} you miss or flagged` : "Cards you miss or flag show up here", "startHardSession('#/level')")}
+    ${row("#17504a", "🃏", "Create & practice flashcards", "New cards are due right away", "openPlusMenu()")}
+    <div class="lvstats"><div class="lvst"><b>${g.xp}</b><small>Total XP</small></div><div class="lvst"><b>${g.conquered||0}</b><small>Hard conquered</small></div><div class="lvst"><b>${hard.length}</b><small>Hard now</small></div></div>
+    <p class="lvnote">Clear every due card to level up. Cards you keep missing (or flag) come back sooner and always show first.</p>
+  </div>`;
+  requestAnimationFrame(()=>requestAnimationFrame(()=>{ const i = document.querySelector(".lvbar i"); if(i) i.style.width = lp.pct + "%"; }));
+}
+
+function floatXP(txt){
+  const e = document.createElement("div");
+  e.className = "xpfloat"; e.textContent = txt;
+  document.body.appendChild(e);
+  setTimeout(()=>e.remove(), 1000);
+}
+function closeCelebrate(){ document.getElementById("celebrate")?.remove(); }
+function showLevelUp(from, to, res){
+  closeCelebrate();
+  const cols = ["#2de2a6","#a78bfa","#ffd54a","#ff6b9a","#5b8cff"];
+  const conf = Array.from({length:52}, (_,i)=>{
+    const l = Math.random()*100, d = Math.random()*.8, w = 6 + Math.random()*7, dur = 2 + Math.random()*1.8, rot = Math.floor(Math.random()*360);
+    return `<i style="left:${l}%;width:${w}px;height:${w*1.6}px;background:${cols[i%5]};animation-delay:${d}s;animation-duration:${dur}s;transform:rotate(${rot}deg)"></i>`;
+  }).join("");
+  const el = document.createElement("div");
+  el.id = "celebrate"; el.className = "celeb";
+  el.innerHTML = `<div class="confetti">${conf}</div><div class="celeb-in"><div class="celeb-k">LEVEL UP!</div><div class="celeb-badge" id="celebBadge">${shieldBadge(from, 150)}</div><div class="celeb-t">You're now Level ${to}</div><div class="celeb-s">All due cards cleared · +${res.xp} XP</div><button class="btn btn-primary" data-nohap style="width:100%" onclick="haptic('select');closeCelebrate()">Continue</button></div>`;
+  document.body.appendChild(el);
+  hapticLevelUp();
+  setTimeout(()=>{                       // the number ticks up with the big haptic hit
+    const b = document.querySelector("#celebBadge .shield b"), box = document.getElementById("celebBadge");
+    if(b) b.textContent = to;
+    if(box){ box.classList.remove("bump"); void box.offsetWidth; box.classList.add("bump"); }
+  }, 650);
 }
 
 /* ============================== GEMINI ============================== */
@@ -1222,17 +1594,39 @@ let session = null; // {cards, idx, flipped, back, title}
 
 function startSession(cards, title, back){
   if(!cards.length) return;
-  session = { cards:[...cards].sort(()=>Math.random()-.5), idx:0, flipped:false, back, title };
+  // hardest cards first, everything else shuffled
+  const hard = cards.filter(isHard).sort((a,b)=>hardScore(b)-hardScore(a));
+  const rest = cards.filter(c=>!isHard(c)).sort(()=>Math.random()-.5);
+  session = { cards:[...hard, ...rest], idx:0, flipped:false, back, title, dueAtStart:dueCards().length, xp:0, reviewed:0, right:0, conq:0 };
   renderSession();
 }
+function flipCard(){
+  if(!session) return;
+  session.flipped = !session.flipped; session.anim = true;
+  haptic("flip");
+  renderSession();
+}
+function toggleHardInSession(id){ toggleHard(id); renderSession(); }
 function rate(r){
   const card = session.cards[session.idx];
-  rateCard(card.id, r);
+  const res = rateCard(card.id, r);
+  const g = data.game;
+  let xp = XP_FOR[r];
+  if(res.wasHard && (r==="good" || r==="easy")) xp += 5;
+  const conquered = res.wasHard && !res.nowHard;       // a hard card finally tamed
+  if(conquered){ xp += 15; g.conquered = (g.conquered||0) + 1; session.conq++; }
+  g.xp += xp; session.xp += xp; session.reviewed++;
+  if(r==="good" || r==="easy") session.right++;
   const deck = data.decks.find(d=>d.id===card.deckId);
   if(deck && deck.subjectId){
     data.studyFreq = data.studyFreq || {};
     data.studyFreq[deck.subjectId] = (data.studyFreq[deck.subjectId]||0) + 1;
-    save();
+  }
+  save();
+  haptic(r);
+  floatXP(conquered ? `+${xp} XP · hard card conquered 💪` : `+${xp} XP`);
+  if(r==="again"){                                      // a miss comes straight back a few cards later
+    session.cards.splice(Math.min(session.cards.length, session.idx + 4), 0, card);
   }
   session.idx++;
   session.flipped = false;
@@ -1564,6 +1958,7 @@ function answerMcq(btn, idx){
   const opts = document.querySelectorAll(".quiz-opt");
   opts.forEach(b=>b.disabled = true);
   const correct = picked === q.correct;
+  haptic(correct ? "good" : "again");
   btn.classList.add(correct ? "correct" : "wrong");
   if(!correct) opts.forEach(b=>{ if(b.textContent === q.correct) b.classList.add("correct"); });
   if(correct) s.score++;
@@ -1575,6 +1970,7 @@ function answerBlank(){
   const input = document.getElementById("blankInput");
   const typed = (input.value||"").trim().toLowerCase();
   const correct = typed.length>0 && typed === q.blank.trim().toLowerCase();
+  haptic(correct ? "good" : "again");
   input.disabled = true;
   document.getElementById("blankCheckBtn")?.setAttribute("disabled","disabled");
   const fb = document.getElementById("quizFeedback");
@@ -1596,6 +1992,7 @@ function revealTyped(){
     </div>`;
 }
 function gradeTyped(correct){
+  haptic(correct ? "good" : "again");
   if(correct) quizState.score++;
   nextQuizQuestion();
 }
@@ -1641,7 +2038,8 @@ function renderHome(){
   const qa = (c, ic, label, fn) => `<button onclick="${fn}"><span class="c" style="background:${c}">${ic}</span>${label}</button>`;
   view.innerHTML = `<div class="kh home">
       <button class="avatar" onclick="openKeyModal()" aria-label="AI key">Q</button>
-      <span class="wm">Quick<b>Learn</b></span><div class="stats"><span>${IC.fire}${due.length}</span><span style="color:#7aa2ff">◆ ${data.decks.length}</span><span style="color:#f5a623">● ${data.cards.length}</span></div>
+      <span class="wm">Quick<b>Learn</b></span><div class="stats"><span>${IC.fire}${due.length}</span>${lvlChip()}<span style="color:#f5a623">● ${data.cards.length}</span></div>
+      <button class="gear" onclick="openSettings()" aria-label="Settings">${IC.gear}</button>
       <button class="sp" onclick="go('#/search')">${IC.search} Search for anything</button>
       <div class="qa">
         ${qa("#12284a", IC.doc, "Notebook", "notebookSheet()")}<i class="dv"></i>
@@ -1682,9 +2080,9 @@ function newFolderSheet(){
   setTimeout(() => document.getElementById("nf")?.focus(), 320);
 }
 let _prevH = "#/", _sk;
-const depthOf = h => /^#\/(deck|folder)\//.test(h) ? 2 : 1;
+const depthOf = h => /^#\/(deck|folder)\/|^#\/level/.test(h) ? 2 : 1;
 function route(){
-  session = null;
+  session = null; syncBase();
   const h = location.hash || "#/";
   document.querySelectorAll(".navitem").forEach(n => n.classList.toggle("active", n.dataset.nav === "#/" ? (h === "#/" || h === "#/create") : h.startsWith(n.dataset.nav)));
   const draw = () => {
@@ -1693,6 +2091,7 @@ function route(){
     else if(h.startsWith("#/search")) renderSearch();
     else if(h.startsWith("#/library")) renderLibrary();
     else if(h.startsWith("#/study")) renderStudy();
+    else if(h.startsWith("#/level")) renderLevel();
     else if(h.startsWith("#/progress")) view.innerHTML = hdr("Progress") + `<div style="padding:0 1.1rem">${renderAnalytics()}</div>`;
     else renderHome();
     window.scrollTo(0, 0);
@@ -1700,7 +2099,7 @@ function route(){
   const a = depthOf(h), b = depthOf(_prevH);
   const cls = a > b ? "goR" : a < b ? "goL" : "";
   _prevH = h; clearTimeout(_sk);
-  view.className = cls; document.querySelector("nav.bottom").style.display = /^#\/deck\//.test(h) ? "none" : "";
+  view.className = cls; document.querySelector("nav.bottom").style.display = /^#\/(deck|level)/.test(h) ? "none" : "";
   if(/^#\/(library|folder\/)/.test(h)){
     view.innerHTML = '<div class="kh"><h1>&nbsp;</h1></div>' + '<div class="sk"></div>'.repeat(6);
     _sk = setTimeout(draw, 650);
@@ -1718,8 +2117,13 @@ Object.assign(IC,{
   test:sv('<rect x="6" y="3" width="12" height="18" rx="2" fill="#e5484d" stroke="none"/><path d="M9 8h6M9 11h6M9 14h4" stroke="#fff" stroke-width="1.4"/>'),
   spark:sv('<path d="M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z" fill="#b69cff" stroke="none"/>')
 });
+Object.assign(IC,{
+  gear:sv('<circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.7 1.7 0 0 0 .3 1.8l.1.1a2 2 0 1 1-2.8 2.8l-.1-.1a1.7 1.7 0 0 0-1.8-.3 1.7 1.7 0 0 0-1 1.5V21a2 2 0 1 1-4 0v-.1a1.7 1.7 0 0 0-1.1-1.5 1.7 1.7 0 0 0-1.8.3l-.1.1a2 2 0 1 1-2.8-2.8l.1-.1a1.7 1.7 0 0 0 .3-1.8 1.7 1.7 0 0 0-1.5-1H3a2 2 0 1 1 0-4h.1a1.7 1.7 0 0 0 1.5-1.1 1.7 1.7 0 0 0-.3-1.8l-.1-.1a2 2 0 1 1 2.8-2.8l.1.1a1.7 1.7 0 0 0 1.8.3H9a1.7 1.7 0 0 0 1-1.5V3a2 2 0 1 1 4 0v.1a1.7 1.7 0 0 0 1 1.5 1.7 1.7 0 0 0 1.8-.3l.1-.1a2 2 0 1 1 2.8 2.8l-.1.1a1.7 1.7 0 0 0-.3 1.8V9a1.7 1.7 0 0 0 1.5 1H21a2 2 0 1 1 0 4h-.1a1.7 1.7 0 0 0-1.5 1z"/>'),
+  flag:sv('<path d="M5 21V4M5 4h11l-2 4 2 4H5"/>')
+});
+
 const PREP=[["👑","AP"],["🏛️","SAT"],["🏫","PSAT 8/9"],["🏛️","PSAT 10"],["🏤","ACT"],["🏫","CTE"],["⚖️","LSAT"]];
-const topRow=()=>`<div class="kh"><button class="avatar" onclick="openKeyModal()" aria-label="AI key">Q</button><div class="stats"><span>${IC.fire}${dueCards().length}</span><span style="color:#7aa2ff">◆ ${data.decks.length}</span><span style="color:#f5a623">● ${data.cards.length}</span></div></div>`;
+const topRow=()=>`<div class="kh"><button class="avatar" onclick="openKeyModal()" aria-label="AI key">Q</button><div class="stats"><span>${IC.fire}${dueCards().length}</span>${lvlChip()}<span style="color:#f5a623">● ${data.cards.length}</span></div></div>`;
 const sheetRow=(bg,ic,label,fn,red)=>`<button class="sr" ${red?'style="color:#ff6b6b"':""} onclick="closeModal();${fn}"><span class="tile" style="background:${bg}">${ic}</span>${label}</button>`;
 const listRow=(bg,ic,b,s,fn)=>`<button class="row2" onclick="${fn}"><span class="tile" style="background:${bg}">${ic}</span><span class="t"><b>${b}</b><small>${s}</small></span></button>`;
 function prepUrl(n){const u=detectExternalSearch(n)||detectExternalSearch(n+" practice test");return u?u.url:"https://www.google.com/search?q="+encodeURIComponent(n+" practice test");}
@@ -1764,6 +2168,7 @@ function renderStudy(){
     ${dueNow.length?listRow("#0f3b38",IC.card,`${dueNow.length} card${dueNow.length===1?"":"s"} due`,has?"for your closest exam":"today","startSession(window.__dueNowCards,'Study all due cards','#/study')"):`<div class="empty2" style="padding:1.5rem 1rem"><p>All caught up 🎉</p></div>`}
     ${deferred.length?listRow("#18233a","⏭️",`${deferred.length} deferred`,"Study them anyway","startSession(window.__deferredCards,'Deferred subjects','#/study')"):""}
     ${has?listRow("#33400f",IC.map,"Predict exam & study plan","Ask Gemini how to prioritize","getStudyAdvice()"):""}
+    ${hardCards().length?listRow("#3a1d28","🔥",`${hardCards().length} hard card${hardCards().length===1?"":"s"}`,"Cards you miss or flagged · practice them","startHardSession('#/study')"):""}
     <div id="studyAdvice"></div>
     ${byDeck.map(x=>listRow("#12284a",IC.doc,esc(x.deck.title),x.due+" due",`studyDue('${x.deck.id}')`)).join("")}</div>`;
   view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 AP, SAT, & ACT Prep")}</div>`+body;
@@ -1777,7 +2182,7 @@ function renderDeck(id){
   const head=`<div class="kh"><button onclick="history.back()" aria-label="Back">${IC.back}</button><div class="mid"><button class="pill" onclick="deckTab='${cv?"note":"cards"}';renderDeck('${id}')">${cv?IC.doc:IC.card} ${cv?"Notes":"Flashcards"}</button></div><button onclick="notePick('${id}')" aria-label="Edit note">${IC.pen}</button><button onclick="deckMenu('${id}')" aria-label="More">${IC.dots}</button></div>`;
   const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${esc(subjectName(d))} · ${cards.length} cards · ${due.length} due</div></div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
   let main;
-  if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
+  if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more flg${isHard(c)?" on":""}" onclick="event.stopPropagation();toggleHard('${c.id}');renderDeck('${id}')" aria-label="Mark as hard">${IC.flag}</span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
   else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md">${md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
   const bar=`<div class="bar"><button class="rf" onclick="refineSheet('${id}')">${IC.crown} Refine this note</button><button class="brain" aria-label="Study methods" title="Study methods" onclick="studyMethodsSheet('${id}')">🧠</button><button class="ai" onclick="learnSheet('${id}')">${IC.tool} AI tools</button></div>`;
   view.innerHTML=head+title+main+bar;
@@ -1858,11 +2263,19 @@ function renderSession(){
   document.querySelector("nav.bottom").style.display="none";
   const hd=(t,r="")=>`<div class="kh"><button onclick="session=null;go('${s.back}')" aria-label="Close">${IC.back}</button><h1>${t}</h1>${r}</div>`;
   if(s.idx>=s.cards.length){
-    view.innerHTML=hd("Session complete")+empty2("🎉","Nice work",`You reviewed ${s.cards.length} card${s.cards.length===1?"":"s"}.`)+`<div style="padding:0 1.1rem"><button class="btn btn-primary" style="width:100%" onclick="go('${s.back}')">Done</button></div>`;
+    if(!s.result) s.result=finishSession(s);
+    const r=s.result, g=data.game, lp=levelProgress();
+    const acc=r.reviewed?Math.round(r.right/r.reviewed*100):0;
+    const chips=`<div class="sumchips"><span class="sumchip">⚡ +${r.xp} XP</span><span class="sumchip">🃏 ${r.reviewed} reviewed</span><span class="sumchip">🎯 ${acc}%</span>${r.conq?`<span class="sumchip">💪 ${r.conq} hard conquered</span>`:""}</div>`;
+    const prog=`<div class="sumlv">${shieldBadge(g.level,46)}<div class="lvl-l"><div class="lvname">Level ${g.level}</div><div class="lvbar"><i style="width:${lp.pct}%"></i></div><div class="lvsub">${r.leveled?`Level ${g.level} unlocked!`:lp.due?`Clear ${lp.due} more due card${lp.due===1?"":"s"} to reach Level ${g.level+1}`:"You're all caught up"}</div></div></div>`;
+    view.innerHTML=hd("Session complete")+`<div class="sdone"><div class="sbig">${r.leveled?"🏆":"🎉"}</div><h2>${r.leveled?"Level up!":"Nice work"}</h2>${chips}${prog}</div><div style="padding:0 1.1rem">${lp.due&&!r.leveled?`<button class="btn btn-secondary" style="width:100%;margin-bottom:.6rem" onclick="startSession(dueCards(),'Due cards','${s.back}')">Study ${lp.due} remaining due</button>`:""}<button class="btn btn-primary" style="width:100%" onclick="go('${s.back}')">Done</button></div>`;
+    if(!s.fx){ s.fx=true; if(r.leveled) setTimeout(()=>showLevelUp(r.from,r.level,r),220); else haptic("complete"); }
     return;
   }
   const c=s.cards[s.idx],dk=data.decks.find(x=>x.id===c.deckId),pct=Math.round(s.idx/s.cards.length*100);
-  view.innerHTML=hd(esc(s.title),`<span class="muted">${s.idx+1} / ${s.cards.length}</span>`)+`<div class="progress" style="margin:0 1.1rem"><div style="width:${pct}%"></div></div><div style="padding:1.1rem"><div class="flashcard" onclick="session.flipped=!session.flipped;renderSession()">${dk?`<span class="tag">${esc(dk.title)}</span>`:""}<div class="q">${esc(s.flipped?c.answer:c.question)}</div><span class="hint">${s.flipped?"How well did you know it?":"Tap to flip"}</span></div>${s.flipped?`<div class="ratings"><button class="btn btn-danger" onclick="rate('again')">Again</button><button class="btn btn-warning" onclick="rate('hard')">Hard</button><button class="btn btn-success" onclick="rate('good')">Good</button><button class="btn btn-primary" onclick="rate('easy')">Easy</button></div>`:""}</div>`;
+  const live=data.cards.find(x=>x.id===c.id)||c, hard=isHard(live);
+  const anim=s.anim?" flipanim":""; s.anim=false;
+  view.innerHTML=hd(esc(s.title),`<span class="muted">${s.idx+1} / ${s.cards.length}</span>`)+`<div class="progress" style="margin:0 1.1rem"><div style="width:${pct}%"></div></div><div style="padding:1.1rem"><div class="flashcard${anim}" data-nohap onclick="flipCard()">${dk?`<span class="tag">${esc(dk.title)}</span>`:""}<button class="flagbtn${hard?" on":""}" data-nohap onclick="event.stopPropagation();toggleHardInSession('${c.id}')" aria-label="Mark as hard">${IC.flag}${hard?"Hard":""}</button><div class="q">${esc(s.flipped?c.answer:c.question)}</div><span class="hint">${s.flipped?"How well did you know it?":"Tap to flip"}</span></div>${s.flipped?`<div class="ratings"><button class="btn btn-danger" onclick="rate('again')">Again</button><button class="btn btn-warning" onclick="rate('hard')">Hard</button><button class="btn btn-success" onclick="rate('good')">Good</button><button class="btn btn-primary" onclick="rate('easy')">Easy</button></div>`:""}</div>`;
 }
 
 /* ---- Quiz / evaluation ---- */
@@ -1960,6 +2373,13 @@ function moveDeck(id,sid){
   d.subjectId=s?s.id:null; d.subject=s?s.name:"General";
   save(); closeModal(); route(); toast(s?"Moved to "+s.name:"Removed from folder");
 }
+
+// Every tappable thing gets a crisp micro-tick, except where a richer pattern fires instead (ratings, quiz answers, flashcard).
+document.addEventListener("pointerdown", e => {
+  const t = e.target.closest && e.target.closest("button,a,.row2,.navitem,.chip2,.ext,.ob,.sr,.lc,.more,.lvl");
+  if(!t || t.disabled || t.closest("[data-nohap],.ratings,.quiz-opt,.flashcard")) return;
+  haptic("tap");
+}, { passive:true });
 
 window.addEventListener("hashchange", route);
 route();
