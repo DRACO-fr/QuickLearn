@@ -2752,7 +2752,7 @@ async function genCourse(id){
     for(let ci=0;ci<sourceChunks.length;ci++){
       const pct=5+Math.round((ci/sourceChunks.length)*22);
       prog(`Analysing notes section ${ci+1} of ${sourceChunks.length}…`,pct);
-      const pp=`You are an instructional designer. Based ONLY on the source notes below, make a comprehensive course plan. Return ONLY valid JSON: {"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Specific lesson title","focus":"Concepts from these notes that this lesson must teach"}]}]}. There is NO fixed or maximum number of units or lessons, and absolutely NO target of four lessons per unit. Each unit may contain as many lessons as the source material requires: 1, 4, 7, 12, or more. Organize lessons by topic and subtopic, and split dense topics into multiple focused lessons. Create enough appropriately sized lessons to cover every distinct topic, heading, definition, term, process, example, formula, date, and testable idea in this source. Do not pad with duplicates, but do not skip details. Usually each lesson should have one clear learning goal. Do not create questions yet. Preserve source terminology and do not add outside facts. Every unit must contain at least one lesson; every lesson must have a specific title and a useful focus.\nSOURCE NOTES:\n${sourceChunks[ci]}`;
+      const pp=`You are QuickLearn's meticulous course architect. The source notes below are the complete authority. Your goal is ZERO OMISSION, not brevity. Return ONLY valid JSON: {"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Specific lesson title","focus":"Precise, exhaustive checklist of every source fact this lesson must teach"}]}]}. There is NO fixed or maximum number of units or lessons. Create as many as required; do not compress details to reduce lesson count. Before planning, mentally inventory every paragraph and sentence, heading, subheading, bullet and nested list item, definition, term, name, date, number, formula, unit, example, classification, component, process step, cause, effect, comparison, condition, exception, qualification, caption, table entry and small factual statement. Split sentences containing multiple facts into independently teachable details. Every such detail must appear explicitly in at least one lesson focus. Preserve the source's organization and terminology; no outside facts, guesses, or silent corrections. Do not use vague focus phrases such as "overview of the topic" to stand in for a detailed checklist. Split dense topics across as many lessons as needed. Each lesson should have a specific title and a detailed focus listing the exact points to teach. Every unit must have at least one lesson. Do not create questions yet.\nSOURCE NOTES:\n${sourceChunks[ci]}`;
       const raw=await askWithRetry(pp,`Planning section ${ci+1}`);
       const units=parseArray(raw,"units");
       if(!units.length)throw new Error(`No course plan was returned for notes section ${ci+1}.`);
@@ -2773,7 +2773,7 @@ async function genCourse(id){
       const related=plan.filter(u=>u.source===sourceChunks[ci]);
       const listed=related.flatMap(u=>u.lessons.map(l=>`- ${l.title}: ${l.focus||"(focus not specified)"}`)).join("\n");
       prog(`Checking notes coverage · section ${ci+1} of ${sourceChunks.length}…`,27);
-      const auditPrompt=`You are a meticulous source-coverage auditor. Compare the source notes with the proposed lesson plan. The goal is that NO source detail is omitted. Check every heading, subheading, definition, named term, list item, classification, step, cause/effect, contrast, example, formula, number, date, exception, condition, and small factual statement. A detail counts as covered only when a lesson title/focus explicitly says it will teach that detail; broad vague labels do not count. Do not use outside knowledge. Return ONLY valid JSON: {"missing":[{"title":"Specific lesson title for uncovered material","focus":"Precise list of source details this lesson must cover"}]}. If all source details are explicitly covered, return {"missing":[]}. Combine closely related omissions into sensible lessons, but do not omit any distinct detail. If uncertain whether something is covered, include it as missing rather than assume.
+      const auditPrompt=`You are a strict source-coverage auditor. Compare the source notes with the proposed lesson plan, detail by detail. NO source information may be omitted. Check every sentence and clause, heading, subheading, definition, named term, list and nested list item, classification, process step, cause/effect, comparison, example, formula, symbol, number, date, name, condition, exception, qualification, table item, and minor factual statement. A detail is covered only if the lesson title/focus names the specific detail, not merely its broad topic. Treat vague labels as missing. Do not use outside knowledge or assume a student can infer a detail. Return ONLY valid JSON: {"missing":[{"title":"Specific lesson title for uncovered material","focus":"Exhaustive, concrete list of source details this lesson must teach"}]}. If every detail is explicitly represented, return {"missing":[]}. Combine related omissions only when each detail remains explicitly named in the focus. When uncertain, report the detail as missing. Do not omit a detail to keep the course short.
 PROPOSED LESSON PLAN:
 ${listed || "(no lessons listed)"}
 SOURCE NOTES:
@@ -2809,7 +2809,7 @@ ${sourceChunks[ci]}`;
       const pct=28+Math.round((bi/Math.max(1,batches.length))*65);
       prog(`Building units ${b.unitStart+1}–${b.unitEnd} · unit ${b.ui+1}, lessons ${b.start+1}–${Math.min(b.start+b.lessons.length,plan[b.ui].lessons.length)} · batch ${bi+1}/${batches.length}`,pct);
       const lessonList=b.lessons.map((l,i)=>`${i+1}. ${l.title}${l.focus?` — focus: ${l.focus}`:""}`).join("\n");
-      const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create 5 questions per lesson, or more if needed to properly cover its focus. Do not limit the number of lessons in a unit; the four-lesson request batch size is not a unit-size limit. Every question must have visible, non-empty q text. Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation e. Questions must be distinct, answerable from the notes, and cover EVERY individual fact and sub-detail in the requested focus, not just the broad topic. Across the five questions, test definitions, parts of lists, steps, exceptions, examples, numbers, formulas, and contrasts where present. Do not skip a detail because it seems minor. Never put a question only in an answer or explanation. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
+      const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create at least 8 questions per lesson, and create more whenever necessary to test every detail in its focus. The five-question minimum is not a maximum. Never limit the number of lessons in a unit; four lessons is only the API batch size. Questions must cover every atomic fact in the focus: each definition, list item, step, example, number, name, date, formula, condition, exception, comparison and qualification. Do not combine multiple facts into one vague question if that would leave any fact untested. Every question must have visible, non-empty q text. Mix mc, tf and fb. Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation grounded in the notes. Questions must be distinct, answerable from the source, and specific enough that each source detail is tested or explicitly taught in a question/explanation. Never put essential information only in a correct answer without context; never invent facts; preserve exact names, figures, dates, formulas, units, conditions and exceptions. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
       try{
         let raw=await askWithRetry(lp,`Generating batch ${bi+1}`);
         let ls=parseArray(raw,"lessons");
@@ -2843,13 +2843,65 @@ ${sourceChunks[ci]}`;
       }
     }
     if(stop)return;
+    // Final audit checks generated lesson content (questions + explanations), not just the plan.
+    // Missing details become supplemental lessons and are generated before the course is marked complete.
+    const auditedGaps=new Set();
+    for(let round=0;round<20;round++){
+      if(stop)return;
+      let foundAny=false;
+      for(let ci=0;ci<sourceChunks.length;ci++){
+        if(stop)return;
+        const source=sourceChunks[ci];
+        const relevantUnits=activeCourse.units.filter(u=>u._source===source);
+        const actual=relevantUnits.flatMap(u=>u.lessons.map(l=>({
+          unit:u.title,title:l.title,
+          questions:l.qs.map(q=>({q:q.q,options:q.o,answer:q.t==="tf"?q.a:(q.o||[])[q.a],explanation:q.e}))
+        })));
+        prog(`Auditing actual lesson content · pass ${round+1}, section ${ci+1}/${sourceChunks.length}…`,94);
+        const finalAudit=`You are a strict independent auditor. Compare the ORIGINAL SOURCE against the ACTUAL GENERATED COURSE CONTENT below. The course is not complete unless every source detail is represented accurately in the questions and their explanations. Inspect every source sentence and clause, heading, list item, definition, term, example, number, date, name, formula, unit, step, cause/effect, comparison, condition, exception and qualification. A broad topic mention is NOT coverage. A fact appearing only in a question title is NOT enough unless the question/explanation actually teaches or tests it. Do not infer coverage. Return ONLY valid JSON: {"missing":[{"title":"Specific supplemental lesson title","focus":"Exact source details absent or inadequately represented"}]}. If everything is covered, return {"missing":[]}. Report omissions conservatively; do not add outside knowledge.
+ORIGINAL SOURCE:
+${source}
+ACTUAL GENERATED LESSONS:
+${JSON.stringify(actual)}`;
+        const auditRaw=await askWithRetry(finalAudit,`Auditing generated content`);
+        const missing=parseArray(auditRaw,"missing");
+        const clean=missing.filter(x=>x&&typeof x.title==="string"&&x.title.trim()&&typeof x.focus==="string"&&x.focus.trim());
+        if(!clean.length)continue;
+        const unique=clean.filter(x=>{const k=source+"::"+x.title.trim().toLowerCase()+"::"+x.focus.trim().toLowerCase();if(auditedGaps.has(k))return false;auditedGaps.add(k);return true;});
+        if(!unique.length)continue;
+        foundAny=true;
+        // Generate supplemental lessons in batches of four; no unit lesson-count limit.
+        let target=activeCourse.units.find(u=>u._source===source);
+        if(!target){target={title:"Additional source details",lessons:[],_source:source};activeCourse.units.push(target)}
+        for(let gi=0;gi<unique.length;gi+=4){
+          const group=unique.slice(gi,gi+4);
+          const prompt=`You are a meticulous teacher repairing a course that failed its source coverage audit. Generate complete, detailed quiz lessons for EVERY supplemental lesson below. Return ONLY valid JSON: {"lessons":[{"title":"Exact requested title","qs":[{"t":"mc","q":"Question?","o":["A","B","C"],"a":0,"e":"Source-grounded explanation"}]}]}. Make at least 8 questions per lesson and as many more as needed to test every detail listed in the focus. Cover each name, date, number, definition, list item, example, step, formula, condition, exception and comparison explicitly. Do not compress or skip details. Use only the original source; do not invent or silently correct facts. Questions must be valid mc/tf/fb; fb text must contain ____, mc/fb need 3-4 options and a zero-based answer index, tf needs a boolean. Every question needs a non-empty question and a source-grounded explanation. Return every requested lesson with its exact title.
+SUPPLEMENTAL LESSONS:
+${group.map((x,i)=>`${i+1}. ${x.title.trim()} — COMPLETE COVERAGE REQUIRED: ${x.focus.trim()}`).join("\n")}
+ORIGINAL SOURCE:
+${source}`;
+          const raw=await askWithRetry(prompt,`Repairing uncovered source details`);
+          const generated=parseArray(raw,"lessons");
+          for(const wanted of group){
+            const got=generated.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase()===wanted.title.trim().toLowerCase());
+            if(!got||!Array.isArray(got.qs))throw new Error(`Coverage repair failed for "${wanted.title}". The course is not complete yet.`);
+            const qs=got.qs.filter(validCourseQuestion);
+            if(!qs.length)throw new Error(`Coverage repair returned no valid questions for "${wanted.title}".`);
+            target.lessons.push({title:wanted.title.trim(),qs});
+          }
+        }
+      }
+      if(!foundAny)break;
+    }
+    if(stop)return;
     activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
+
     const lessonCount=activeCourse.units.reduce((n,u)=>n+u.lessons.length,0);
     const questionCount=activeCourse.units.reduce((n,u)=>n+u.lessons.reduce((q,l)=>q+l.qs.length,0),0);
     if(!lessonCount||!questionCount)throw new Error("The AI couldn't generate valid lessons. Check your notes and try again.");
     (data.courses=data.courses||{})[id]=activeCourse;save();
     closeModal();haptic("complete");renderCourse(id);
-    toast(failed.length?`Course partly ready · ${lessonCount} lessons; ${failed.length} lesson(s) still need retry`:`Course generated · ${activeCourse.units.length} units, ${lessonCount} lessons. Review the coverage in your source notes.`);
+    toast(failed.length?`Course partly ready · ${lessonCount} lessons; ${failed.length} lesson(s) still need retry`:`Course generated · ${activeCourse.units.length} units, ${lessonCount} lessons. Source coverage audit completed.`);
   }catch(e){
     if(stop)return;
     closeModal();
