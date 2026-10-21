@@ -548,7 +548,7 @@ const isHard = c => !!(c.manualHard || c.autoHard);
 const hardScore = c => (c.manualHard ? 50 : 0) + (c.autoHard ? 20 : 0) + (c.struggle || 0) * 8;
 const hardCards = id => data.cards.filter(c => isHard(c) && (id ? c.deckId === id : true)).sort((a,b) => hardScore(b) - hardScore(a));
 // Due cards, hardest first — so the cards you struggle with are always at the front of the queue.
-const dueCards = id => data.cards.filter(c => c.nextReview <= todayISO() && (id ? c.deckId === id : true)).sort((a,b) => hardScore(b) - hardScore(a));
+const dueCards = id => data.cards.filter(c => (!c.nextReview || c.nextReview <= todayISO()) && (id ? c.deckId === id : true)).sort((a,b) => hardScore(b) - hardScore(a));
 const subjectName = d => d.subjectId ? (data.subjects.find(s=>s.id===d.subjectId)?.name || d.subject) : d.subject;
 const tone = i => "tone" + (i % 5);
 
@@ -637,12 +637,14 @@ applyTheme();
 // Haptic vocabulary. Patterns are [buzz, pause, buzz, …] in ms. Short, crisp pulses with tiny gaps feel like a *tap*
 // rather than a buzz: rising pulses = success, a firm double-thud = a miss, a long crescendo = level up.
 const HAP = {
-  tap:[7], select:[10], flip:[9,22,7],
-  good:[12,34,22], easy:[10,28,13,28,17,28,30],
-  hard:[26,60,14], again:[66,48,66,48,34],
-  buildup:[8,34,10,32,12,30,15,28,19,26,24,24,30,22],
-  levelhit:[46,36,110,50,150], sparkle:[9,46,9,46,9,46,14],
-  complete:[14,48,14,48,40]
+  // Short, tactile patterns: tiny UI ticks, a soft flip double-tap,
+  // rising positive feedback, and a distinct heavier miss pattern.
+  tap:[8], select:[12], flip:[10,24,8],
+  good:[14,28,24], easy:[10,24,14,24,20,30,34],
+  hard:[30,42,16], again:[58,36,72,34,42],
+  buildup:[9,28,12,26,15,24,19,22,24,20,30,18],
+  levelhit:[42,28,105,42,145], sparkle:[10,38,10,38,12,38,18],
+  complete:[16,35,16,35,46]
 };
 let _iosSwitch = null;
 function iosTick(){   // iPhone Safari has no Vibration API; on iOS 17.4+ toggling a hidden switch gives a light tick
@@ -661,7 +663,12 @@ function haptic(name){
   if(!settings.haptics) return;
   const p = HAP[name]; if(!p) return;
   try{
-    if(navigator.vibrate){ navigator.vibrate(p); return; }
+    if(navigator.vibrate){
+      // Cancel a lingering pattern before starting the next crisp interaction.
+      navigator.vibrate(0);
+      navigator.vibrate(p);
+      return;
+    }
     let t = 0;
     p.forEach((ms,i)=>{ if(i%2===0){ t===0 ? iosTick() : setTimeout(iosTick, t); } t += ms; });
   }catch(_){}
@@ -677,6 +684,7 @@ function openSettings(){
   modal(`<div class="sh"><h2>Settings</h2>
     <div class="setrow"><span class="seti">📳</span><span class="sett"><b>Vibrations</b><small id="hapSub">${hapSub()}</small></span>
       <button id="swHap" data-nohap class="sw${settings.haptics?" on":""}" role="switch" aria-checked="${settings.haptics}" aria-label="Vibrations" onclick="toggleHaptics()"><i></i></button></div>
+    <button class="btn btn-secondary" data-nohap style="width:100%;margin:.1rem 0 .8rem" onclick="haptic('easy')">✨ Try haptics</button>
     <div class="setrow" style="cursor:default"><span class="seti" id="themeIc">${light?"☀️":"🌙"}</span><span class="sett"><b>Appearance</b><small id="themeSub">${light?"Day mode":"Night mode"}</small></span></div>
     <div class="seg full" data-nohap><button id="thNight" class="${light?"":"on"}" onclick="setTheme('dark')">🌙 Night</button><button id="thDay" class="${light?"on":""}" onclick="setTheme('light')">☀️ Day</button></div>
     <button class="setrow" onclick="closeModal();openKeyModal()"><span class="seti">🔑</span><span class="sett"><b>AI key</b><small>Needed for the AI features</small></span><span style="opacity:.5">›</span></button>
