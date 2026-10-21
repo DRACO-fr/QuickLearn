@@ -220,7 +220,7 @@ a.row2,a.ext{text-decoration:none;color:#fff}
 .doc .md p{margin:0 0 1rem}.doc .md li{margin:.4rem 0}.doc .md code{background:#37261b}
 .nsep{border:0;border-top:1px solid #4d3627;margin:1.2rem 0}
 .bar{position:fixed;left:0;right:0;bottom:0;z-index:35;display:flex;gap:.6rem;padding:.7rem 1rem calc(.8rem + env(safe-area-inset-bottom));background:#000}
-.bar .rf{flex:1;display:flex;align-items:center;gap:.6rem;background:#261a12;border:0;color:#8a8a8a;border-radius:999px;padding:.9rem 1.1rem;font-family:DM Sans,system-ui,sans-serif;font-size:.95rem;cursor:pointer;text-align:left}
+.bar .rf{flex:1;min-width:0;min-height:3.25rem;display:flex;align-items:center;gap:.6rem;background:#261a12;border:0;color:#f0d7c6;border-radius:1.25rem;padding:1rem 1.15rem;font-family:DM Sans,system-ui,sans-serif;font-size:1rem;font-weight:600;cursor:pointer;text-align:left;line-height:1.25}
 .bar .brain{display:flex;align-items:center;justify-content:center;gap:.35rem;background:#36251a;color:#fff;border:1px solid #5e4331;border-radius:999px;padding:.85rem .95rem;font-family:DM Sans,system-ui,sans-serif;font-size:1.1rem;cursor:pointer;flex:none}
 .bar .ai{display:flex;align-items:center;gap:.5rem;background:#4a2117;color:#fff;border:0;border-radius:999px;padding:.9rem 1.2rem;font-family:DM Sans,system-ui,sans-serif;font-size:.95rem;cursor:pointer}
 .bar svg{width:1.15rem;height:1.15rem}
@@ -554,6 +554,26 @@ html:not([data-theme="light"]) body{background:#0c0806;background-image:radial-g
 .lfoot.good{background:#3a280e;animation:up .3s both}.lfoot.bad{background:#3d1a22;animation:up .3s both}.lfoot .fb b{display:block;font-size:1.15rem}.lfoot .fb span{font-size:.88rem;opacity:.85}.lfoot.good b{color:#e29a2d}.lfoot.bad b{color:#ff8a8a}
 .btn-danger2{background:#ff6b6b!important;color:#2a0508!important}
 .genorb{width:4.5rem;height:4.5rem;margin:0 auto 1rem;border-radius:50%;background:conic-gradient(#e29a2d,#ff7c5b,#fa9a8b,#e29a2d);animation:orbspin 1.2s linear infinite;-webkit-mask:radial-gradient(circle,transparent 55%,#000 58%);mask:radial-gradient(circle,transparent 55%,#000 58%)}@keyframes orbspin{to{transform:rotate(360deg)}}
+/* QuickLearn loading polish */
+.genorb{position:relative;filter:drop-shadow(0 0 16px color-mix(in oklab,var(--primary) 35%,transparent))}
+.genorb:before,.genorb:after{content:"";position:absolute;inset:9px;border:1px dashed color-mix(in oklab,var(--primary) 70%,transparent);border-radius:50%;animation:orbitPulse 2.2s ease-in-out infinite}
+.genorb:after{inset:-7px;border:1px solid color-mix(in oklab,var(--primary) 25%,transparent);animation:orbitPulse 2.2s ease-in-out infinite reverse}
+@keyframes orbitPulse{0%,100%{transform:scale(.92) rotate(0);opacity:.3}50%{transform:scale(1.08) rotate(160deg);opacity:1}}
+.modal{animation:modalBloom .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes modalBloom{from{opacity:0;transform:translateY(14px) scale(.97)}to{opacity:1;transform:translateY(0) scale(1)}}
+.load-dots{display:inline-flex;gap:4px;align-items:center;margin-left:.25rem;vertical-align:middle}
+.load-dots i{width:5px;height:5px;border-radius:50%;background:var(--primary);animation:dotHop 1s ease-in-out infinite}
+.load-dots i:nth-child(2){animation-delay:.15s}.load-dots i:nth-child(3){animation-delay:.3s}
+@keyframes dotHop{0%,60%,100%{transform:translateY(0);opacity:.45}30%{transform:translateY(-5px);opacity:1}}
+.load-insight{position:relative;overflow:hidden;margin:1.15rem 0 1rem;padding:1rem;text-align:left;border:1px solid color-mix(in oklab,var(--primary) 30%,var(--border));border-radius:1rem;background:linear-gradient(135deg,color-mix(in oklab,var(--primary) 12%,var(--surface)),var(--surface-2));animation:insightIn .35s ease both}
+.load-insight:after{content:"";position:absolute;top:-60%;left:-40%;width:30%;height:220%;transform:rotate(20deg);background:linear-gradient(90deg,transparent,color-mix(in oklab,var(--foreground) 7%,transparent),transparent);animation:insightShimmer 4.5s ease-in-out infinite}
+@keyframes insightIn{from{opacity:0;transform:translateY(7px)}to{opacity:1;transform:translateY(0)}}
+@keyframes insightShimmer{0%,35%{left:-40%}75%,100%{left:130%}}
+.load-insight .insight-label{font-size:.68rem;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--primary);margin-bottom:.4rem}
+.load-insight .insight-copy{font-size:.88rem;line-height:1.55;color:var(--foreground);min-height:2.7em}
+.load-subtitle{display:flex;justify-content:center;align-items:center;gap:.25rem}
+@media(prefers-reduced-motion:reduce){.genorb,.genorb:before,.genorb:after,.load-dots i,.load-insight,.load-insight:after,.modal{animation:none!important;transition:none!important}}
+
 html[data-theme="light"] .xm,html[data-theme="light"] .lopt{background:#fff;color:#22100b;border-color:#ebe0d8;box-shadow:0 4px 0 #ebe0d8}
 html[data-theme="light"] .lopt.sel{background:#ffeeea;border-color:#ff7c5b;box-shadow:0 4px 0 #ff7c5b}
 html[data-theme="light"] .lfoot{background:#fff;border-color:#eee4dd}html[data-theme="light"] .lfoot.good{background:#dff5e6}html[data-theme="light"] .lfoot.bad{background:#fde6e6}
@@ -1638,7 +1658,7 @@ function modal(html){
   const root = document.getElementById("modal-root");
   root.innerHTML = `<div class="modal-bg" onclick="if(event.target===this)closeModal()"><div class="modal">${html}</div></div>`;
 }
-function closeModal(){ document.getElementById("modal-root").innerHTML = ""; }
+function closeModal(){ if(window.__loadingTipTimer){clearInterval(window.__loadingTipTimer);window.__loadingTipTimer=null;} document.getElementById("modal-root").innerHTML = ""; }
 function openCreateDeckModal(){
   modal(`<h2 style="font-size:1rem">Create a deck</h2>
     <input class="input" id="deckTitle" placeholder="e.g. Biology — Chapter 4" style="margin-top:1rem">
@@ -2394,7 +2414,7 @@ function quizDeck(id){if(deckCards(id).length<4){toast("Add at least 4 flashcard
 function aiDeck(id,kind){if(!deckNotes(id).length){toast("Add a note first");return;}aiAct(id,kind);}
 let blurtingInterval=null, blurtingRemaining=0, blurtingSection="";
 function studyMethodsSheet(id){
-  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span></button><button class="ob" disabled style="opacity:.45;cursor:default"><span style="font-size:1.5rem">＋</span><span><b>More methods coming soon</b><small style="display:block;color:#aaa;margin-top:.2rem">New study techniques will appear here</small></span></button></div>`);
+  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span></button><button class="ob" onclick="closeModal();go('#/course/${id}')"><span style="font-size:1.5rem">🎓</span><span><b>Course</b><small style="display:block;color:#aaa;margin-top:.2rem">Turn your notes into a complete course with lessons and questions</small></span></button><button class="ob" disabled style="opacity:.45;cursor:default"><span style="font-size:1.5rem">＋</span><span><b>More methods coming soon</b><small style="display:block;color:#aaa;margin-top:.2rem">New study techniques will appear here</small></span></button></div>`);
 }
 function startBlurtingSetup(id){
   const notes=deckNotes(id); if(!notes.length){toast("Add a note first");return;}
@@ -2445,7 +2465,7 @@ function editNote(id){
 function saveEdit(id){const n=data.notes.find(x=>x.id===id);if(n){n.content=document.getElementById("editNoteField").value;save();}closeModal();route();}
 function refineSheet(id){
   if(!deckNotes(id).length){toast("Add a note first");return;}
-  modal(`<div class="sh"><h2>Refine this note</h2><input class="input" id="refineTxt" placeholder="e.g. make it shorter, add examples" style="width:100%"><button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="aiRefine('${id}')">Refine</button></div>`);
+  modal(`<div class="sh"><h2>Customise your notes</h2><p class="muted">Tell QuickLearn exactly how you want the notes changed.</p><label class="label" for="refineTxt">Your instructions</label><textarea class="input" id="refineTxt" placeholder="e.g. Explain difficult terms more simply, add examples, organise into headings, keep every testable fact, and add a short recap." style="width:100%;min-height:10rem;resize:vertical;line-height:1.5"></textarea><button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="aiRefine('${id}')">Apply changes</button></div>`);
   setTimeout(()=>document.getElementById("refineTxt")?.focus(),320);
 }
 async function aiRefine(id){
@@ -2636,125 +2656,83 @@ function validCourseLesson(l){
 }
 async function genCourse(id){
   const d=data.decks.find(x=>x.id===id);
-  const notes=deckNotes(id).map(n=>({title:stripMd(n.title||""),text:stripMd(n.content||"")})).filter(n=>n.text.trim());
-  if(!d){toast("Couldn't find this deck");return}
-  if(!notes.length||notes.every(n=>n.text.trim().length<40)){toast("Add more to your notes first");return}
-  let stop=false,activeCourse=null;
-  window.__cc=()=>{stop=true;closeModal()};
-  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${esc(m)}</p><div class="progress"><div style="width:${Math.max(2,Math.min(100,p))}%"></div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
-  const pause=ms=>new Promise(r=>setTimeout(r,ms));
-  const splitNotes=(arr,maxChars=18000)=>{
-    const chunks=[];let cur="";
-    for(const note of arr){
-      const block=(note.title?`NOTE: ${note.title}\n`:"")+note.text;
-      const paras=block.split(/\n\s*\n/);
-      for(let para of paras){
-        para=para.trim();if(!para)continue;
-        while(para.length>maxChars){
-          if(cur){chunks.push(cur);cur=""}
-          let cut=para.lastIndexOf(" ",maxChars);if(cut<maxChars*.55)cut=maxChars;
-          chunks.push(para.slice(0,cut));para=para.slice(cut).trim();
-        }
-        if(cur.length+para.length+2>maxChars&&cur){chunks.push(cur);cur=""}
-        cur+=(cur?"\n\n":"")+para;
-      }
-    }
-    if(cur)chunks.push(cur);return chunks;
+  const txt=deckNotes(id).map(n=>stripMd(n.content)).join("\n\n").trim();
+  if(txt.length<80){toast("Add more to your note first");return}
+  let stop=false,c=null; window.__cc=()=>{stop=true;closeModal()};
+  const insights=[
+    {kind:"💡 Tip & trick",text:"Turn a heading into a question before you study it. Questions give your brain a clear target to retrieve."},
+    {kind:"🧠 Fun fact",text:"Trying to recall an idea from memory is called retrieval practice—and it can strengthen long-term learning."},
+    {kind:"⚡ Study hack",text:"After a lesson, explain the main idea in your own words without looking at your notes. Then check what you missed."},
+    {kind:"🎯 Quick tip",text:"Short review sessions spread over several days often help you remember more than one long cramming session."},
+    {kind:"✨ Fun fact",text:"Mixing practice questions with different formats can help you notice what you know—and what needs another look."},
+    {kind:"🚀 Pro tip",text:"If a topic feels difficult, break it into smaller chunks and master one idea at a time."}
+  ];
+  let insightIndex=Math.floor(Math.random()*insights.length);
+  const prog=(m,p)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Building your complete course <span class="load-dots" aria-hidden="true"><i></i><i></i><i></i></span></h2><p class="muted">${m}</p><div class="progress"><div style="width:${p}%"></div></div><div class="load-insight" aria-live="polite"><div class="insight-label" id="loadInsightLabel">${insights[insightIndex].kind}</div><div class="insight-copy" id="loadInsightCopy">${insights[insightIndex].text}</div></div><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`);
+  const validQuestion=q=>{
+    if(!q||typeof q!=="object"||typeof q.q!=="string"||!q.q.trim())return false;
+    if(q.t==="mc")return Array.isArray(q.o)&&q.o.length>=2&&Number.isInteger(q.a)&&q.a>=0&&q.a<q.o.length;
+    if(q.t==="tf")return typeof q.a==="boolean";
+    if(q.t==="fb")return q.q.includes("____")&&Array.isArray(q.o)&&q.o.length>=2&&Number.isInteger(q.a)&&q.a>=0&&q.a<q.o.length;
+    return false;
   };
-  const sourceChunks=splitNotes(notes);
-  const parseArray=(raw,key)=>{
-    let o=jparse(raw);if(Array.isArray(o))return o;if(o&&Array.isArray(o[key]))return o[key];throw new Error("The AI returned an incomplete response. Please try again.");
-  };
-  const askWithRetry=async(prompt,label)=>{
-    let last;
-    for(let attempt=0;attempt<3;attempt++){
-      if(stop)throw new Error("Cancelled");
-      try{const out=await gemini(prompt);if(!out.trim())throw new Error("The AI returned an empty response");return out}
-      catch(e){last=e;if(stop)throw e;if(attempt<2){prog(`${label} · retrying (${attempt+1}/2)…`,30);await pause(700*(attempt+1))}}
-    }
-    throw last||new Error("Couldn't generate this batch");
-  };
-  const plan=[];
   try{
-    for(let ci=0;ci<sourceChunks.length;ci++){
-      const pct=5+Math.round((ci/sourceChunks.length)*22);
-      prog(`Analysing notes section ${ci+1} of ${sourceChunks.length}…`,pct);
-      const pp=`You are an instructional designer. Based ONLY on the source notes below, make a comprehensive course plan. Return ONLY valid JSON: {"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Specific lesson title","focus":"Concepts from these notes that this lesson must teach"}]}]}. There is NO fixed or maximum number of units or lessons. Create enough appropriately sized lessons to cover every distinct topic, heading, definition, term, process, example, formula, date, and testable idea in this source. Do not pad with duplicates, but do not skip details. Usually each lesson should have one clear learning goal. Do not create questions yet. Preserve source terminology and do not add outside facts. Every unit must contain at least one lesson; every lesson must have a specific title and a useful focus.\nSOURCE NOTES:\n${sourceChunks[ci]}`;
-      const raw=await askWithRetry(pp,`Planning section ${ci+1}`);
-      const units=parseArray(raw,"units");
-      if(!units.length)throw new Error(`No course plan was returned for notes section ${ci+1}.`);
-      for(const u of units){
-        if(!u||typeof u.title!=="string"||!u.title.trim()||!Array.isArray(u.lessons))continue;
-        const lessons=u.lessons.filter(l=>l&&typeof l.title==="string"&&l.title.trim()).map(l=>({title:l.title.trim(),focus:typeof l.focus==="string"?l.focus.trim():""}));
-        if(lessons.length)plan.push({title:u.title.trim(),lessons,source:sourceChunks[ci]});
-      }
-    }
+    prog("Mapping every topic in your notes…",8);
+    if(window.__loadingTipTimer)clearInterval(window.__loadingTipTimer);
+    window.__loadingTipTimer=setInterval(()=>{
+      if(stop||!document.getElementById("loadInsightCopy")){clearInterval(window.__loadingTipTimer);window.__loadingTipTimer=null;return;}
+      insightIndex=(insightIndex+1)%insights.length;
+      const label=document.getElementById("loadInsightLabel"),copy=document.getElementById("loadInsightCopy");
+      if(label&&copy){label.textContent=insights[insightIndex].kind;copy.textContent=insights[insightIndex].text;const card=copy.closest(".load-insight");if(card){card.style.animation="none";void card.offsetWidth;card.style.animation="insightIn .35s ease both";}}
+    },3800);
+    const prompt=`You are an expert curriculum designer. Build the COMPLETE learning course from the source notes below in ONE response.
+
+Return ONLY valid JSON with this exact shape:
+{"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Lesson title","qs":[{"t":"mc","q":"Visible question text?","o":["Option A","Option B","Option C","Option D"],"a":0,"e":"Short explanation"},{"t":"tf","q":"A true-or-false statement.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ as the blank.","o":["Choice A","Choice B","Choice C"],"a":1,"e":"Short explanation"}]}]}]}
+
+CURRICULUM RULES:
+- There is NO fixed or maximum number of units or lessons. Do not force the notes into a preset count.
+- First identify every distinct subject, chapter, heading, subtopic, important term, process, example, formula, date, and other testable idea in the notes.
+- Create as many logically sized units as needed to cover all the source material. Create as many lessons per unit as needed to teach each topic clearly. Split broad topics into multiple lessons; combine only closely related small topics.
+- Preserve the order and terminology of the notes as much as practical.
+- Do not omit a topic just to keep the course short. Avoid redundant lessons and duplicate questions.
+- Each lesson must teach/test its own topic and contain enough varied questions to assess the key ideas (normally 5-8 questions per lesson, but use more when the topic requires it).
+- Every question must have non-empty visible question text in "q". Never return answer options or answers without a question.
+- Use only information supported by the notes. Do not invent facts or add unrelated general knowledge.
+- Mix multiple-choice ("mc"), true/false ("tf"), and fill-in-the-blank ("fb") questions. For mc/fb, "a" is the zero-based index of the correct option. For tf, "a" must be true or false. For fb, "q" must contain exactly a visible "____" blank.
+- Every question needs a short explanation in "e". Ensure the correct answer is unambiguous.
+- Output the full course now, not an outline, not a plan, and not unit-by-unit follow-up requests. Do not use placeholders or say "continued".
+- JSON only: no Markdown fences, comments, or text outside the JSON.
+
+SOURCE NOTES:
+${txt}`;
+    prog("Creating all units, lessons and questions together…",35);
+    const o=jparse(await gemini(prompt));
     if(stop)return;
-    if(!plan.length)throw new Error("Couldn't create a course plan from these notes.");
-    const plannedLessons=plan.reduce((n,u)=>n+u.lessons.length,0);
-    activeCourse={title:d.title,units:plan.map(u=>({title:u.title,lessons:[],_source:u.source})),done:{}};
-    const batches=[];
-    for(let ui=0;ui<plan.length;ui++){
-      for(let li=0;li<plan[ui].lessons.length;li+=3){
-        batches.push({ui,start:li,lessons:plan[ui].lessons.slice(li,li+3),source:plan[ui].source});
+    if(!o||!Array.isArray(o.units)||!o.units.length)throw new Error("The AI didn't return a complete course. Please try again.");
+    c={title:typeof o.title==="string"&&o.title.trim()?o.title.trim():d.title,units:[],done:{}};
+    for(const u of o.units){
+      if(!u||typeof u.title!=="string"||!u.title.trim()||!Array.isArray(u.lessons))continue;
+      const lessons=[];
+      for(const l of u.lessons){
+        if(!l||typeof l.title!=="string"||!l.title.trim()||!Array.isArray(l.qs))continue;
+        const qs=l.qs.filter(validQuestion).map(q=>({...q,q:q.q.trim(),e:typeof q.e==="string"?q.e:""}));
+        if(qs.length)lessons.push({title:l.title.trim(),qs});
       }
+      if(lessons.length)c.units.push({title:u.title.trim(),lessons});
     }
-    let completed=0,failed=[];
-    for(let bi=0;bi<batches.length;bi++){
-      if(stop)return;
-      const b=batches[bi],u=plan[b.ui];
-      const pct=28+Math.round((bi/Math.max(1,batches.length))*65);
-      prog(`Writing lessons ${Math.min(completed+1,plannedLessons)}–${Math.min(completed+b.lessons.length,plannedLessons)} of ${plannedLessons} · batch ${bi+1}/${batches.length}`,pct);
-      const lessonList=b.lessons.map((l,i)=>`${i+1}. ${l.title}${l.focus?` — focus: ${l.focus}`:""}`).join("\n");
-      const lp=`You are an expert teacher. Write complete lesson question sets for the requested lesson titles, using ONLY the notes below. Return ONLY valid JSON in exactly this structure: {"lessons":[{"title":"Exact requested lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nREQUIRED LESSONS (return every one, do not rename or omit):\n${lessonList}\nRULES: Create 5 questions per lesson, or more if needed to properly cover its focus. Every question must have visible, non-empty q text. Mix multiple choice (mc), true/false (tf), and fill-in-the-blank (fb). Every fb question must visibly contain ____ in q. For mc/fb provide 3–4 non-empty options and a zero-based correct answer index. For tf a must be a boolean. Add a short explanation e. Questions must be distinct, answerable from the notes, and cover the requested focus. Never put a question only in an answer or explanation. No markdown fences or commentary.\nSOURCE NOTES:\n${b.source}`;
-      try{
-        let raw=await askWithRetry(lp,`Generating batch ${bi+1}`);
-        let ls=parseArray(raw,"lessons");
-        const byTitle=new Map(ls.filter(x=>x&&typeof x.title==="string").map(x=>[x.title.trim().toLowerCase(),x]));
-        let good=[];
-        for(const wanted of b.lessons){
-          let got=byTitle.get(wanted.title.toLowerCase())||ls.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase().includes(wanted.title.toLowerCase()))||null;
-          if(!got||!Array.isArray(got.qs))continue;
-          const qs=got.qs.filter(validCourseQuestion);
-          if(qs.length)good.push({title:wanted.title,qs});
-        }
-        // One targeted repair request for any missing/invalid lesson in this batch.
-        const missing=b.lessons.filter(w=>!good.some(g=>g.title===w.title));
-        if(missing.length){
-          const rp=`Return ONLY valid JSON {"lessons":[{"title":"Exact lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C"],"a":0,"e":"Explanation"}]}]}. Repair and generate complete question sets for these missing lessons only. Include 5 distinct questions per lesson, all with visible q text; valid mc/tf/fb types and correct answer formats; fb q must contain ____. Use only these notes.\nMISSING LESSONS:\n${missing.map(l=>l.title+(l.focus?" — "+l.focus:"")).join("\n")}\nNOTES:\n${b.source}`;
-          try{
-            const rr=parseArray(await askWithRetry(rp,`Repairing batch ${bi+1}`),"lessons");
-            for(const wanted of missing){const got=rr.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase()===wanted.title.toLowerCase());if(got&&Array.isArray(got.qs)){const qs=got.qs.filter(validCourseQuestion);if(qs.length)good.push({title:wanted.title,qs})}}
-          }catch(re){if(stop)return;}
-        }
-        const ordered=b.lessons.map(w=>good.find(g=>g.title===w.title)).filter(Boolean);
-        activeCourse.units[b.ui].lessons.push(...ordered);
-        completed+=b.lessons.length;
-        if(ordered.length!==b.lessons.length)failed.push(...b.lessons.filter(w=>!ordered.some(g=>g.title===w.title)).map(w=>w.title));
-        // Persist progress after each successful batch so an interruption doesn't lose generated lessons.
-        const snapshot={title:activeCourse.title,units:activeCourse.units.map(x=>({title:x.title,lessons:x.lessons})),done:{}};
-        if(snapshot.units.some(x=>x.lessons.length)){(data.courses=data.courses||{})[id]=snapshot;save()}
-      }catch(e){
-        if(stop)return;
-        failed.push(...b.lessons.map(l=>l.title));
-      }
-    }
-    if(stop)return;
-    activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
-    const lessonCount=activeCourse.units.reduce((n,u)=>n+u.lessons.length,0);
-    const questionCount=activeCourse.units.reduce((n,u)=>n+u.lessons.reduce((q,l)=>q+l.qs.length,0),0);
-    if(!lessonCount||!questionCount)throw new Error("The AI couldn't generate valid lessons. Check your notes and try again.");
-    (data.courses=data.courses||{})[id]=activeCourse;save();
+    const totalLessons=c.units.reduce((n,u)=>n+u.lessons.length,0);
+    const totalQuestions=c.units.reduce((n,u)=>n+u.lessons.reduce((m,l)=>m+l.qs.length,0),0);
+    if(!c.units.length)throw new Error("No complete lessons were returned. Try again or shorten the notes.");
+    (data.courses=data.courses||{})[id]=c;save();
+    prog(`Checking ${c.units.length} units, ${totalLessons} lessons and ${totalQuestions} questions…`,90);
     closeModal();haptic("complete");renderCourse(id);
-    toast(failed.length?`Course ready · ${lessonCount} lessons; ${failed.length} need retry`:`Complete course ready · ${activeCourse.units.length} units, ${lessonCount} lessons`);
+    toast(`Course ready · ${c.units.length} units · ${totalLessons} lessons`);
   }catch(e){
     if(stop)return;
     closeModal();
-    if(activeCourse&&activeCourse.units.some(u=>u.lessons.length)){
-      activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
-      (data.courses=data.courses||{})[id]=activeCourse;save();renderCourse(id);
-      toast("Saved the lessons generated so far. Rebuild to retry missing content.");
-    }else toast(e.message||"Couldn't build the course");
+    if(c&&c.units&&c.units.length){(data.courses=data.courses||{})[id]=c;save();toast("Course created with the complete lessons returned · "+(e.message||"error"));renderCourse(id)}
+    else{toast(e.message||"Couldn't build the course")}
   }
 }
 function renderCourse(id){
