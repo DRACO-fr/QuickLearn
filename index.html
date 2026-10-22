@@ -95,6 +95,9 @@ nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;width:100%;max-widt
 .modal-bg{position:fixed;inset:0;overflow-y:auto;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);padding:1rem}
 @media(min-width:640px){.modal-bg{align-items:center}}
 .modal{width:100%;max-width:28rem;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:1.25rem;padding:1.25rem}
+.modal:has(.settings-content){max-height:calc(100dvh - 1rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
+.modal:has(.settings-content) .sh{padding-bottom:.5rem}
+.modal:has(.settings-content) .sh h2{position:sticky;top:0;z-index:2;background:var(--surface);padding:.45rem 0 .65rem}
 .flashcard{position:relative;width:100%;max-width:100%;overflow-wrap:anywhere;min-height:16rem;border-radius:1.5rem;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;transition:.2s;user-select:none}
 .flashcard:hover{border-color:var(--primary)}
 .flashcard .q{font-size:1.15rem;font-weight:600;line-height:1.5}
@@ -1226,7 +1229,7 @@ function hapticLevelUp(){
 
 function openSettings(){
   const light = settings.theme === "light";
-  modal(`<div class="sh"><h2>Settings</h2>
+  modal(`<div class="sh settings-content"><h2>Settings</h2>
     <div class="setrow"><span class="seti">📳</span><span class="sett"><b>Vibrations</b><small id="hapSub">${hapSub()}</small></span>
       <button id="swHap" data-nohap class="sw${settings.haptics?" on":""}" role="switch" aria-checked="${settings.haptics}" aria-label="Vibrations" onclick="toggleHaptics()"><i></i></button></div>
     <button class="btn btn-secondary" data-nohap style="width:100%;margin:.1rem 0 .8rem" onclick="haptic('easy')">✨ Try haptics</button>
@@ -3447,7 +3450,7 @@ function applyMx(){ document.documentElement.setAttribute("data-mx", animOn() ? 
 applyMx();
 window.addEventListener("hashchange", () => mxClose());
 
-const MX_C = { body:"#72d8e8", dark:"#55bfd5", deep:"#389dbb", belly:"#c7f4f7", ink:"#24445a" };
+const MX_C = { body:"#57cfc3", dark:"#149b9b", deep:"#087f83", belly:"#ffc83d", ink:"#123c3b" };
 // Outfit registry. The store (added later) only needs to sell these and set data.mascot.worn[slot] = id.
 const MX_OUTFITS = {
   party:  { slot:"hat",  name:"Party hat", price:60,  svg:`<g transform="rotate(-9 100 44)"><path d="M100 4 L127 47 Q100 54 73 47Z" fill="#ff7a59"/><path d="M89 21 L113 23 M83 34 L119 36" stroke="#ffd166" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="5" r="6.5" fill="#ffd166"/></g>` },
@@ -3495,7 +3498,7 @@ function mascot(mood, o){
     case "wave": eyes = eyeOpen(2, 1, 11, 6); mouth = smile; cheek = cheeks; wave = 1; break;
     default: eyes = eyeOpen(1, 2, 11, 6); mouth = smile;
   }
-  const BODY = "M100 38 C65 38 43 65 42 105 C40 145 61 174 100 176 C139 174 160 145 158 105 C157 65 135 38 100 38Z";
+  const BODY = "M100 38 C65 38 39 62 39 103 C37 143 57 166 78 171 L69 194 L91 194 L100 176 L109 194 L131 194 L122 171 C143 166 163 143 161 103 C161 62 135 38 100 38Z";
   let armsBack;
   if(armsUp){
     armsBack = `<g class="mx-armL"><path d="M50 114 Q30 98 26 68" stroke="${C.body}" stroke-width="21" stroke-linecap="round" fill="none"/></g><g class="mx-armR"><path d="M150 114 Q170 98 174 68" stroke="${C.dark}" stroke-width="21" stroke-linecap="round" fill="none"/></g>`;
@@ -3510,11 +3513,13 @@ function mascot(mood, o){
 <defs><clipPath id="${id}c"><path d="${BODY}"/></clipPath></defs>
 <ellipse cx="100" cy="189" rx="52" ry="6.5" fill="#000" opacity=".25"/>
 ${armsBack}
-<path d="M57 61 C48 43 49 29 58 25 C70 21 83 34 91 48 Q77 43 66 56Z" fill="${C.body}"/><path d="M143 61 C152 43 151 29 142 25 C130 21 117 34 109 48 Q123 43 134 56Z" fill="${C.dark}"/>
-<ellipse cx="61" cy="36" rx="5" ry="7" transform="rotate(-22 61 36)" fill="#c7f4f7" opacity=".8"/><ellipse cx="139" cy="36" rx="5" ry="7" transform="rotate(22 139 36)" fill="#c7f4f7" opacity=".8"/>
+<path d="M55 151 Q36 174 17 168 Q28 190 59 177 L72 164Z" fill="${C.body}"/><path d="M29 179 L37 188 L42 178Z" fill="#ffc83d"/>
+<path d="M57 61 C47 42 48 25 58 24 C70 23 82 36 91 49 Q76 45 66 57Z" fill="${C.deep}"/><path d="M143 61 C153 42 152 25 142 24 C130 23 118 36 109 49 Q124 45 134 57Z" fill="${C.deep}"/>
+<!-- tiny friendly dragon wings -->
+<path d="M47 116 Q25 92 13 104 Q18 117 10 124 Q25 142 49 139Z" fill="#ffc83d"/><path d="M153 116 Q175 92 187 104 Q182 117 190 124 Q175 142 151 139Z" fill="#ffc83d"/>
 <path d="${BODY}" fill="${C.body}"/>
 <ellipse cx="76" cy="66" rx="13" ry="7" transform="rotate(-35 76 66)" fill="#fff" opacity=".22"/>
-<g clip-path="url(#${id}c)"><path d="M128 28 C178 56 186 140 138 192 L204 204 L204 18Z" fill="${C.dark}" opacity=".55"/><ellipse cx="97" cy="146" rx="30" ry="29" fill="${C.belly}" opacity=".5"/></g>
+<g clip-path="url(#${id}c)"><path d="M128 28 C178 56 186 140 138 192 L204 204 L204 18Z" fill="${C.dark}" opacity=".55"/><path d="M78 119 Q100 112 122 119 L128 163 Q100 181 72 163Z" fill="${C.belly}"/><path d="M80 132 Q100 137 120 132 M77 145 Q100 150 123 145 M75 157 Q100 162 125 157" stroke="#e8a927" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
 <ellipse cx="74" cy="177" rx="20" ry="9" fill="${C.dark}"/><ellipse cx="126" cy="177" rx="20" ry="9" fill="${C.deep}"/>
 <path d="M66 180 L66 174 M74 181 L74 174 M82 180 L82 174 M118 180 L118 174 M126 181 L126 174 M134 180 L134 174" stroke="${C.ink}" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
 ${cheek}${eyes}${brows}${mouth}${face}${hat}${extra}</svg></div>`;
