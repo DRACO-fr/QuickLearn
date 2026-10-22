@@ -1234,8 +1234,11 @@ function openSettings(){
     <div class="seg full" data-nohap><button id="thNight" class="${light?"":"on"}" onclick="setTheme('dark')">🌙 Night</button><button id="thDay" class="${light?"on":""}" onclick="setTheme('light')">☀️ Day</button></div>
     <div class="setrow" style="cursor:default"><span class="seti">🎞️</span><span class="sett"><b>Reduce motion</b><small id="motSub">${motSub()}</small></span>
       <button id="swMot" data-nohap class="sw${motionReduced()?" on":""}" role="switch" aria-checked="${motionReduced()}" aria-label="Reduce motion" onclick="toggleMotion()"><i></i></button></div>
-    <div class="setrow" style="cursor:default"><span class="seti">${mascot("happy",{size:40})}</span><span class="sett"><b>Mascot animations</b><small id="mxSub">${mxSub()}</small></span>
+    <div class="setrow" style="cursor:default"><span class="seti">🎭</span><span class="sett"><b>Show mascot</b><small id="mxVisibleSub">${settings.mascotVisible===false?"Off · mascot hidden throughout the app":"On · show your QuickLearn buddy"}</small></span>
+      <button id="swMxVisible" data-nohap class="sw${settings.mascotVisible!==false?" on":""}" role="switch" aria-checked="${settings.mascotVisible!==false}" aria-label="Show mascot" onclick="toggleMascotVisible()"><i></i></button></div>
+    <div class="setrow" style="cursor:default"><span class="seti">✨</span><span class="sett"><b>Mascot animations</b><small id="mxSub">${mxSub()}</small></span>
       <button id="swMx" data-nohap class="sw${settings.mascotAnim!==false?" on":""}" role="switch" aria-checked="${settings.mascotAnim!==false}" aria-label="Mascot animations" onclick="toggleMx()"><i></i></button></div>
+    ${quickLearnUser ? `<div class="setrow"><span class="seti">🚪</span><span class="sett"><b>Account</b><small>${esc(quickLearnUser.email || quickLearnUser.displayName || "Signed in")}</small></span><button class="btn btn-secondary" style="flex:none" onclick="quickLearnSignOut();closeModal()">Sign out</button></div>` : `<button class="setrow" onclick="closeModal();openAccountModal()"><span class="seti">👤</span><span class="sett"><b>Account</b><small>Sign in or create an account</small></span><span style="opacity:.5">›</span></button>`}
     <button class="setrow" onclick="openMascotName(false)"><span class="seti">✏️</span><span class="sett"><b>Buddy name</b><small>${esc(data.mascot&&data.mascot.name?data.mascot.name:"Not named yet")} · ${data.game.coins||0} coins</small></span><span style="opacity:.5">›</span></button>
     <button class="setrow" onclick="closeModal();openKeyModal()"><span class="seti">🔑</span><span class="sett"><b>AI key</b><small>Needed for the AI features</small></span><span style="opacity:.5">›</span></button>
     <button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Done</button></div>`);
@@ -3444,7 +3447,7 @@ function applyMx(){ document.documentElement.setAttribute("data-mx", animOn() ? 
 applyMx();
 window.addEventListener("hashchange", () => mxClose());
 
-const MX_C = { body:"#3cbbca", dark:"#2a98ad", deep:"#1d7f93", belly:"#8fe0e8", ink:"#0f3340" };
+const MX_C = { body:"#72d8e8", dark:"#55bfd5", deep:"#389dbb", belly:"#c7f4f7", ink:"#24445a" };
 // Outfit registry. The store (added later) only needs to sell these and set data.mascot.worn[slot] = id.
 const MX_OUTFITS = {
   party:  { slot:"hat",  name:"Party hat", price:60,  svg:`<g transform="rotate(-9 100 44)"><path d="M100 4 L127 47 Q100 54 73 47Z" fill="#ff7a59"/><path d="M89 21 L113 23 M83 34 L119 36" stroke="#ffd166" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="5" r="6.5" fill="#ffd166"/></g>` },
@@ -3457,6 +3460,7 @@ const COIN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy
 const coinSVG = s => s ? COIN_SVG.replace("<svg ", `<svg width="${s}" height="${s}" `) : COIN_SVG;
 
 function mascot(mood, o){
+  if (typeof settings !== "undefined" && settings.mascotVisible === false) return "";
   o = o || {};
   const id = "mx" + (++_mxid), C = MX_C, size = o.size || 120, W = (data.mascot && data.mascot.worn) || {};
   const ink = C.ink;
@@ -3464,8 +3468,8 @@ function mascot(mood, o){
   const eyeOpen = (px, py, r, pr) => `<g class="mx-eyes"><circle cx="78" cy="88" r="${r}" fill="#fff"/><circle cx="122" cy="88" r="${r}" fill="#fff"/><circle cx="${78+px}" cy="${88+py}" r="${pr}" fill="${ink}"/><circle cx="${122+px}" cy="${88+py}" r="${pr}" fill="${ink}"/><circle cx="${76+px}" cy="${85+py}" r="2.2" fill="#fff"/><circle cx="${120+px}" cy="${85+py}" r="2.2" fill="#fff"/></g>`;
   const eyeHappy = `<g class="mx-eyes">${ln("M66 94 Q78 76 90 94", 5.5)}${ln("M110 94 Q122 76 134 94", 5.5)}</g>`;
   const eyeSleep = `<g>${ln("M66 90 Q78 100 90 90", 5)}${ln("M110 90 Q122 100 134 90", 5)}</g>`;
-  const smile = ln("M86 112 Q100 125 114 112", 4.5) + `<path d="M105 116 L109.5 126 L113.5 114Z" fill="#fff"/>`;
-  const cheeks = `<ellipse cx="60" cy="108" rx="9" ry="5.5" fill="#ff8fa3" opacity=".5"/><ellipse cx="140" cy="108" rx="9" ry="5.5" fill="#ff8fa3" opacity=".5"/>`;
+  const smile = ln("M87 113 Q100 126 113 113", 4);
+  const cheeks = `<ellipse cx="59" cy="108" rx="11" ry="6.5" fill="#ff8fa3" opacity=".68"/><ellipse cx="141" cy="108" rx="11" ry="6.5" fill="#ff8fa3" opacity=".68"/>`;
   const mouthBig = `<clipPath id="${id}m"><path d="M72 102 Q100 107 128 102 Q126 148 100 150 Q74 148 72 102Z"/></clipPath><path d="M72 102 Q100 107 128 102 Q126 148 100 150 Q74 148 72 102Z" fill="#0b3340"/><g clip-path="url(#${id}m)"><ellipse cx="100" cy="146" rx="19" ry="14" fill="#ff6a78"/></g><path d="M76 103 Q100 108 124 103 L123.5 112 Q100 117 76.5 112Z" fill="#fff"/>`;
   const mouthMid = `<clipPath id="${id}m"><path d="M80 106 Q100 110 120 106 Q118 134 100 136 Q82 134 80 106Z"/></clipPath><path d="M80 106 Q100 110 120 106 Q118 134 100 136 Q82 134 80 106Z" fill="#0b3340"/><g clip-path="url(#${id}m)"><ellipse cx="100" cy="134" rx="14" ry="10" fill="#ff6a78"/></g>`;
   const heart = (x, y, d) => `<g transform="translate(${x} ${y})"><path class="mx-heart" style="animation-delay:${d}s" d="M0 -3 C-5 -11 -15 -3 0 9 C15 -3 5 -11 0 -3Z" fill="#ff5c7a"/></g>`;
@@ -3491,7 +3495,7 @@ function mascot(mood, o){
     case "wave": eyes = eyeOpen(2, 1, 11, 6); mouth = smile; cheek = cheeks; wave = 1; break;
     default: eyes = eyeOpen(1, 2, 11, 6); mouth = smile;
   }
-  const BODY = "M100 34 C66 34 46 62 42 100 C38 140 56 176 100 178 C144 176 162 140 158 100 C154 62 134 34 100 34Z";
+  const BODY = "M100 38 C65 38 43 65 42 105 C40 145 61 174 100 176 C139 174 160 145 158 105 C157 65 135 38 100 38Z";
   let armsBack;
   if(armsUp){
     armsBack = `<g class="mx-armL"><path d="M50 114 Q30 98 26 68" stroke="${C.body}" stroke-width="21" stroke-linecap="round" fill="none"/></g><g class="mx-armR"><path d="M150 114 Q170 98 174 68" stroke="${C.dark}" stroke-width="21" stroke-linecap="round" fill="none"/></g>`;
@@ -3506,9 +3510,10 @@ function mascot(mood, o){
 <defs><clipPath id="${id}c"><path d="${BODY}"/></clipPath></defs>
 <ellipse cx="100" cy="189" rx="52" ry="6.5" fill="#000" opacity=".25"/>
 ${armsBack}
-<path d="M62 54 L50 20 C60 20 77 28 88 42Z" fill="${C.body}"/><path d="M138 54 L150 20 C140 20 123 28 112 42Z" fill="${C.dark}"/>
-<path d="M60 46 L54 30 C60 31 68 35 74 41Z" fill="${C.deep}" opacity=".55"/><path d="M140 46 L146 30 C140 31 132 35 126 41Z" fill="${C.deep}" opacity=".55"/>
+<path d="M57 61 C48 43 49 29 58 25 C70 21 83 34 91 48 Q77 43 66 56Z" fill="${C.body}"/><path d="M143 61 C152 43 151 29 142 25 C130 21 117 34 109 48 Q123 43 134 56Z" fill="${C.dark}"/>
+<ellipse cx="61" cy="36" rx="5" ry="7" transform="rotate(-22 61 36)" fill="#c7f4f7" opacity=".8"/><ellipse cx="139" cy="36" rx="5" ry="7" transform="rotate(22 139 36)" fill="#c7f4f7" opacity=".8"/>
 <path d="${BODY}" fill="${C.body}"/>
+<ellipse cx="76" cy="66" rx="13" ry="7" transform="rotate(-35 76 66)" fill="#fff" opacity=".22"/>
 <g clip-path="url(#${id}c)"><path d="M128 28 C178 56 186 140 138 192 L204 204 L204 18Z" fill="${C.dark}" opacity=".55"/><ellipse cx="97" cy="146" rx="30" ry="29" fill="${C.belly}" opacity=".5"/></g>
 <ellipse cx="74" cy="177" rx="20" ry="9" fill="${C.dark}"/><ellipse cx="126" cy="177" rx="20" ry="9" fill="${C.deep}"/>
 <path d="M66 180 L66 174 M74 181 L74 174 M82 180 L82 174 M118 180 L118 174 M126 181 L126 174 M134 180 L134 174" stroke="${C.ink}" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
@@ -3694,6 +3699,17 @@ function mxNameSkip(){ data.mascot = data.mascot || {}; data.mascot.asked = 1; s
 function mxSub(){
   if(motionReduced()) return "Paused · Reduce motion is on";
   return settings.mascotAnim !== false ? "On · reactions, combos and chest openings" : "Off · simple results, no mascot motion";
+}
+function toggleMascotVisible(){
+  settings.mascotVisible = settings.mascotVisible === false;
+  saveSettings();
+  const sw = document.getElementById("swMxVisible");
+  if(sw){ sw.classList.toggle("on", settings.mascotVisible !== false); sw.setAttribute("aria-checked", settings.mascotVisible !== false); }
+  const sub = document.getElementById("mxVisibleSub");
+  if(sub) sub.textContent = settings.mascotVisible === false ? "Off · mascot hidden throughout the app" : "On · show your QuickLearn buddy";
+  // Re-render the current screen so mascot illustrations disappear/return immediately.
+  try { route(); } catch(_) {}
+  haptic("select");
 }
 function toggleMx(){
   settings.mascotAnim = settings.mascotAnim === false; saveSettings(); applyMx();
