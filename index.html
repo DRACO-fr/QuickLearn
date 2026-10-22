@@ -4321,9 +4321,10 @@ window.markPractice=function(){const g=data.game,t=localISODate();if(g.lastPract
 window.streakBadge=function(){const n=cur(),d=data.game.lastPracticeDate===localISODate();return `<button class="streak-pill qs-pill${d?" done":""}" onclick="event.stopPropagation();QX.streak()" aria-label="${n} day streak"><span class="flame">🔥</span><span>${n}</span></button>`};
 function weekStrip(){const S=pdays(),t=new Date(),dw=(t.getDay()+6)%7;let o="";for(let i=0;i<7;i++){const d=new Date(t);d.setDate(t.getDate()-dw+i);const s=iso(d);o+=`<i class="${S.has(s)?"on":""}${s===localISODate()?" td":""}"><small>${"MTWTFSS"[i]}</small>${S.has(s)?"🔥":""}</i>`}return o}
 function streakCard(){const n=cur(),done=data.game.lastPracticeDate===localISODate(),nx=MS.find(m=>m>n)||n+100;
-  return `<div class="qs-card" onclick="QX.streak()"><div class="qs-top"><span class="qs-fl">🔥</span><div><div class="qs-n">${n} day${n==1?"":"s"}</div><div class="qs-s">${done?"✅ Streak secured today":n?"Practice today to keep your streak alive":"Start your streak today"}</div></div>${done?"":`<button class="btn btn-primary" style="margin-left:auto;min-height:38px" onclick="event.stopPropagation();go('#/study')">Practice</button>`}</div><div class="qs-wk">${weekStrip()}</div><div class="progress" style="margin:0"><div style="width:${Math.min(100,n/nx*100)}%"></div></div><div class="qs-s">${nx-n} more day${nx-n==1?"":"s"} to the ${nx}-day milestone · Best ${Math.max(data.game.best||0,n)}</div></div>`}
-function todayCard(){const ds=localISODate(),ev=evOn(ds).filter(e=>e.type!=="routine"),has=P().ev.some(e=>e.src==="plan");
-  return `<div class="qt-card"><div class="row" style="justify-content:space-between;margin-bottom:.3rem"><b style="font-size:.95rem">📅 Today</b><button class="btn btn-secondary" style="min-height:34px;font-size:.75rem" onclick="QX.plan()">${has?"Re-plan":"Plan my days"}</button></div>${ev.length?ev.slice(0,4).map(e=>`<div class="r"><b>${e.start||"All day"}</b><span>${esc(e.title)}</span></div>`).join(""):`<div class="muted">Nothing scheduled — let me build your daily plan.</div>`}</div>`}
+  return `<div class="qs-card" onclick="QX.streak()"><div class="qs-top"><span class="qs-fl">🔥</span><div><div class="qs-n">${n} day${n==1?"":"s"}</div><div class="qs-s">${done?"✅ Streak secured today":n?"Practice today to keep it alive":"Start your streak today"}</div></div>${done?"":`<button class="btn btn-primary" style="margin-left:auto;min-height:36px" onclick="event.stopPropagation();go('#/study')">Practice</button>`}</div><div class="qs-wk">${weekStrip()}</div><div class="qs-s" style="opacity:.75">Best ${Math.max(data.game.best||0,n)} · ${nx-n} to the ${nx}-day milestone</div></div>`}
+function todayCard(){const ev=evOn(localISODate()).filter(e=>e.type!=="routine");
+  if(!ev.length)return `<button class="qt-link" onclick="QX.plan()">🗓 Plan my days →</button>`;
+  return `<div class="qt-card"><div class="row" style="justify-content:space-between;margin-bottom:.2rem"><b style="font-size:.9rem">📅 Today</b><button class="qt-link" style="margin:0" onclick="QX.plan()">Re-plan</button></div>${ev.slice(0,3).map(e=>`<div class="r"><b>${e.start||"All day"}</b><span>${esc(e.title)}</span></div>`).join("")}${ev.length>3?`<div class="muted" style="font-size:.75rem">+${ev.length-3} more in My exams</div>`:""}</div>`}
 const _rh=window.renderHome;
 window.renderHome=function(){_rh();const k=view.querySelector(".kh.home");if(k)k.insertAdjacentHTML("afterend",streakCard()+todayCard())};
 /* month grid shared by the exam calendar and the streak sheet */
@@ -4349,7 +4350,7 @@ window.examTimeline=function(w,has){
   return `<div class="qc"><div class="qc-h"><button onclick="QX.mo(-1)" aria-label="Previous month">‹</button><h3>${mlabel(cal.y,cal.m)}</h3><button onclick="QX.mo(1)" aria-label="Next month">›</button><button onclick="QX.today()">Today</button></div>${body}
   <div class="qc-lg"><span><i class="k-exam"></i>Exam</span><span><i class="k-study"></i>Study</span><span><i class="k-activity"></i>Activity</span></div>
   <b style="font-size:.9rem">${pd(cal.sel).toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"short"})}</b>
-  ${main.length?main.map(row).join(""):`<div class="muted" style="margin-top:.4rem">Nothing planned this day.</div>`}${ro.map(row).join("")}
+  ${main.length?main.map(row).join(""):`<div class="muted" style="margin-top:.4rem">Nothing planned this day.</div>`}${ro.length?`<details class="qc-rt"><summary>Daily routine · ${ro.length}</summary>${ro.map(row).join("")}</details>`:""}
   <div class="qc-ac"><button class="btn btn-secondary" onclick="QX.add('${cal.sel}')">＋ Add</button><button class="btn btn-primary" onclick="QX.plan()">🗓 Plan my days</button><button class="btn btn-secondary" onclick="openExamScheduleModal()">🎯 Exams</button></div></div>`};
 /* ---------- add / edit events ---------- */
 const sel=(id,o,c)=>`<select id="${id}" class="input" style="appearance:auto">${o.map(x=>`<option value="${x[0]}"${String(x[0])===String(c)?" selected":""}>${x[1]}</option>`).join("")}</select>`;
@@ -4461,6 +4462,12 @@ if(!location.hash||location.hash==="#/"||/^#\/study/.test(location.hash))try{rou
 
 <!-- ===== QuickLearn additions: Focus mode · sound effects ===== -->
 <style id="qf-css">
+.kh.home .qa{margin-top:1rem}.kh.home~.chips{margin:.3rem 0 .6rem}
+.qs-card{gap:.55rem;padding:.85rem 1rem;margin-bottom:.6rem}.qs-n{font-size:1.8rem}.qs-fl{font-size:2.2rem}
+.qt-card{padding:.75rem 1rem;margin-bottom:.6rem}
+.qt-link{display:block;margin:0 1.1rem .7rem;background:none;border:0;color:var(--muted-fg);font-size:.82rem;text-align:left;padding:.2rem 0;cursor:pointer}
+.qc-rt{margin-top:.5rem}.qc-rt summary,.qx-more summary{cursor:pointer;font-size:.8rem;color:var(--muted-fg);padding:.4rem 0;list-style:none}
+.qc-ac{margin:1rem 0 .4rem}.qc-lg{margin:.7rem 0 .8rem}.qc-ev{margin-top:.5rem}.qx-more{padding:0 1.1rem}
 #qfGray,#qfExit{display:none}
 html[data-focus] #qfGray{display:block;position:fixed;inset:0;pointer-events:none;z-index:9999;background:#808080;mix-blend-mode:saturation}
 html[data-focus] #qfExit{display:block;position:fixed;top:calc(.35rem + env(safe-area-inset-top));right:.6rem;z-index:80;font-size:.65rem;padding:.25rem .6rem;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted-fg);opacity:.7;cursor:pointer}
@@ -4505,7 +4512,11 @@ window.openSettings=function(){_os();const sc=document.querySelector("#modal-roo
   row("🎯","Focus mode","Greyscale, no mascot, haptics, sounds, animations or streak/XP badges",focus(),"QF.focus();openSettings()")+
   row("🔊","Sound effects","Soft tones when you flip, answer and finish",settings.sound!==false,"QF.snd();this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))"))};
 const _rh=window.renderHome;
-window.renderHome=function(){_rh();const r=view.querySelector(".qt-card .row");if(r)r.insertAdjacentHTML("afterbegin",`<button class="btn btn-secondary" style="min-height:34px;font-size:.75rem" onclick="QF.focus(true)">🎯 Focus</button>`)};
+window.renderHome=function(){_rh();const st=view.querySelector(".kh.home .stats");if(st)[...st.children].forEach(c=>{if(c.classList.contains("streak-pill")||/^\s*⚡/.test(c.textContent))c.remove()});
+ const ch=view.querySelector(".chips");if(ch)ch.insertAdjacentHTML("beforeend",`<button class="chip2" onclick="QF.focus(true)">🎯 Focus</button>`)};
+const _rs=window.renderStudy;
+window.renderStudy=function(){_rs();const a=view.querySelector("#studyAdvice");if(!a)return;const rest=[];let n=a.nextElementSibling;while(n){rest.push(n);n=n.nextElementSibling}
+ if(rest.length>2){const d=document.createElement("details");d.className="qx-more";d.innerHTML=`<summary>By deck · ${rest.length}</summary>`;rest.forEach(x=>d.appendChild(x));a.after(d)}};
 const nv=document.querySelector("nav.bottom"),ab=[...nv.querySelectorAll(".navitem")].pop();if(ab&&ab.textContent==="✨")ab.id="qaBtn";
 apply();
 })();
