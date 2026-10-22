@@ -4522,5 +4522,192 @@ apply();
 })();
 </script>
 
+
+<style>
+/* QuickLearn minimal refresh + mandatory standalone account gate */
+:root{--ql-mint:#d9a56c;--primary:#d9a56c}
+body{background:var(--background);background-image:none}
+.panel,.row2,.lc,.ext,.ob,.chip2,.flashcard,.modal{box-shadow:none!important}
+.row2{border-color:transparent;border-radius:.85rem}
+.chip2{border-color:transparent}
+.btn,.btn-primary,.plusbtn,.fab{box-shadow:none!important}
+#ql-gate{position:fixed;inset:0;z-index:2000;overflow:auto;background:var(--background);color:var(--foreground);display:flex;align-items:center;justify-content:center;padding:calc(1.25rem + env(safe-area-inset-top)) 1.1rem calc(1.25rem + env(safe-area-inset-bottom))}
+#ql-gate .gate-card{width:min(100%,27rem);margin:auto}
+#ql-gate h1{font:700 1.8rem/1.2 'Sora',sans-serif;letter-spacing:-.04em;margin:.4rem 0 .6rem}
+#ql-gate p{color:var(--muted-fg);line-height:1.55;font-size:.92rem}
+#ql-gate .gate-brand{font-weight:800;letter-spacing:-.03em;font-size:1rem}
+#ql-gate .gate-kicker{font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted-fg);margin-top:2rem}
+#ql-gate .gate-terms{border:1px solid var(--border);border-radius:.9rem;padding:.85rem;max-height:11rem;overflow:auto;font-size:.82rem;line-height:1.5;margin:1rem 0}
+#ql-gate .gate-accept{display:flex;gap:.65rem;align-items:flex-start;font-size:.82rem;line-height:1.45;margin:1rem 0}
+#ql-gate .gate-accept input{margin-top:.2rem;accent-color:var(--primary);width:1.1rem;height:1.1rem;flex:none}
+#ql-gate .gate-btn{width:100%;margin-top:.55rem}
+#ql-gate .gate-fields{display:grid;gap:.55rem;margin-top:1.1rem}
+#ql-gate .gate-fields label{font-size:.8rem;color:var(--muted-fg)}
+#ql-gate .gate-error{color:#ff8d82!important;min-height:1.1rem;font-size:.82rem!important}
+#ql-gate .gate-divider{display:flex;align-items:center;gap:.7rem;color:var(--muted-fg);font-size:.75rem;margin:.9rem 0}
+#ql-gate .gate-divider:before,#ql-gate .gate-divider:after{content:"";height:1px;background:var(--border);flex:1}
+#ql-recorder{padding:1.1rem}
+#ql-recorder textarea{min-height:12rem}
+.ql-record-pulse{display:inline-block;width:.6rem;height:.6rem;background:#ff6b6b;border-radius:50%;margin-right:.45rem}
+@media(min-width:640px){#ql-gate{padding:2rem}}
+</style>
+<script>
+(function(){
+"use strict";
+const TERMS_KEY="quicklearn-terms-accepted-v1";
+let qlAccepted=localStorage.getItem(TERMS_KEY)==="yes";
+let qlGateMode="signin";
+function qlGateVisible(){return !!document.getElementById("ql-gate")}
+function renderGate(mode){
+ qlGateMode=mode||"signin";
+ let old=document.getElementById("ql-gate");if(old)old.remove();
+ const gate=document.createElement("div");gate.id="ql-gate";
+ const terms=`<div class="gate-terms"><strong>QuickLearn Terms & Conditions</strong><br><br>
+1. <strong>Personal account:</strong> Your account is for your own use. Do not share, sell, rent, or transfer your login or account access.<br><br>
+2. <strong>Source code:</strong> Do not copy, redistribute, publish, sell, reverse engineer, or share QuickLearn's source code except where you have written permission or applicable law permits it.<br><br>
+3. <strong>Respectful use:</strong> Do not use the app for unlawful activity, to interfere with its operation, or to access another person's account or data.<br><br>
+4. <strong>Your content:</strong> You are responsible for having permission to upload notes, recordings, and other material. Do not record people or share their words without appropriate consent.<br><br>
+5. <strong>AI-generated content:</strong> Transcriptions, summaries, answers, and study materials may contain mistakes. Check important information against reliable course materials.<br><br>
+6. <strong>Privacy:</strong> Do not upload confidential or sensitive information unless you are authorized to do so. Recording and microphone access require your permission and can be stopped at any time.<br><br>
+7. <strong>Availability:</strong> Features may change or be unavailable. Do not rely on the app as the only copy of important work; keep backups.<br><br>
+8. <strong>Security:</strong> Keep your password private and tell us if you suspect unauthorized access.<br><br>
+9. <strong>Fair use:</strong> Do not abuse, overload, or attempt to bypass the app's security, access controls, or usage limits.<br><br>
+10. <strong>Updates:</strong> These terms may be updated. Where required, we will ask you to review and accept revised terms.<br><br>
+These terms are a practical starting point and do not replace a legally reviewed agreement or privacy policy.</div>`;
+ gate.innerHTML=`<div class="gate-card">
+   <div class="gate-brand">QuickLearn<span style="color:var(--primary)">.</span></div>
+   <div class="gate-kicker">${quickLearnUser?"ACCOUNT ACCESS":"YOUR STUDY SPACE"}</div>
+   <h1>${quickLearnUser?"One last step.":"Learn with focus."}</h1>
+   <p>${quickLearnUser?"Review and accept the terms to continue to your account.":"Sign in or create an account to continue. Your account is required to use QuickLearn."}</p>
+   ${quickLearnUser?`<p>Signed in as <strong>${qlEscapeHtml(quickLearnUser.email||quickLearnUser.displayName||"your account")}</strong></p>`:`
+   <div class="gate-fields">
+    <label for="qlGateEmail">Email address</label><input class="input" id="qlGateEmail" type="email" autocomplete="email" placeholder="you@example.com">
+    <label for="qlGatePassword">Password</label><input class="input" id="qlGatePassword" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+   </div>
+   <p id="qlGateError" class="gate-error" role="alert"></p>
+   <button class="btn btn-primary gate-btn" onclick="qlGateEmailSignIn()">Sign in</button>
+   <button class="btn btn-secondary gate-btn" onclick="qlGateEmailSignUp()">Create account</button>
+   <div class="gate-divider">or</div>
+   <button class="btn btn-secondary gate-btn" onclick="qlGateGoogleSignIn()">Continue with Google</button>`}
+   <div class="gate-kicker">PLEASE READ</div>${terms}
+   <label class="gate-accept"><input id="qlGateAccept" type="checkbox" ${qlAccepted?"checked":""} onchange="qlGateTermsChanged(this.checked)"><span>I have read and agree to the QuickLearn Terms & Conditions above, including the rules on account sharing, source-code sharing, and responsible use.</span></label>
+   <button class="btn btn-primary gate-btn" id="qlGateContinue" ${qlAccepted?"":"disabled"} onclick="qlGateContinue()">Accept terms & continue</button>
+   ${quickLearnUser?`<button class="btn btn-ghost gate-btn" onclick="quickLearnSignOut()">Sign out</button>`:""}
+ </div>`;
+ document.body.appendChild(gate);
+ const nav=document.querySelector("nav.bottom");if(nav)nav.style.display="none";
+ const shell=document.querySelector(".shell");if(shell)shell.style.visibility="hidden";
+}
+window.qlGateTermsChanged=function(checked){const b=document.getElementById("qlGateContinue");if(b)b.disabled=!checked};
+window.qlGateContinue=function(){
+ const c=document.getElementById("qlGateAccept");
+ if(!c||!c.checked){return}
+ if(!quickLearnUser){const e=document.getElementById("qlGateError");if(e)e.textContent="Please sign in or create an account first.";return}
+ localStorage.setItem(TERMS_KEY,"yes");qlAccepted=true;
+ const gate=document.getElementById("ql-gate");if(gate)gate.remove();
+ const nav=document.querySelector("nav.bottom");if(nav)nav.style.display="";
+ const shell=document.querySelector(".shell");if(shell)shell.style.visibility="";
+ try{route()}catch(_){}
+};
+window.qlGateEmailSignIn=async function(){
+ const email=document.getElementById("qlGateEmail")?.value.trim(),password=document.getElementById("qlGatePassword")?.value||"";
+ const e=document.getElementById("qlGateError");if(!email||!password){if(e)e.textContent="Enter your email and password.";return}
+ try{await quickLearnAuth.signInWithEmailAndPassword(email,password)}catch(err){if(e)e.textContent=qlAuthMessage(err)}
+};
+window.qlGateEmailSignUp=async function(){
+ const email=document.getElementById("qlGateEmail")?.value.trim(),password=document.getElementById("qlGatePassword")?.value||"";
+ const e=document.getElementById("qlGateError");if(!email||!password){if(e)e.textContent="Enter your email and choose a password.";return}
+ if(password.length<6){if(e)e.textContent="Use a password with at least 6 characters.";return}
+ try{await quickLearnAuth.createUserWithEmailAndPassword(email,password)}catch(err){if(e)e.textContent=qlAuthMessage(err)}
+};
+window.qlGateGoogleSignIn=async function(){
+ const e=document.getElementById("qlGateError");
+ try{await quickLearnAuth.signInWithPopup(new firebase.auth.GoogleAuthProvider())}
+ catch(err){try{await quickLearnAuth.signInWithRedirect(new firebase.auth.GoogleAuthProvider())}catch(err2){if(e)e.textContent=qlAuthMessage(err2)}}
+};
+// Replace modal account entry with the dedicated full-page sign-in gate.
+window.openAccountModal=function(){renderGate()};
+window.closeAccountModal=function(){if(!quickLearnUser)renderGate();else renderGate()};
+if(typeof quickLearnAuth!=="undefined"&&quickLearnAuth){
+ quickLearnAuth.onAuthStateChanged(user=>{
+   quickLearnUser=user||null;
+   const btn=document.getElementById("accountBtn");if(btn)btn.textContent=user?(user.displayName?user.displayName.split(" ")[0]:"Account"):"Sign in";
+   if(!user){renderGate("signin");return}
+   if(!qlAccepted){renderGate("terms");return}
+   const gate=document.getElementById("ql-gate");if(gate)gate.remove();
+   const nav=document.querySelector("nav.bottom");if(nav)nav.style.display="";
+   const shell=document.querySelector(".shell");if(shell)shell.style.visibility="";
+ });
+}
+window.addEventListener("load",()=>{if(!quickLearnUser||!qlAccepted)renderGate(quickLearnUser?"terms":"signin")});
+// Guard navigation and plus menu, even if triggered by a deep link.
+const _gateGo=window.go;
+if(typeof _gateGo==="function")window.go=function(){if(!quickLearnUser||!qlAccepted){renderGate(quickLearnUser?"terms":"signin");return}return _gateGo.apply(this,arguments)};
+const _gatePlus=window.openPlusMenu;
+if(typeof _gatePlus==="function")window.openPlusMenu=function(){if(!quickLearnUser||!qlAccepted){renderGate(quickLearnUser?"terms":"signin");return}return _gatePlus.apply(this,arguments)};
+
+/* Lesson recording: browser mic permission is requested only after the user taps Start. */
+let qlRecorder=null,qlChunks=[],qlStream=null,qlRecognition=null,qlTranscript="",qlRecording=false,qlAudioUrl=null;
+window.openLessonRecorder=function(){
+ const root=document.getElementById("modal-root");if(!root)return;
+ root.innerHTML=`<div class="modal-backdrop" onclick="if(event.target===this)closeLessonRecorder()"><section class="modal" id="ql-recorder" role="dialog" aria-modal="true">
+ <button class="modal-close" onclick="closeLessonRecorder()" aria-label="Close">×</button>
+ <h2 style="text-align:left">Record a lesson</h2><p class="muted">Record your lecture and turn speech into editable text. Your browser will ask for microphone permission when you start.</p>
+ <div id="qlRecStatus" class="muted" style="margin:.8rem 0">Ready to record</div>
+ <div class="row" style="flex-wrap:wrap"><button class="btn btn-primary" id="qlRecStart" onclick="startLessonRecording()">● Start recording</button><button class="btn btn-secondary" id="qlRecStop" onclick="stopLessonRecording()" disabled>Stop</button></div>
+ <div class="label">Live transcript</div><textarea class="input" id="qlTranscript" placeholder="Your words will appear here when speech recognition is supported. You can also edit the transcript." rows="8"></textarea>
+ <p class="muted">Speech-to-text availability depends on your browser and language support. If live transcription is unavailable, the recording can still be saved, but automatic transcription requires a compatible speech-to-text service.</p>
+ <div class="row" style="flex-wrap:wrap;margin-top:.7rem"><button class="btn btn-secondary" onclick="downloadLessonTranscript()">Download transcript</button><button class="btn btn-secondary" id="qlAudioDownload" onclick="downloadLessonAudio()" disabled>Download audio</button><button class="btn btn-primary" onclick="saveLessonTranscript()">Save to notes</button></div>
+ </section></div>`;
+};
+window.closeLessonRecorder=function(){if(qlRecording)stopLessonRecording();const r=document.getElementById("modal-root");if(r)r.innerHTML=""};
+window.startLessonRecording=async function(){
+ if(!navigator.mediaDevices?.getUserMedia||!window.MediaRecorder){toast("Audio recording is not supported in this browser.");return}
+ try{
+  qlStream=await navigator.mediaDevices.getUserMedia({audio:true}); // native permission prompt
+  qlChunks=[];qlTranscript=document.getElementById("qlTranscript")?.value||"";
+  qlRecorder=new MediaRecorder(qlStream);qlRecorder.ondataavailable=e=>{if(e.data&&e.data.size)qlChunks.push(e.data)};
+  qlRecorder.onstop=()=>{const blob=new Blob(qlChunks,{type:qlRecorder.mimeType||"audio/webm"});if(qlAudioUrl)URL.revokeObjectURL(qlAudioUrl);qlAudioUrl=URL.createObjectURL(blob);const b=document.getElementById("qlAudioDownload");if(b)b.disabled=false;};
+  qlRecorder.start(500);qlRecording=true;
+  const st=document.getElementById("qlRecStatus");if(st)st.innerHTML='<span class="ql-record-pulse"></span>Recording…';
+  document.getElementById("qlRecStart").disabled=true;document.getElementById("qlRecStop").disabled=false;
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(SR){try{qlRecognition=new SR();qlRecognition.continuous=true;qlRecognition.interimResults=true;qlRecognition.lang=navigator.language||"en-US";
+   qlRecognition.onresult=e=>{let finalText="",interim="";for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i].isFinal)finalText+=e.results[i][0].transcript+" ";else interim+=e.results[i][0].transcript}
+    const box=document.getElementById("qlTranscript");if(box){qlTranscript=(qlTranscript+" "+finalText).trim();box.value=(qlTranscript+(interim?" "+interim:"")).trim();box.scrollTop=box.scrollHeight}};
+   qlRecognition.onerror=()=>{};qlRecognition.start()}catch(_){}
+  }
+ }catch(e){toast(e.name==="NotAllowedError"?"Microphone permission was denied. Allow it in browser settings to record.":"Could not start recording: "+(e.message||"unknown error"))}
+};
+window.stopLessonRecording=function(){
+ if(qlRecognition){try{qlRecognition.stop()}catch(_){}qlRecognition=null}
+ if(qlRecorder&&qlRecorder.state!=="inactive")qlRecorder.stop();
+ if(qlStream)qlStream.getTracks().forEach(t=>t.stop());qlStream=null;qlRecording=false;
+ const st=document.getElementById("qlRecStatus");if(st)st.textContent="Recording stopped. Review your transcript, then save it to notes.";
+ const a=document.getElementById("qlRecStart"),b=document.getElementById("qlRecStop");if(a)a.disabled=false;if(b)b.disabled=true;
+};
+window.downloadLessonTranscript=function(){
+ const text=document.getElementById("qlTranscript")?.value||"";if(!text.trim()){toast("There is no transcript to download yet.");return}
+ const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([text],{type:"text/plain;charset=utf-8"}));a.download="quicklearn-lesson-transcript.txt";a.click();URL.revokeObjectURL(a.href);
+};
+window.downloadLessonAudio=function(){if(!qlAudioUrl)return;const a=document.createElement("a");a.href=qlAudioUrl;a.download="quicklearn-lesson-recording.webm";a.click()};
+window.saveLessonTranscript=function(){
+ const text=document.getElementById("qlTranscript")?.value?.trim();if(!text){toast("Add or transcribe some lesson text first.");return}
+ try{data.notes=data.notes||[];data.notes.unshift({id:uid(),title:"Recorded lesson — "+new Date().toLocaleDateString(),text,content:text,createdAt:Date.now()});save();toast("Lesson transcript saved to your notes.");closeLessonRecorder()}catch(e){toast("Could not save transcript. Download it as a backup.")}
+};
+// Add a clean lesson-recording entry to the home screen.
+const oldRenderHome=window.renderHome;
+if(typeof oldRenderHome==="function")window.renderHome=function(){
+ oldRenderHome.apply(this,arguments);
+ if(!quickLearnUser||!qlAccepted)return;
+ const root=document.querySelector("#view");
+ if(root&&!root.querySelector("#qlRecordLessonBtn")){
+  const btn=document.createElement("button");btn.id="qlRecordLessonBtn";btn.className="row2";btn.style.margin="0 1.1rem .8rem";btn.innerHTML='<span class="tile" style="background:#3b3025">🎙️</span><span class="t"><b>Record a lesson</b><small>Capture audio and transcribe speech to text</small></span><span aria-hidden="true">›</span>';btn.onclick=()=>openLessonRecorder();
+  const header=root.querySelector(".kh.home");if(header)header.after(btn);else root.prepend(btn);
+ }
+};
+})();
+</script>
+
 </body>
 </html>
