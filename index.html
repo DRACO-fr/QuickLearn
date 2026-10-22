@@ -4550,6 +4550,18 @@ body{background:var(--background);background-image:none}
 #ql-recorder textarea{min-height:12rem}
 .ql-record-pulse{display:inline-block;width:.6rem;height:.6rem;background:#ff6b6b;border-radius:50%;margin-right:.45rem}
 @media(min-width:640px){#ql-gate{padding:2rem}}
+
+#ql-auth-buffer{position:fixed;inset:0;z-index:100000;background:#100c09;color:#f8f1e8;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:2rem;text-align:center;gap:.8rem;animation:qlBufferIn .35s ease both}
+#ql-auth-buffer h1{font-size:1.8rem;letter-spacing:-.04em;margin:.5rem 0 0;font-weight:800}#ql-auth-buffer h1 span{color:#ffb84d}
+#ql-auth-buffer p{color:#b9aa9c;margin:0;font-size:.92rem}
+.ql-loader-orbit{width:94px;height:94px;position:relative;display:grid;place-items:center;margin-bottom:.5rem}
+.ql-loader-orbit:before,.ql-loader-orbit:after{content:"";position:absolute;inset:4px;border:2px solid transparent;border-top-color:#ffb84d;border-right-color:#ffb84d;border-radius:50%;animation:qlSpin 1.4s linear infinite}
+.ql-loader-orbit:after{inset:14px;border-top-color:#e9853e;border-right-color:transparent;border-bottom-color:#e9853e;animation-direction:reverse;animation-duration:1.9s}
+.ql-loader-orbit span{position:absolute;width:7px;height:7px;border-radius:50%;background:#ffcf75;top:0;left:44px;transform-origin:3px 47px;animation:qlSpin 1.5s linear infinite}
+.ql-loader-orbit span:nth-child(2){animation-delay:-.5s;transform:rotate(120deg)}.ql-loader-orbit span:nth-child(3){animation-delay:-1s;transform:rotate(240deg)}
+.ql-loader-orbit b{width:48px;height:48px;border-radius:16px;background:#292017;display:grid;place-items:center;color:#ffb84d;font-size:1.4rem;box-shadow:0 8px 28px #0006}
+.ql-loader-track{width:min(210px,65vw);height:3px;border-radius:9px;background:#30251c;overflow:hidden;margin-top:1rem}.ql-loader-track i{display:block;width:38%;height:100%;border-radius:9px;background:linear-gradient(90deg,#d97b32,#ffd078);animation:qlLoadTrack 1.25s ease-in-out infinite}
+@keyframes qlSpin{to{transform:rotate(360deg)}}@keyframes qlLoadTrack{0%{transform:translateX(-110%)}100%{transform:translateX(280%)}}@keyframes qlBufferIn{from{opacity:0}to{opacity:1}}
 </style>
 <script>
 (function(){
@@ -4557,6 +4569,16 @@ body{background:var(--background);background-image:none}
 const TERMS_KEY="quicklearn-terms-accepted-v1";
 let qlAccepted=localStorage.getItem(TERMS_KEY)==="yes";
 let qlGateMode="signin";
+let qlAuthResolved=false;
+function showAuthBuffer(){
+ let el=document.getElementById("ql-auth-buffer");if(el)return;
+ el=document.createElement("div");el.id="ql-auth-buffer";
+ el.innerHTML='<div class="ql-loader-orbit"><span></span><span></span><span></span><b>Q</b></div><h1>QuickLearn<span>.</span></h1><p id="ql-auth-status">Preparing your study space…</p><div class="ql-loader-track"><i></i></div>';
+ document.body.appendChild(el);
+ const nav=document.querySelector("nav.bottom");if(nav)nav.style.display="none";
+ const shell=document.querySelector(".shell");if(shell)shell.style.visibility="hidden";
+}
+function hideAuthBuffer(){const el=document.getElementById("ql-auth-buffer");if(el)el.remove()}
 function qlGateVisible(){return !!document.getElementById("ql-gate")}
 function renderGate(mode){
  qlGateMode=mode||"signin";
@@ -4626,10 +4648,11 @@ window.qlGateGoogleSignIn=async function(){
  catch(err){try{await quickLearnAuth.signInWithRedirect(new firebase.auth.GoogleAuthProvider())}catch(err2){if(e)e.textContent=qlAuthMessage(err2)}}
 };
 // Replace modal account entry with the dedicated full-page sign-in gate.
-window.openAccountModal=function(){renderGate()};
-window.closeAccountModal=function(){if(!quickLearnUser)renderGate();else renderGate()};
+window.openAccountModal=function(){if(!qlAuthResolved){showAuthBuffer();return}renderGate()};
+window.closeAccountModal=function(){if(!qlAuthResolved){showAuthBuffer();return}renderGate()};
 if(typeof quickLearnAuth!=="undefined"&&quickLearnAuth){
  quickLearnAuth.onAuthStateChanged(user=>{
+   qlAuthResolved=true;hideAuthBuffer();
    quickLearnUser=user||null;
    const btn=document.getElementById("accountBtn");if(btn)btn.textContent=user?(user.displayName?user.displayName.split(" ")[0]:"Account"):"Sign in";
    if(!user){renderGate("signin");return}
@@ -4639,7 +4662,9 @@ if(typeof quickLearnAuth!=="undefined"&&quickLearnAuth){
    const shell=document.querySelector(".shell");if(shell)shell.style.visibility="";
  });
 }
-window.addEventListener("load",()=>{if(!quickLearnUser||!qlAccepted)renderGate(quickLearnUser?"terms":"signin")});
+window.addEventListener("DOMContentLoaded",()=>{showAuthBuffer()});
+window.addEventListener("load",()=>{if(!qlAuthResolved)showAuthBuffer()});
+if(typeof quickLearnAuth==="undefined"||!quickLearnAuth){window.addEventListener("load",()=>{qlAuthResolved=true;hideAuthBuffer();renderGate("signin")})}
 // Guard navigation and plus menu, even if triggered by a deep link.
 const _gateGo=window.go;
 if(typeof _gateGo==="function")window.go=function(){if(!quickLearnUser||!qlAccepted){renderGate(quickLearnUser?"terms":"signin");return}return _gateGo.apply(this,arguments)};
