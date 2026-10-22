@@ -757,6 +757,129 @@ img,svg{-webkit-user-drag:none}
 .grab{position:relative;height:2.2rem;margin:-.7rem -1.2rem -.2rem;touch-action:none;cursor:grab}
 .grab::after{content:"";position:absolute;left:50%;top:.7rem;width:2.4rem;height:.28rem;margin-left:-1.2rem;border-radius:9px;background:color-mix(in oklab,var(--mut) 55%,transparent);transition:width .2s,margin .2s}
 .grab:active::after{width:3rem;margin-left:-1.5rem}
+/* ===== mascot pack: mascot · combo · results flow · chest · coins ===== */
+.mxw{display:inline-block;width:var(--s,120px);height:var(--s,120px);flex:none;position:relative;line-height:0}
+.mxw svg{width:100%;height:100%;overflow:visible;display:block}
+.mxw.idle{animation:mxBob 3s ease-in-out infinite}
+.mxw.hop{animation:mxHop .7s cubic-bezier(.2,1.4,.35,1) both}
+.mxw.shake{animation:mxShake .55s both}
+.mxw.cheer{animation:mxCheer .85s ease-in-out infinite}
+.mxw.pop{animation:mxPop .7s cubic-bezier(.2,1.5,.3,1) both}
+@keyframes mxBob{0%,100%{transform:translateY(0) scale(1,1)}50%{transform:translateY(-3%) scale(1.015,.985)}}
+@keyframes mxHop{0%{transform:translateY(0) scale(1.1,.88)}35%{transform:translateY(-22%) scale(.94,1.08)}65%{transform:translateY(0) scale(1.08,.92)}100%{transform:none}}
+@keyframes mxShake{0%,100%{transform:none}20%{transform:translateX(-7%) rotate(-4deg)}40%{transform:translateX(6%) rotate(3deg)}60%{transform:translateX(-4%)}80%{transform:translateX(3%)}}
+@keyframes mxCheer{0%,100%{transform:translateY(0) scale(1.04,.96)}50%{transform:translateY(-12%) scale(.97,1.03)}}
+@keyframes mxPop{0%{transform:scale(.3);opacity:0}100%{transform:none;opacity:1}}
+.mx-eyes{transform-box:fill-box;transform-origin:center;animation:mxBlink 4.4s infinite}
+@keyframes mxBlink{0%,93%,100%{transform:scaleY(1)}96%{transform:scaleY(.08)}}
+.mx-armL,.mx-armR{transform-box:fill-box;transform-origin:50% 100%}
+.mx-armL{animation:mxArmL .42s ease-in-out infinite alternate}
+.mx-armR{animation:mxArmR .42s ease-in-out infinite alternate}
+.mx-wave{transform-box:fill-box;transform-origin:50% 100%;animation:mxWave .5s ease-in-out infinite alternate}
+@keyframes mxArmL{from{transform:rotate(-10deg)}to{transform:rotate(8deg)}}
+@keyframes mxArmR{from{transform:rotate(10deg)}to{transform:rotate(-8deg)}}
+@keyframes mxWave{from{transform:rotate(-14deg)}to{transform:rotate(16deg)}}
+.mx-heart{transform-box:fill-box;transform-origin:center;animation:mxHeart 1.8s ease-out infinite}
+@keyframes mxHeart{0%{opacity:0;transform:translateY(10px) scale(.4)}25%{opacity:1}100%{opacity:0;transform:translateY(-26px) scale(1.05)}}
+.mx-sp{transform-box:fill-box;transform-origin:center;animation:mxTwinkle 1.1s ease-in-out infinite alternate}
+@keyframes mxTwinkle{from{opacity:.25;transform:scale(.5) rotate(0)}to{opacity:1;transform:scale(1.1) rotate(25deg)}}
+.mx-tear{animation:mxTear 1.7s ease-in infinite}
+@keyframes mxTear{0%{opacity:0;transform:translateY(-4px)}20%{opacity:1}100%{opacity:0;transform:translateY(16px)}}
+.mx-z{animation:mxZ 2.6s ease-in-out infinite}
+@keyframes mxZ{0%{opacity:0;transform:translate(0,6px)}30%{opacity:1}100%{opacity:0;transform:translate(8px,-14px)}}
+html[data-mx="off"] .mxw,html[data-mx="off"] .mxw *,html[data-mx="off"] .cbig,html[data-mx="off"] .hearts,html[data-mx="off"] .celeb.mxc *,html[data-mx="off"] .mxsticker{animation:none!important}
+html[data-mx="off"] .celeb.mxc .confetti{display:none}
+
+/* lesson: mascot + speech bubble */
+.mxrow{display:flex;align-items:flex-end;gap:.7rem;padding:.3rem 1.3rem 0;position:relative}
+.mxbubble{position:relative;background:var(--s1);border:2px solid var(--bd);border-radius:1rem;padding:.55rem .9rem;font-weight:600;font-size:.95rem;margin-bottom:1.2rem;max-width:72%}
+.mxbubble::before{content:"";position:absolute;left:-.5rem;bottom:.95rem;width:.8rem;height:.8rem;background:inherit;border-left:2px solid;border-bottom:2px solid;border-color:inherit;transform:rotate(45deg)}
+.mxbubble.good{border-color:#8fd16a}.mxbubble.bad{border-color:#ff7a6b}
+.mxsticker{position:absolute;left:6.4rem;top:-.55rem;transform:rotate(-8deg);font-family:var(--font-display);font-weight:800;font-size:1.3rem;color:#fff;-webkit-text-stroke:6px #1ea4bd;paint-order:stroke fill;white-space:nowrap;pointer-events:none;animation:mxStick 1.9s cubic-bezier(.2,1.5,.3,1) both}
+@keyframes mxStick{0%{transform:rotate(-8deg) scale(0)}14%{transform:rotate(-8deg) scale(1.25)}24%{transform:rotate(-8deg) scale(1)}84%{opacity:1}100%{transform:rotate(-8deg) scale(1);opacity:0}}
+.lp>div{transition:width .55s cubic-bezier(.2,.9,.3,1);position:relative}
+.lp>div::after{content:"";position:absolute;left:.45rem;right:.45rem;top:.14rem;height:.16rem;border-radius:9px;background:rgba(255,255,255,.4)}
+.hearts.lost{animation:mxHeartLost .6s both}
+@keyframes mxHeartLost{0%{transform:none}30%{transform:scale(1.5) rotate(-10deg)}60%{transform:scale(.85)}100%{transform:none}}
+
+/* course path */
+.mxnode{position:absolute;top:.5rem;display:block;font-style:normal;pointer-events:none}
+.mxnode.l{right:calc(100% - .5rem)}.mxnode.r{left:calc(100% - .5rem)}
+.coinchip svg{width:1.15rem;height:1.15rem}
+.kh .stats>.coinchip{gap:.35rem}
+
+/* full-screen reward flow */
+.mxo{position:fixed;inset:0;z-index:110;background:var(--ob);color:var(--foreground);display:flex;flex-direction:column;animation:fade .25s both;overflow:hidden}
+.mxo .confetti{z-index:1}
+.mxo-in{position:relative;z-index:2;flex:1;min-height:0;overflow:auto;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:calc(1.5rem + env(safe-area-inset-top)) 1.5rem 1rem;gap:.8rem;animation:mxIn .45s cubic-bezier(.2,1,.3,1) both}
+@keyframes mxIn{from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:none}}
+.mxo-foot{position:relative;z-index:3;padding:1rem 1.25rem calc(1rem + env(safe-area-inset-bottom));width:100%;max-width:720px;margin:0 auto}
+.mxo-foot .btn{width:100%}
+.mxo-foot .btn:disabled{opacity:.45}
+.mxo-h{font-family:var(--font-display);font-weight:800;font-size:1.75rem;line-height:1.15;color:var(--teal)}
+.mxo-p{color:var(--mut);line-height:1.45;max-width:20rem;margin:0}
+.mxpill{display:inline-flex;align-items:center;gap:.4rem;border:2px solid var(--c,#3cbbca);color:var(--c,#3cbbca);border-radius:999px;padding:.35rem .9rem;font-family:var(--font-display);font-weight:800;font-size:1.1rem}
+.mxst{display:flex;gap:.6rem;width:100%;max-width:22rem;margin-top:.5rem}
+.mxst>div{flex:1;border:2px solid var(--c);border-radius:1rem;overflow:hidden;background:var(--s1);animation:mxIn .5s both}
+.mxst>div:nth-child(1){--c:#e29a2d;animation-delay:.25s}.mxst>div:nth-child(2){--c:#3cbbca;animation-delay:.4s}.mxst>div:nth-child(3){--c:#8fd16a;animation-delay:.55s}
+.mxst small{display:block;background:var(--c);color:#130d04;font-weight:800;font-size:.74rem;padding:.3rem 0}
+.mxst b{display:block;padding:.75rem 0;font-family:var(--font-display);font-size:1.25rem;color:var(--c)}
+.mxbar{width:100%;max-width:22rem;height:1.15rem;border-radius:999px;background:var(--s2);overflow:hidden;margin-top:.4rem}
+.mxbar i{display:block;height:100%;width:0;border-radius:999px;background:linear-gradient(90deg,#e29a2d,#ffd166);transition:width 1.2s cubic-bezier(.2,.9,.3,1);position:relative}
+.mxbar i::after{content:"";position:absolute;left:.5rem;right:.5rem;top:.18rem;height:.2rem;border-radius:9px;background:rgba(255,255,255,.45)}
+.mxbarlbl{display:flex;justify-content:space-between;width:100%;max-width:22rem;font-family:var(--font-display);font-weight:800;color:var(--mut)}
+.mxflame{font-size:5.5rem;line-height:1;animation:mxFlicker 1.1s ease-in-out infinite;filter:drop-shadow(0 0 24px #ff7a2b88)}
+@keyframes mxFlicker{0%,100%{transform:scale(1) rotate(-2deg)}50%{transform:scale(1.08) rotate(2deg)}}
+.mxbig{font-family:var(--font-display);font-weight:800;font-size:5rem;line-height:1;color:#ff8a3d}
+.mxweek{display:flex;gap:.5rem;margin-top:.6rem}
+.mxday{display:grid;gap:.3rem;justify-items:center;color:var(--mut);font-size:.72rem;font-weight:700}
+.mxday span{width:2.1rem;height:2.1rem;border-radius:50%;background:var(--s2);display:grid;place-items:center;font-weight:800;color:#130d04;font-size:1rem}
+.mxday.on span{background:#ff8a3d}
+.mxday.today span{animation:mxPop .6s .5s cubic-bezier(.2,1.6,.3,1) both}
+.mxday.today small{color:#ff8a3d}
+
+/* chest */
+.mxcoinchip{position:absolute;top:calc(1rem + env(safe-area-inset-top));right:1.1rem;z-index:5;display:flex;align-items:center;gap:.4rem;background:var(--s1);border:1px solid var(--bd);border-radius:999px;padding:.35rem .8rem;font-family:var(--font-display);font-weight:800}
+.mxcoinchip.bump{animation:mxBump .18s}
+@keyframes mxBump{50%{transform:scale(1.18)}}
+.mxrar{font-family:var(--font-display);font-weight:800;font-size:1.5rem;color:var(--c)}
+.mxrar.common{--c:#e8a850}.mxrar.rare{--c:#5aa8ff}.mxrar.epic{--c:#b57cff}
+.mxstage{position:relative;width:min(17rem,80vw);height:15rem;margin-top:.2rem}
+.mxstage.common{--gl:rgba(255,198,90,.55)}.mxstage.rare{--gl:rgba(90,168,255,.55)}.mxstage.epic{--gl:rgba(181,124,255,.6)}
+.mxrays{position:absolute;left:50%;top:48%;width:170%;aspect-ratio:1;transform:translate(-50%,-50%);opacity:0;pointer-events:none;transition:opacity .5s;background:repeating-conic-gradient(from 0deg,var(--gl) 0 8deg,transparent 8deg 24deg);-webkit-mask:radial-gradient(circle,#000 0,transparent 66%);mask:radial-gradient(circle,#000 0,transparent 66%)}
+.mxstage.open .mxrays{opacity:1;animation:mxSpin 16s linear infinite}
+@keyframes mxSpin{from{transform:translate(-50%,-50%) rotate(0)}to{transform:translate(-50%,-50%) rotate(360deg)}}
+.mxchestw{position:absolute;inset:0;display:grid;place-items:center;cursor:pointer;-webkit-tap-highlight-color:transparent}
+.mxchestw svg{width:88%;height:auto;overflow:visible}
+.mxchestw.wobble{animation:mxWobble 1.5s ease-in-out infinite}
+@keyframes mxWobble{0%,100%{transform:rotate(0)}12%{transform:rotate(-4deg) translateY(-3px)}24%{transform:rotate(4deg) translateY(-3px)}36%{transform:rotate(-3deg)}48%{transform:rotate(2deg)}60%{transform:none}}
+.mxchestw.open{animation:mxChestPop .5s cubic-bezier(.2,1.6,.3,1) both;cursor:default}
+@keyframes mxChestPop{0%{transform:scale(1,1)}30%{transform:scale(1.1,.88)}60%{transform:scale(.95,1.08)}100%{transform:scale(1)}}
+.mxchestw .ch-lid{transform-origin:34px 100px;transition:transform .5s cubic-bezier(.3,1.5,.5,1)}
+.mxchestw.open .ch-lid{transform:translate(-4px,-4px) rotate(-32deg)}
+.mxchestw .ch-in{opacity:0;transition:opacity .35s}
+.mxchestw.open .ch-in{opacity:1}
+.mxcoins{position:absolute;left:50%;top:44%;width:0;height:0;z-index:4;pointer-events:none}
+.mxcoin{position:absolute;left:0;top:0;width:30px;height:30px;line-height:0;will-change:transform}
+.mxcoin svg{width:100%;height:100%}
+.mxgain{display:flex;align-items:center;justify-content:center;gap:.5rem;min-height:2.6rem;font-family:var(--font-display);font-weight:800;font-size:2rem;color:#ffd166}
+.mxgain.show{animation:mxPop .5s cubic-bezier(.2,1.6,.3,1) both}
+.mxgain svg{width:2.1rem;height:2.1rem}
+
+/* naming sheet */
+.mxsug{display:flex;gap:.5rem;flex-wrap:wrap;justify-content:center;margin-top:.8rem}
+.mxname .input{text-align:center;font-weight:700}
+
+
+/* Firebase account modal */
+.modal-backdrop{position:fixed;inset:0;z-index:1000;background:rgba(0,0,0,.68);display:grid;place-items:center;padding:1rem}
+.modal-backdrop .modal{position:relative;width:min(100%,28rem);max-height:90dvh;overflow:auto;background:var(--s1,#201b19);color:var(--tx,#fff);border:1px solid var(--bd,#444);border-radius:1.25rem;padding:1.4rem;box-shadow:0 24px 80px rgba(0,0,0,.4)}
+.modal-backdrop .modal h2{margin:.2rem 2rem 1rem 0}
+.modal-close{position:absolute;right:.8rem;top:.7rem;border:0;background:transparent;color:inherit;font-size:1.8rem;cursor:pointer}
+.modal-backdrop .field-label{display:block;margin:.8rem 0 .35rem;font-size:.9rem;font-weight:700}
+.modal-backdrop .input{width:100%;box-sizing:border-box}
+.modal-backdrop .muted{opacity:.78;line-height:1.45}
+
 </style>
 </head>
 <body>
@@ -764,6 +887,7 @@ img,svg{-webkit-user-drag:none}
   <header class="top">
     <div class="brand" onclick="go('#/')">QuickLearn</div>
     <button class="keybtn" onclick="openKeyModal()">AI key</button>
+    <button class="keybtn" id="accountBtn" onclick="openAccountModal()">Sign in</button>
   </header>
   <main id="view"></main>
   <nav class="bottom">
@@ -780,6 +904,89 @@ img,svg{-webkit-user-drag:none}
 <input type="file" id="imgInput" accept="image/*,application/pdf" multiple style="display:none">
 <input type="file" id="schedInput" accept="image/*,application/pdf" multiple style="display:none" onchange="importSchedule(this.files)">
 
+<!-- Firebase compat SDKs: chosen for compatibility with this single-file HTML app -->
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script>
+/* ============================== FIREBASE AUTH ============================== */
+const firebaseConfig = {
+  apiKey: "AIzaSyCR4QvXMAQos5dY_7MRnLcRJynYBeXtNm8",
+  authDomain: "quicklearn-14967.firebaseapp.com",
+  projectId: "quicklearn-14967",
+  storageBucket: "quicklearn-14967.firebasestorage.app",
+  messagingSenderId: "1032448337480",
+  appId: "1:1032448337480:web:03d5a84f2458beae141a7d",
+  measurementId: "G-LPGWD5E0LS"
+};
+let quickLearnAuth = null;
+let quickLearnUser = null;
+try {
+  if (!firebase.apps.length) firebase.initializeApp(firebaseConfig);
+  quickLearnAuth = firebase.auth();
+  quickLearnAuth.onAuthStateChanged(user => {
+    quickLearnUser = user || null;
+    const btn = document.getElementById('accountBtn');
+    if (btn) btn.textContent = user ? (user.displayName ? user.displayName.split(' ')[0] : 'Account') : 'Sign in';
+    if (user) { try { toast('Signed in as ' + (user.email || user.displayName || 'QuickLearn user')); } catch (_) {} }
+  });
+} catch (e) { console.error('Firebase initialization failed:', e); }
+function qlEscapeHtml(value){ return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
+function openAccountModal() {
+  const root = document.getElementById('modal-root');
+  if (!root) return;
+  const user = quickLearnUser;
+  root.innerHTML = `<div class="modal-backdrop" onclick="if(event.target===this)closeAccountModal()"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="qlAuthTitle">
+    <button class="modal-close" onclick="closeAccountModal()" aria-label="Close">×</button>
+    <h2 id="qlAuthTitle">${user ? 'Your QuickLearn account' : 'Sign in to QuickLearn'}</h2>
+    ${user ? `<p class="muted">Signed in as <strong>${qlEscapeHtml(user.email || user.displayName || 'Google account')}</strong></p><button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="quickLearnSignOut()">Sign out</button>` : `
+      <p class="muted">Sign in to use your QuickLearn account. Cloud syncing will be enabled after the database rules are configured.</p>
+      <label class="field-label" for="qlAuthEmail">Email</label><input class="input" id="qlAuthEmail" type="email" autocomplete="email" placeholder="you@example.com">
+      <label class="field-label" for="qlAuthPassword">Password</label><input class="input" id="qlAuthPassword" type="password" autocomplete="current-password" placeholder="At least 6 characters">
+      <div id="qlAuthError" role="alert" style="color:var(--danger,#ff6b6b);font-size:.9rem;margin-top:8px"></div>
+      <button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="quickLearnEmailSignIn()">Sign in with email</button>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="quickLearnEmailSignUp()">Create account</button>
+      <button class="btn" style="width:100%;margin-top:8px" onclick="quickLearnGoogleSignIn()">Continue with Google</button>`}
+  </section></div>`;
+}
+function closeAccountModal(){ const root=document.getElementById('modal-root'); if(root) root.innerHTML=''; }
+function qlAuthError(message){ const el=document.getElementById('qlAuthError'); if(el) el.textContent=message; else toast(message); }
+function qlAuthFields(){ return {email:(document.getElementById('qlAuthEmail')?.value||'').trim(),password:document.getElementById('qlAuthPassword')?.value||''}; }
+async function quickLearnEmailSignIn(){
+  if(!quickLearnAuth) return qlAuthError('Firebase could not initialize. Check your internet connection and Firebase configuration.');
+  const {email,password}=qlAuthFields(); if(!email||!password) return qlAuthError('Enter your email and password.');
+  try { await quickLearnAuth.signInWithEmailAndPassword(email,password); closeAccountModal(); toast('Welcome back!'); }
+  catch(e){ qlAuthError(qlAuthMessage(e)); }
+}
+async function quickLearnEmailSignUp(){
+  if(!quickLearnAuth) return qlAuthError('Firebase could not initialize. Check your internet connection and Firebase configuration.');
+  const {email,password}=qlAuthFields(); if(!email||!password) return qlAuthError('Enter your email and choose a password.');
+  if(password.length<6) return qlAuthError('Use a password with at least 6 characters.');
+  try { await quickLearnAuth.createUserWithEmailAndPassword(email,password); closeAccountModal(); toast('QuickLearn account created!'); }
+  catch(e){ qlAuthError(qlAuthMessage(e)); }
+}
+async function quickLearnGoogleSignIn(){
+  if(!quickLearnAuth) return qlAuthError('Firebase could not initialize. Check your internet connection and Firebase configuration.');
+  try { const provider=new firebase.auth.GoogleAuthProvider(); await quickLearnAuth.signInWithPopup(provider); closeAccountModal(); toast('Signed in with Google!'); }
+  catch(e){
+    // Mobile browsers often block popups; redirect is the fallback.
+    if(e && (e.code==='auth/popup-blocked' || e.code==='auth/popup-closed-by-user' || e.code==='auth/operation-not-supported-in-this-environment')) {
+      try { await quickLearnAuth.signInWithRedirect(new firebase.auth.GoogleAuthProvider()); return; } catch(err) { qlAuthError(qlAuthMessage(err)); return; }
+    }
+    qlAuthError(qlAuthMessage(e));
+  }
+}
+async function quickLearnSignOut(){ try { await quickLearnAuth.signOut(); closeAccountModal(); toast('Signed out'); } catch(e){ toast(qlAuthMessage(e)); } }
+function qlAuthMessage(e){ const code=e&&e.code; const map={
+  'auth/email-already-in-use':'That email already has an account. Try signing in.',
+  'auth/invalid-email':'That email address does not look valid.',
+  'auth/weak-password':'Choose a stronger password (at least 6 characters).',
+  'auth/user-not-found':'No account found for that email. Create an account first.',
+  'auth/wrong-password':'Incorrect password. Try again.',
+  'auth/invalid-credential':'Email or password is incorrect. Check them and try again.',
+  'auth/popup-closed-by-user':'Google sign-in was closed before it finished.',
+  'auth/unauthorized-domain':'This website domain is not authorized in Firebase Authentication settings.'
+}; return map[code] || (e&&e.message) || 'Sign-in failed. Please try again.'; }
+</script>
 <script>
 /* ============================== DATA ============================== */
 const DATA_KEY = "quicklearn-data-v1";
@@ -789,7 +996,7 @@ const GEMINI_FALLBACK_MODEL = "gemini-flash-lite-latest"; // lighter backup mode
 const RETRY_DELAYS = [2000, 5000, 10000];     // wait before retry 1, 2, 3 (ms)
 const RETRYABLE = [429, 500, 502, 503, 504];  // busy / temporary errors worth retrying
 
-const EMPTY = { decks: [], subjects: [], notes: [], cards: [], examSchedule: {}, subjectScores: {}, studyFreq: {}, game: { level:1, xp:0, day:"", base:0, conquered:0 } };
+const EMPTY = { decks: [], subjects: [], notes: [], cards: [], examSchedule: {}, subjectScores: {}, studyFreq: {}, game: { level:1, xp:0, day:"", base:0, conquered:0, coins:0 }, mascot: { name:"", asked:0, worn:{} } };
 let data = load();
 
 function load(){
@@ -806,8 +1013,9 @@ function load(){
     return {
       decks:d.decks||[], subjects:d.subjects||[], notes:d.notes||[], cards:d.cards||[],
       examSchedule:sched, subjectScores:d.subjectScores||{}, studyFreq:d.studyFreq||{},
-      game:Object.assign({ level:1, xp:0, day:"", base:0, conquered:0 }, d.game||{}),
-      reviewLog:d.reviewLog||{}, courses:d.courses||{}
+      game:Object.assign({ level:1, xp:0, day:"", base:0, conquered:0, coins:0 }, d.game||{}),
+      reviewLog:d.reviewLog||{}, courses:d.courses||{},
+      mascot:Object.assign({ name:"", asked:0, worn:{} }, d.mascot||{})
     };
   }catch{ return structuredClone(EMPTY); }
 }
@@ -958,10 +1166,10 @@ function toggleHard(id){
 
 /* ============================== SETTINGS · HAPTICS · THEME ============================== */
 const SETTINGS_KEY = "quicklearn-settings-v1";
-let settings = (()=>{ try{ return { haptics:true, theme:"dark", reduceMotion:null, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") }; }catch{ return { haptics:true, theme:"dark", reduceMotion:null }; } })();
+let settings = (()=>{ try{ return { haptics:true, theme:"dark", reduceMotion:null, mascotAnim:true, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") }; }catch{ return { haptics:true, theme:"dark", reduceMotion:null, mascotAnim:true }; } })();
 const _osReduce = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 const motionReduced = () => settings.reduceMotion == null ? !!(_osReduce && _osReduce.matches) : !!settings.reduceMotion;
-function applyMotion(){ document.documentElement.setAttribute("data-motion", motionReduced() ? "reduced" : "full"); }
+function applyMotion(){ document.documentElement.setAttribute("data-motion", motionReduced() ? "reduced" : "full"); try{ applyMx(); }catch(_){} }
 if(_osReduce && _osReduce.addEventListener) _osReduce.addEventListener("change", ()=>{ if(settings.reduceMotion == null) applyMotion(); });
 function saveSettings(){ try{ localStorage.setItem(SETTINGS_KEY, JSON.stringify(settings)); }catch(_){} }
 function applyTheme(){
@@ -1026,6 +1234,9 @@ function openSettings(){
     <div class="seg full" data-nohap><button id="thNight" class="${light?"":"on"}" onclick="setTheme('dark')">🌙 Night</button><button id="thDay" class="${light?"on":""}" onclick="setTheme('light')">☀️ Day</button></div>
     <div class="setrow" style="cursor:default"><span class="seti">🎞️</span><span class="sett"><b>Reduce motion</b><small id="motSub">${motSub()}</small></span>
       <button id="swMot" data-nohap class="sw${motionReduced()?" on":""}" role="switch" aria-checked="${motionReduced()}" aria-label="Reduce motion" onclick="toggleMotion()"><i></i></button></div>
+    <div class="setrow" style="cursor:default"><span class="seti">${mascot("happy",{size:40})}</span><span class="sett"><b>Mascot animations</b><small id="mxSub">${mxSub()}</small></span>
+      <button id="swMx" data-nohap class="sw${settings.mascotAnim!==false?" on":""}" role="switch" aria-checked="${settings.mascotAnim!==false}" aria-label="Mascot animations" onclick="toggleMx()"><i></i></button></div>
+    <button class="setrow" onclick="openMascotName(false)"><span class="seti">✏️</span><span class="sett"><b>Buddy name</b><small>${esc(data.mascot&&data.mascot.name?data.mascot.name:"Not named yet")} · ${data.game.coins||0} coins</small></span><span style="opacity:.5">›</span></button>
     <button class="setrow" onclick="closeModal();openKeyModal()"><span class="seti">🔑</span><span class="sett"><b>AI key</b><small>Needed for the AI features</small></span><span style="opacity:.5">›</span></button>
     <button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Done</button></div>`);
 }
@@ -1035,6 +1246,7 @@ function toggleMotion(){
   const sw = document.getElementById("swMot");
   if(sw){ sw.classList.toggle("on", motionReduced()); sw.setAttribute("aria-checked", motionReduced()); }
   const sub = document.getElementById("motSub"); if(sub) sub.textContent = motSub();
+  const msub = document.getElementById("mxSub"); if(msub) msub.textContent = mxSub();
   haptic("select");
 }
 function hapSub(){
@@ -2967,7 +3179,7 @@ async function genCourse(id){
     ["MEMORY BOOST","Mix definitions, examples and application questions when revising a topic."]
   ];
   let insightIndex=0;
-  const prog=(m,p)=>{const tip=genInsights[insightIndex++%genInsights.length];modal(`<div class="sh gen-progress" style="text-align:center"><div class="genorb"></div><h2>Building your complete course</h2><p class="muted">${esc(m)}</p><div class="progress"><div style="width:${Math.max(2,Math.min(100,p))}%"></div></div><div class="gen-tip"><b>✦ ${tip[0]}</b><p>${tip[1]}</p></div><p class="muted" style="font-size:.75rem;margin-top:.65rem">Preparing your next learning step…</p><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`)};
+  const prog=(m,p)=>{const tip=genInsights[insightIndex++%genInsights.length];modal(`<div class="sh gen-progress" style="text-align:center">${animOn()?mascot("think",{size:104,cls:"idle"}):'<div class="genorb"></div>'}<h2>Building your complete course</h2><p class="muted">${esc(m)}</p><div class="progress"><div style="width:${Math.max(2,Math.min(100,p))}%"></div></div><div class="gen-tip"><b>✦ ${tip[0]}</b><p>${tip[1]}</p></div><p class="muted" style="font-size:.75rem;margin-top:.65rem">Preparing your next learning step…</p><button class="btn btn-ghost" onclick="__cc()">Cancel</button></div>`)};
   const pause=ms=>new Promise(r=>setTimeout(r,ms));
   const splitNotes=(arr,maxChars=18000)=>{
     const chunks=[];let cur="";
@@ -3167,11 +3379,12 @@ ${source}`;
 }
 function renderCourse(id){
   const d=data.decks.find(x=>x.id===id); if(!d){go("#/");return}
+  if(data.mascot&&!data.mascot.name&&!data.mascot.asked)setTimeout(()=>{if((location.hash||"").startsWith("#/course/")&&!document.getElementById("mxo"))openMascotName(true)},600);
   document.querySelector("nav.bottom").style.display="none";
-  const c=courseOf(id), head=`<div class="kh"><button onclick="history.back()" aria-label="Back">${IC.back}</button><h1>${esc(c?c.title:"Course")}</h1></div>`;
-  if(!c||!c.units.length){view.innerHTML=head+`<div class="cintro"><div class="cbig">🎓</div><h2>Turn this note into a course</h2><p class="muted">Gemini reads your whole note and builds bite-size lessons covering every topic, with hearts, streaks and a big celebration at the end.</p><button class="btn btn-primary" style="width:100%" onclick="genCourse('${id}')">Generate course</button></div>`;return}
+  const c=courseOf(id), head=`<div class="kh"><button onclick="history.back()" aria-label="Back">${IC.back}</button><h1>${esc(c?c.title:"Course")}</h1><div class="stats"><span class="coinchip">${coinSVG(18)}<b>${data.game.coins||0}</b></span></div></div>`;
+  if(!c||!c.units.length){view.innerHTML=head+`<div class="cintro"><div class="cbig">${mascot("wave",{size:140,cls:animOn()?"idle":""})}</div><h2>Turn this note into a course</h2><p class="muted">Gemini reads your whole note and builds bite-size lessons covering every topic, with hearts, streaks and a big celebration at the end.</p><button class="btn btn-primary" style="width:100%" onclick="genCourse('${id}')">Generate course</button></div>`;return}
   let cur=null;
-  const nodes=c.units.map((u,ui)=>`<div class="unit" style="--uc:${UC[ui%UC.length]}"><div class="ubar"><b>UNIT ${ui+1}</b><span>${esc(u.title)}</span></div>${u.lessons.map((l,li)=>{const k=ui+"-"+li,done=c.done[k]!=null;const st=done?"done":(cur===null?(cur=k,"cur"):"lock");return `<button class="node ${st}" style="--x:${[0,38,56,38,0,-38,-56,-38][li%8]}px" ${st==="lock"?"disabled":`onclick="startLesson('${id}',${ui},${li})"`}><span>${done?"✓":st==="cur"?"★":"🔒"}</span>${st==="cur"?`<i class="go">START</i>`:""}<small>${esc(l.title)}</small></button>`}).join("")}</div>`).join("");
+  const nodes=c.units.map((u,ui)=>`<div class="unit" style="--uc:${UC[ui%UC.length]}"><div class="ubar"><b>UNIT ${ui+1}</b><span>${esc(u.title)}</span></div>${u.lessons.map((l,li)=>{const k=ui+"-"+li,done=c.done[k]!=null;const st=done?"done":(cur===null?(cur=k,"cur"):"lock");return `<button class="node ${st}" style="--x:${[0,38,56,38,0,-38,-56,-38][li%8]}px" ${st==="lock"?"disabled":`onclick="startLesson('${id}',${ui},${li})"`}><span>${done?"✓":st==="cur"?"★":"🔒"}</span>${st==="cur"?`<i class="go">START</i><em class="mxnode ${[0,38,56,38,0,-38,-56,-38][li%8]>0?"l":"r"}">${mascot("wave",{size:62,cls:animOn()?"idle":""})}</em>`:""}<small>${esc(l.title)}</small></button>`}).join("")}</div>`).join("");
   const total=c.units.reduce((a,u)=>a+u.lessons.length,0),dn=Object.keys(c.done).length;
   view.innerHTML=head+`<div class="cprog"><div class="progress"><div style="width:${Math.round(dn/total*100)}%"></div></div><small>${dn}/${total} lessons</small></div><div class="path">${nodes}</div><button class="btn btn-ghost" style="margin:1rem auto;display:block" onclick="askConfirm('Rebuild this course?','Your progress on this course will reset.','Rebuild',true).then(ok=>{if(ok){delete data.courses['${id}'];save();genCourse('${id}')}})">Rebuild course</button>`;
 }
@@ -3179,26 +3392,40 @@ let LS=null;
 function startLesson(id,u,l){const ls=courseOf(id).units[u].lessons[l];LS={id,u,l,qs:ls.qs.map(q=>({...q})),i:0,hearts:3,right:0,miss:0,streak:0,best:0,sel:null,chk:null,xp:0,total:ls.qs.length};renderLesson()}
 const corrOf=q=>q.t==="tf"?(q.a?0:1):q.a;
 function renderLesson(){const s=LS;if(!s)return;document.querySelector("nav.bottom").style.display="none";
-  if(s.hearts<=0){view.innerHTML=`<div class="lend"><div class="cbig shake">💔</div><h2>Out of hearts</h2><p class="muted" style="margin:.5rem 0 1.4rem">Skim the note and try again.</p><button class="btn btn-primary" style="width:100%" onclick="startLesson('${s.id}',${s.u},${s.l})">Try again</button><button class="btn btn-ghost" onclick="LS=null;renderCourse('${s.id}')">Back to course</button></div>`;return}
+  if(s.hearts<=0){view.innerHTML=`<div class="lend"><div style="display:grid;place-items:center;margin-bottom:.4rem">${mascot("sad",{size:150,cls:animOn()?"shake":""})}</div><h2>Out of hearts</h2><p class="muted" style="margin:.5rem 0 1.4rem">${esc(mxName())} says: skim the note and try again.</p><button class="btn btn-primary" style="width:100%" onclick="startLesson('${s.id}',${s.u},${s.l})">Try again</button><button class="btn btn-ghost" onclick="LS=null;renderCourse('${s.id}')">Back to course</button></div>`;return}
   const q=s.qs[s.i]; if(!q){finishLesson();return}
-  const opts=q.t==="tf"?["True","False"]:q.o,cr=corrOf(q);
-  view.innerHTML=`<div class="lh"><button onclick="LS=null;renderCourse('${s.id}')" aria-label="Quit">✕</button><div class="progress lp"><div style="width:${s.i/s.qs.length*100}%"></div></div><span class="hearts">❤️ ${s.hearts}</span></div>
-  <div class="lq"><div class="lqt">${q.t==="tf"?"True or false?":q.t==="fb"?"Fill in the blank":"Choose the answer"}</div><h2>${esc(q.q)}</h2><div class="lo">${opts.map((o,k)=>`<button class="lopt${s.sel===k?" sel":""}${s.chk!==null&&k===cr?" ok":""}${s.chk===false&&s.sel===k?" bad":""}" ${s.chk!==null?"disabled":""} onclick="LS.sel=${k};haptic('select');renderLesson()"><kbd>${k+1}</kbd>${esc(o)}</button>`).join("")}</div></div>
-  <div class="lfoot ${s.chk===null?"":s.chk?"good":"bad"}">${s.chk===null?`<button class="btn btn-primary" style="width:100%" ${s.sel===null?"disabled":""} onclick="checkAns()">CHECK</button>`:`<div class="fb"><b>${s.chk?["Nice!","Correct!","Great job!","Spot on!"][s.i%4]:"Not quite"}</b><span>${s.chk?"":"Answer: "+esc(opts[cr])+". "}${esc(q.e||"")}</span></div><button class="btn ${s.chk?"btn-primary":"btn-danger2"}" onclick="nextQ()">CONTINUE</button>`}</div>`;}
+  const A=animOn(),opts=q.t==="tf"?["True","False"]:q.o,cr=corrOf(q);
+  const tgt=s.i/s.qs.length*100,from=s._pw==null?tgt:s._pw;s._pw=tgt;
+  const lost=s._hp!=null&&s.hearts<s._hp;s._hp=s.hearts;
+  const label=q.t==="tf"?"True or false?":q.t==="fb"?"Fill in the blank":"Choose the answer";
+  const mood=s.chk===null?(s.i===0?"wave":"idle"):s.chk?(s.streak>=3?"cheer":"happy"):"sad";
+  const mcls=!A?"":s.chk===null?"idle":s.chk?(s.streak>=3?"cheer":"hop"):"shake";
+  const say=s.chk===null?label:s.chk?(s.streak>=3?`${s.streak} in a row!`:["Yes!","Boom!","Got it!","Smooth!"][s.i%4]):"Next one's yours.";
+  const sticker=A&&s.chk===true&&s.streak>=3?`<div class="mxsticker">COMBO ×${s.streak}</div>`:"";
+  view.innerHTML=`<div class="lh"><button onclick="LS=null;renderCourse('${s.id}')" aria-label="Quit">✕</button><div class="progress lp"><div style="width:${from}%"></div></div><span class="hearts${lost&&A?" lost":""}">❤️ ${s.hearts}</span></div>
+  <div class="mxrow">${mascot(mood,{size:92,cls:mcls})}<div class="mxbubble${s.chk===null?"":s.chk?" good":" bad"}">${esc(say)}</div>${sticker}</div>
+  <div class="lq"><h2>${esc(q.q)}</h2><div class="lo">${opts.map((o,k)=>`<button class="lopt${s.sel===k?" sel":""}${s.chk!==null&&k===cr?" ok":""}${s.chk===false&&s.sel===k?" bad":""}" ${s.chk!==null?"disabled":""} onclick="LS.sel=${k};haptic('select');renderLesson()"><kbd>${k+1}</kbd>${esc(o)}</button>`).join("")}</div></div>
+  <div class="lfoot ${s.chk===null?"":s.chk?"good":"bad"}">${s.chk===null?`<button class="btn btn-primary" style="width:100%" ${s.sel===null?"disabled":""} onclick="checkAns()">CHECK</button>`:`<div class="fb"><b>${s.chk?["Nice!","Correct!","Great job!","Spot on!"][s.i%4]:"Not quite"}</b><span>${s.chk?"":"Answer: "+esc(opts[cr])+". "}${esc(q.e||"")}</span></div><button class="btn ${s.chk?"btn-primary":"btn-danger2"}" onclick="nextQ()">CONTINUE</button>`}</div>`;
+  if(from!==tgt){const b=view.querySelector(".lp>div");if(b)requestAnimationFrame(()=>requestAnimationFrame(()=>{b.style.width=tgt+"%"}))}}
 function checkAns(){const s=LS,q=s.qs[s.i],ok=s.sel===corrOf(q);s.chk=ok;
-  if(ok){s.streak++;s.best=Math.max(s.best,s.streak);if(!q.r){s.right++;s.xp+=10;floatXP("+10 XP"+(s.streak>=3?" 🔥"+s.streak:""))}haptic(s.streak>=3?"easy":"good")}
-  else{s.streak=0;s.hearts--;s.miss++;haptic("again");if(!q.r)s.qs.push({...q,r:1})}
+  if(ok){s.streak++;s.best=Math.max(s.best,s.streak);if(s.streak>=5&&s.streak%5===0)s.combo=s.streak;if(!q.r){s.right++;s.xp+=10;floatXP("+10 XP"+(s.streak>=3?" 🔥"+s.streak:""))}haptic(s.streak>=3?"easy":"good")}
+  else{s.streak=0;s.combo=0;s.hearts--;s.miss++;haptic("again");if(!q.r)s.qs.push({...q,r:1})}
   renderLesson()}
-function nextQ(){const s=LS;s.i++;s.sel=null;s.chk=null;renderLesson()}
-function finishLesson(){const s=LS,c=courseOf(s.id),k=s.u+"-"+s.l,acc=Math.round(s.right/s.total*100),first=c.done[k]==null;
+function nextQ(){const s=LS,cb=s.combo;s.combo=0;s.i++;s.sel=null;s.chk=null;renderLesson();if(cb&&animOn()&&LS&&s.i<s.qs.length)mxCombo(cb)}
+function finishLesson(){const s=LS,c=courseOf(s.id),k=s.u+"-"+s.l,acc=Math.round(s.right/s.total*100),first=c.done[k]==null,g=data.game,firstToday=g.lastPracticeDate!==localISODate();
   c.done[k]=Math.max(c.done[k]||0,s.miss===0?3:s.miss<3?2:1);
   const all=c.units.every((u,ui)=>u.lessons.every((_,li)=>c.done[ui+"-"+li]!=null)),fin=all&&!c.finished,unit=c.units[s.u].lessons.every((_,li)=>c.done[s.u+"-"+li]!=null);
-  let xp=s.xp+(first?20:5)+(fin?100:0); if(fin)c.finished=1; data.game.xp+=xp; markPractice(); save(); LS=null;
-  if(fin){celebrate("COURSE COMPLETE","🏆",`You finished ${esc(c.title)}`,`Every topic in your note · +${xp} XP`,()=>renderCourse(s.id),true);hapticLevelUp();return}
-  celebrate(unit?"UNIT COMPLETE":"LESSON COMPLETE",unit?"🎉":"⭐",`${acc}% accuracy`,`+${xp} XP · best streak ${s.best}`,()=>renderCourse(s.id));haptic("complete")}
+  let xp=s.xp+(first?20:5)+(fin?100:0); if(fin)c.finished=1; g.xp+=xp;
+  const chest=rollChest(s.miss,unit,fin),coinsBefore=g.coins||0; g.coins=coinsBefore+chest.coins;
+  markPractice(); save(); LS=null;
+  const total=c.units.reduce((a,u)=>a+u.lessons.length,0),dn=Object.keys(c.done).length,back=()=>renderCourse(s.id);
+  if(animOn()){mxFinish({acc,xp,best:s.best,miss:s.miss,unit,fin,course:c.title,dn,total,pdn:dn-(first?1:0),firstToday,streak:g.streak||1,chest,coinsBefore,coinsAfter:g.coins},back);return}
+  const coinTxt=` · ${coinSVG(14)} +${chest.coins}`,face=mascot(fin?"cheer":"happy",{size:fin?150:130});
+  if(fin){celebrate("COURSE COMPLETE",face,`You finished ${esc(c.title)}`,`Every topic in your note · +${xp} XP${coinTxt}`,back,true);hapticLevelUp();return}
+  celebrate(unit?"UNIT COMPLETE":"LESSON COMPLETE",face,`${acc}% accuracy`,`+${xp} XP · best streak ${s.best}${coinTxt}`,back);haptic("complete")}
 function celebrate(k,big,t,sub,cb,mega){closeCelebrate();const cols=["#e29a2d","#f2ca5c","#ff7a4d","#ffd54a","#ff7c5b"];
   const conf=Array.from({length:mega?120:50},(_,i)=>`<i style="left:${Math.random()*100}%;width:${6+Math.random()*7}px;height:${10+Math.random()*10}px;background:${cols[i%5]};animation-delay:${Math.random()*(mega?2.6:.8)}s;animation-duration:${2+Math.random()*1.8}s"></i>`).join("");
-  const el=document.createElement("div");el.id="celebrate";el.className="celeb";
+  const el=document.createElement("div");el.id="celebrate";el.className="celeb mxc";
   el.innerHTML=`<div class="confetti">${conf}</div><div class="celeb-in"><div class="celeb-k">${k}</div><div class="celeb-badge" style="font-size:${mega?9:7}rem;line-height:1">${big}</div><div class="celeb-t">${t}</div><div class="celeb-s">${sub}</div><button class="btn btn-primary" data-nohap style="width:100%" id="celebGo">CONTINUE</button></div>`;
   document.body.appendChild(el);document.getElementById("celebGo").onclick=()=>{haptic("select");closeCelebrate();cb&&cb()}}
 
@@ -3208,6 +3435,273 @@ document.addEventListener("pointerdown", e => {
   if(!t || t.disabled || t.closest("[data-nohap],.ratings,.quiz-opt,.flashcard")) return;
   haptic("tap");
 }, { passive:true });
+
+/* ============================== MASCOT · CHESTS · COINS ============================== */
+let _mxid = 0;
+const mxName = () => ((data.mascot && data.mascot.name) || "").trim() || "Buddy";
+function animOn(){ return settings.mascotAnim !== false && !motionReduced(); }
+function applyMx(){ document.documentElement.setAttribute("data-mx", animOn() ? "on" : "off"); }
+applyMx();
+window.addEventListener("hashchange", () => mxClose());
+
+const MX_C = { body:"#3cbbca", dark:"#2a98ad", deep:"#1d7f93", belly:"#8fe0e8", ink:"#0f3340" };
+// Outfit registry. The store (added later) only needs to sell these and set data.mascot.worn[slot] = id.
+const MX_OUTFITS = {
+  party:  { slot:"hat",  name:"Party hat", price:60,  svg:`<g transform="rotate(-9 100 44)"><path d="M100 4 L127 47 Q100 54 73 47Z" fill="#ff7a59"/><path d="M89 21 L113 23 M83 34 L119 36" stroke="#ffd166" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="5" r="6.5" fill="#ffd166"/></g>` },
+  crown:  { slot:"hat",  name:"Crown",     price:150, svg:`<path d="M72 48 L70 20 L87 34 L100 12 L113 34 L130 20 L128 48Z" fill="#ffc83d" stroke="#d99a12" stroke-width="3" stroke-linejoin="round"/><circle cx="100" cy="16" r="4" fill="#ff6b6b"/><circle cx="76" cy="26" r="3" fill="#ff6b6b"/><circle cx="124" cy="26" r="3" fill="#ff6b6b"/>` },
+  santa:  { slot:"hat",  name:"Santa hat", price:120, svg:`<path d="M66 50 Q70 10 108 14 Q128 18 138 44 Q134 52 126 50Z" fill="#e8402f"/><rect x="62" y="42" width="80" height="14" rx="7" fill="#fff"/><circle cx="114" cy="10" r="8" fill="#fff"/>` },
+  shades: { slot:"face", name:"Shades",    price:90,  svg:`<rect x="58" y="77" width="38" height="24" rx="10" fill="#14232a"/><rect x="104" y="77" width="38" height="24" rx="10" fill="#14232a"/><rect x="94" y="84" width="12" height="5" fill="#14232a"/><path d="M64 83 L74 83 M110 83 L120 83" stroke="#fff" stroke-opacity=".35" stroke-width="3" stroke-linecap="round"/>` }
+};
+
+const COIN_SVG = '<svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="11" fill="#f2a900"/><circle cx="12" cy="12" r="9" fill="#ffd34d"/><circle cx="12" cy="12" r="6.8" fill="none" stroke="#e29a00" stroke-width="1.3"/><path d="M12 7.6l1.35 2.9 3.15.4-2.3 2.15.6 3.15L12 14.6l-2.8 1.6.6-3.15-2.3-2.15 3.15-.4z" fill="#f2a900"/></svg>';
+const coinSVG = s => s ? COIN_SVG.replace("<svg ", `<svg width="${s}" height="${s}" `) : COIN_SVG;
+
+function mascot(mood, o){
+  o = o || {};
+  const id = "mx" + (++_mxid), C = MX_C, size = o.size || 120, W = (data.mascot && data.mascot.worn) || {};
+  const ink = C.ink;
+  const ln = (d, w) => `<path d="${d}" stroke="${ink}" stroke-width="${w||5}" stroke-linecap="round" stroke-linejoin="round" fill="none"/>`;
+  const eyeOpen = (px, py, r, pr) => `<g class="mx-eyes"><circle cx="78" cy="88" r="${r}" fill="#fff"/><circle cx="122" cy="88" r="${r}" fill="#fff"/><circle cx="${78+px}" cy="${88+py}" r="${pr}" fill="${ink}"/><circle cx="${122+px}" cy="${88+py}" r="${pr}" fill="${ink}"/><circle cx="${76+px}" cy="${85+py}" r="2.2" fill="#fff"/><circle cx="${120+px}" cy="${85+py}" r="2.2" fill="#fff"/></g>`;
+  const eyeHappy = `<g class="mx-eyes">${ln("M66 94 Q78 76 90 94", 5.5)}${ln("M110 94 Q122 76 134 94", 5.5)}</g>`;
+  const eyeSleep = `<g>${ln("M66 90 Q78 100 90 90", 5)}${ln("M110 90 Q122 100 134 90", 5)}</g>`;
+  const smile = ln("M86 112 Q100 125 114 112", 4.5) + `<path d="M105 116 L109.5 126 L113.5 114Z" fill="#fff"/>`;
+  const cheeks = `<ellipse cx="60" cy="108" rx="9" ry="5.5" fill="#ff8fa3" opacity=".5"/><ellipse cx="140" cy="108" rx="9" ry="5.5" fill="#ff8fa3" opacity=".5"/>`;
+  const mouthBig = `<clipPath id="${id}m"><path d="M72 102 Q100 107 128 102 Q126 148 100 150 Q74 148 72 102Z"/></clipPath><path d="M72 102 Q100 107 128 102 Q126 148 100 150 Q74 148 72 102Z" fill="#0b3340"/><g clip-path="url(#${id}m)"><ellipse cx="100" cy="146" rx="19" ry="14" fill="#ff6a78"/></g><path d="M76 103 Q100 108 124 103 L123.5 112 Q100 117 76.5 112Z" fill="#fff"/>`;
+  const mouthMid = `<clipPath id="${id}m"><path d="M80 106 Q100 110 120 106 Q118 134 100 136 Q82 134 80 106Z"/></clipPath><path d="M80 106 Q100 110 120 106 Q118 134 100 136 Q82 134 80 106Z" fill="#0b3340"/><g clip-path="url(#${id}m)"><ellipse cx="100" cy="134" rx="14" ry="10" fill="#ff6a78"/></g>`;
+  const heart = (x, y, d) => `<g transform="translate(${x} ${y})"><path class="mx-heart" style="animation-delay:${d}s" d="M0 -3 C-5 -11 -15 -3 0 9 C15 -3 5 -11 0 -3Z" fill="#ff5c7a"/></g>`;
+  const spark = (x, y, d) => `<g transform="translate(${x} ${y})"><path class="mx-sp" style="animation-delay:${d}s" d="M0 -9 L2.2 -2.2 9 0 2.2 2.2 0 9 -2.2 2.2 -9 0 -2.2 -2.2Z" fill="#ffd166"/></g>`;
+  let eyes, mouth = "", brows = "", cheek = "", extra = "", armsUp = 0, wave = 0;
+  switch(mood){
+    case "happy": eyes = eyeHappy; mouth = mouthMid; cheek = cheeks; break;
+    case "cheer": eyes = eyeHappy; mouth = mouthBig; cheek = cheeks; armsUp = 1;
+      extra = heart(40, 38, 0) + heart(160, 30, .6) + heart(100, 14, 1.1) + spark(22, 120, .2) + spark(180, 118, .5); break;
+    case "sad": eyes = eyeOpen(0, 4, 11, 5.5);
+      brows = ln("M62 78 L91 70", 4.5) + ln("M109 70 L138 78", 4.5);
+      mouth = ln("M88 127 Q100 113 112 127", 4.5);
+      extra = `<path class="mx-tear" d="M64 102 q-6 10 0 14 q6 -4 0 -14z" fill="#9be7ff"/>`; break;
+    case "wow": eyes = eyeOpen(0, 0, 13, 5);
+      brows = ln("M65 66 Q78 56 91 66", 4.5) + ln("M109 66 Q122 56 135 66", 4.5);
+      mouth = `<ellipse cx="100" cy="124" rx="9" ry="12" fill="#0b3340"/>`; break;
+    case "think": eyes = eyeOpen(4, -3, 11, 6);
+      brows = ln("M109 68 L136 62", 4.5);
+      mouth = `<ellipse cx="108" cy="124" rx="6" ry="5" fill="#0b3340"/>`;
+      extra = `<text class="mx-z" x="150" y="46" font-size="26" font-weight="800" fill="#ffb347" font-family="Sora,system-ui,sans-serif">?</text>`; break;
+    case "sleep": eyes = eyeSleep; mouth = ln("M92 117 Q100 122 108 117", 4);
+      extra = `<text class="mx-z" x="146" y="52" font-size="22" font-weight="800" fill="#cfe9ee" font-family="Sora,system-ui,sans-serif">z</text><text class="mx-z" style="animation-delay:1.1s" x="160" y="34" font-size="16" font-weight="800" fill="#cfe9ee" font-family="Sora,system-ui,sans-serif">z</text>`; break;
+    case "wave": eyes = eyeOpen(2, 1, 11, 6); mouth = smile; cheek = cheeks; wave = 1; break;
+    default: eyes = eyeOpen(1, 2, 11, 6); mouth = smile;
+  }
+  const BODY = "M100 34 C66 34 46 62 42 100 C38 140 56 176 100 178 C144 176 162 140 158 100 C154 62 134 34 100 34Z";
+  let armsBack;
+  if(armsUp){
+    armsBack = `<g class="mx-armL"><path d="M50 114 Q30 98 26 68" stroke="${C.body}" stroke-width="21" stroke-linecap="round" fill="none"/></g><g class="mx-armR"><path d="M150 114 Q170 98 174 68" stroke="${C.dark}" stroke-width="21" stroke-linecap="round" fill="none"/></g>`;
+  }else if(wave){
+    armsBack = `<ellipse cx="41" cy="126" rx="10" ry="19" transform="rotate(12 41 126)" fill="${C.body}"/><g class="mx-wave"><path d="M150 116 Q172 100 172 70" stroke="${C.dark}" stroke-width="21" stroke-linecap="round" fill="none"/></g>`;
+  }else{
+    armsBack = `<ellipse cx="41" cy="126" rx="10" ry="19" transform="rotate(12 41 126)" fill="${C.body}"/><ellipse cx="159" cy="126" rx="10" ry="19" transform="rotate(-12 159 126)" fill="${C.dark}"/>`;
+  }
+  const hat = MX_OUTFITS[W.hat] && MX_OUTFITS[W.hat].slot === "hat" ? MX_OUTFITS[W.hat].svg : "";
+  const face = MX_OUTFITS[W.face] && MX_OUTFITS[W.face].slot === "face" ? MX_OUTFITS[W.face].svg : "";
+  return `<div class="mxw ${o.cls || ""}" style="--s:${size}px"><svg class="mx" viewBox="0 0 200 200" role="img" aria-label="${esc(mxName())}, your study buddy" xmlns="http://www.w3.org/2000/svg">
+<defs><clipPath id="${id}c"><path d="${BODY}"/></clipPath></defs>
+<ellipse cx="100" cy="189" rx="52" ry="6.5" fill="#000" opacity=".25"/>
+${armsBack}
+<path d="M62 54 L50 20 C60 20 77 28 88 42Z" fill="${C.body}"/><path d="M138 54 L150 20 C140 20 123 28 112 42Z" fill="${C.dark}"/>
+<path d="M60 46 L54 30 C60 31 68 35 74 41Z" fill="${C.deep}" opacity=".55"/><path d="M140 46 L146 30 C140 31 132 35 126 41Z" fill="${C.deep}" opacity=".55"/>
+<path d="${BODY}" fill="${C.body}"/>
+<g clip-path="url(#${id}c)"><path d="M128 28 C178 56 186 140 138 192 L204 204 L204 18Z" fill="${C.dark}" opacity=".55"/><ellipse cx="97" cy="146" rx="30" ry="29" fill="${C.belly}" opacity=".5"/></g>
+<ellipse cx="74" cy="177" rx="20" ry="9" fill="${C.dark}"/><ellipse cx="126" cy="177" rx="20" ry="9" fill="${C.deep}"/>
+<path d="M66 180 L66 174 M74 181 L74 174 M82 180 L82 174 M118 180 L118 174 M126 181 L126 174 M134 180 L134 174" stroke="${C.ink}" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
+${cheek}${eyes}${brows}${mouth}${face}${hat}${extra}</svg></div>`;
+}
+
+/* ---------- treasure chest ---------- */
+const CHEST_PAL = {
+  common: { a:"#b9763a", b:"#8a5326", g:"#f6c244", gd:"#c98f18", glow:"#ffc65a" },
+  rare:   { a:"#3f86e8", b:"#2858b3", g:"#f6c244", gd:"#c98f18", glow:"#6fb2ff" },
+  epic:   { a:"#9a5be8", b:"#6a35b8", g:"#ffd24d", gd:"#d79a1c", glow:"#c79bff" }
+};
+function chestSVG(rar){
+  const p = CHEST_PAL[rar] || CHEST_PAL.common, id = "ch" + (++_mxid);
+  const LID = "M30 100 C30 44 70 30 120 30 C170 30 210 44 210 100 Z";
+  return `<svg viewBox="0 0 240 210" aria-hidden="true"><defs>
+<clipPath id="${id}l"><path d="${LID}"/></clipPath></defs>
+<ellipse cx="120" cy="198" rx="88" ry="9" fill="#000" opacity=".3"/>
+<rect x="34" y="96" width="172" height="96" rx="12" fill="${p.a}"/>
+<rect x="34" y="150" width="172" height="42" rx="12" fill="${p.b}" opacity=".5"/>
+<path d="M36 128 H204 M36 160 H204" stroke="${p.b}" stroke-opacity=".55" stroke-width="3"/>
+<rect x="60" y="96" width="20" height="96" fill="${p.g}"/><rect x="160" y="96" width="20" height="96" fill="${p.g}"/>
+<rect x="60" y="96" width="5" height="96" fill="#fff" opacity=".25"/><rect x="160" y="96" width="5" height="96" fill="#fff" opacity=".25"/>
+<g fill="${p.gd}"><circle cx="70" cy="110" r="3"/><circle cx="70" cy="178" r="3"/><circle cx="170" cy="110" r="3"/><circle cx="170" cy="178" r="3"/></g>
+<rect class="ch-in" x="40" y="92" width="160" height="16" rx="7" fill="#fff6b8"/>
+<g class="ch-lid"><path d="${LID}" fill="${p.a}"/>
+<g clip-path="url(#${id}l)"><rect x="60" y="20" width="20" height="90" fill="${p.g}"/><rect x="160" y="20" width="20" height="90" fill="${p.g}"/><rect x="26" y="90" width="188" height="14" fill="${p.gd}"/>
+<path d="M44 84 C46 56 74 42 102 40" stroke="#fff" stroke-opacity=".35" stroke-width="6" stroke-linecap="round" fill="none"/></g>
+<rect x="102" y="86" width="36" height="34" rx="8" fill="${p.g}" stroke="${p.gd}" stroke-width="3"/><circle cx="120" cy="100" r="5" fill="#3a2410"/><rect x="118" y="102" width="4" height="9" rx="2" fill="#3a2410"/></g></svg>`;
+}
+function rollChest(miss, unit, fin){
+  const r = Math.random(), t = miss === 0 ? [.15, .45] : miss < 3 ? [.04, .31] : [0, .12];
+  let rar = r < t[0] ? "epic" : r < t[0] + t[1] ? "rare" : "common";
+  if(unit && rar === "common") rar = "rare";
+  if(fin) rar = "epic";
+  const rng = (a, b) => a + Math.floor(Math.random() * (b - a + 1));
+  let coins = { common: rng(10, 20), rare: rng(25, 45), epic: rng(60, 100) }[rar];
+  if(miss === 0) coins += 5;
+  if(fin) coins += 50;
+  return { rar, coins };
+}
+const MX_RAR = { common:"Common chest", rare:"Rare chest", epic:"Epic chest" };
+
+/* ---------- full-screen flow ---------- */
+function mxClose(){ const o = document.getElementById("mxo"); if(o) o.remove(); }
+function mxFlow(steps, done){
+  mxClose();
+  const root = document.createElement("div"); root.id = "mxo"; root.className = "mxo";
+  document.body.appendChild(root);
+  let i = 0;
+  const show = () => {
+    const st = steps[i];
+    root.innerHTML = `${st.conf || ""}<div class="mxo-in">${st.html()}</div><div class="mxo-foot"><button class="btn btn-primary" id="mxGo" data-nohap>${st.btn || "Continue"}</button></div>`;
+    const go = root.querySelector("#mxGo");
+    const next = () => { if(++i < steps.length) show(); else { mxClose(); done && done(); } };
+    go.onclick = () => { haptic("select"); st.go ? st.go(root, next, go) : next(); };
+    st.mount && st.mount(root, go, next);
+  };
+  show();
+}
+function mxCount(el, to, ms, from){
+  from = from || 0; const t0 = performance.now();
+  (function f(t){ const p = Math.min(1, (t - t0) / ms); el.textContent = Math.round(from + (to - from) * (1 - Math.pow(1 - p, 3))); if(p < 1) requestAnimationFrame(f); })(t0);
+}
+function mxConfetti(n){
+  const cols = ["#e29a2d","#f2ca5c","#3cbbca","#ffd54a","#ff7c5b"];
+  return `<div class="confetti">${Array.from({length:n},(_,i)=>`<i style="left:${Math.random()*100}%;width:${6+Math.random()*7}px;height:${10+Math.random()*10}px;background:${cols[i%5]};animation-delay:${Math.random()*1.8}s;animation-duration:${2+Math.random()*1.8}s"></i>`).join("")}</div>`;
+}
+
+/* combo screen (mid-lesson, every 5 right answers in a row) */
+function mxCombo(n){
+  const head = n >= 20 ? "Unstoppable!" : n >= 15 ? "You're on fire!" : n >= 10 ? "This combo won't quit!" : "Nice combo!";
+  haptic("easy");
+  mxFlow([{ btn: "Keep going", html: () => `<div class="mxo-hero">${mascot("cheer", {size:180, cls:"cheer"})}</div><h2 class="mxo-h">${head}</h2><p class="mxo-p">You're up to ${n} right answers in a row.</p><div class="mxpill" style="--c:#ff8a3d">🔥 ×${n}</div>` }]);
+}
+
+/* post-lesson flow: results → progress → day streak → chest */
+function mxFinish(f, done){
+  const steps = [];
+  const title = f.fin ? "Course complete!" : f.unit ? "Unit complete!" : f.miss === 0 ? "Perfect lesson!" : "Lesson complete!";
+  steps.push({
+    btn: "Claim XP",
+    conf: f.fin || f.miss === 0 ? mxConfetti(f.fin ? 110 : 45) : "",
+    html: () => `<div class="mxo-hero">${mascot("cheer", {size:180, cls:"cheer"})}</div><h2 class="mxo-h">${title}</h2><p class="mxo-p">${esc(mxName())} is proud of you.</p>
+      <div class="mxst"><div><small>Total XP</small><b>⚡ <span id="mxXp">0</span></b></div><div><small>Best combo</small><b>🔥 ×${f.best}</b></div><div><small>Accuracy</small><b>🎯 ${f.acc}%</b></div></div>`,
+    mount: () => { haptic("complete"); setTimeout(() => { const el = document.getElementById("mxXp"); if(el) mxCount(el, f.xp, 900); }, 300); }
+  });
+  steps.push({
+    btn: "Continue",
+    html: () => `<div class="mxo-hero">${mascot("happy", {size:130, cls:"idle"})}</div><h2 class="mxo-h">${f.fin ? "Every lesson is done!" : f.unit ? "On to the next unit" : "Keep it rolling"}</h2>
+      <div class="mxbarlbl"><span>${f.pdn}</span><span>${f.total}</span></div><div class="mxbar"><i id="mxBar"></i></div>
+      <p class="mxo-p">${f.dn} of ${f.total} lessons done in ${esc(f.course)}.</p>`,
+    mount: () => { const b = document.getElementById("mxBar"); if(!b) return; b.style.width = Math.round(f.pdn / f.total * 100) + "%"; setTimeout(() => { b.style.width = Math.round(f.dn / f.total * 100) + "%"; haptic("good"); }, 450); }
+  });
+  if(f.firstToday){
+    const n = f.streak, days = ["Mo","Tu","We","Th","Fr","Sa","Su"], dow = (new Date().getDay() + 6) % 7;
+    const week = days.map((d, k) => { const ago = dow - k, on = ago >= 0 && ago < n; return `<div class="mxday${on ? " on" : ""}${ago === 0 ? " today" : ""}"><span>${on ? "✓" : ""}</span><small>${d}</small></div>`; }).join("");
+    steps.push({
+      btn: "Keep it going",
+      html: () => `<div class="mxflame">🔥</div><div class="mxbig" id="mxStreak">0</div><h2 class="mxo-h" style="color:#ff8a3d">day streak</h2><div class="mxweek">${week}</div>
+        <p class="mxo-p">${n < 7 ? `Practice ${7 - n} more day${7 - n === 1 ? "" : "s"} in a row for a full week.` : `That's ${Math.floor(n / 7)} full week${n >= 14 ? "s" : ""} in a row. Amazing!`}</p>`,
+      mount: () => { haptic("sparkle"); const el = document.getElementById("mxStreak"); if(el) mxCount(el, n, 700); }
+    });
+  }
+  steps.push({
+    btn: "Open chest",
+    html: () => `<div class="mxcoinchip" id="mxChip">${coinSVG(20)}<b id="mxBal">${f.coinsBefore}</b></div>
+      <div class="mxrar ${f.chest.rar}">${MX_RAR[f.chest.rar]}</div>
+      <div class="mxstage ${f.chest.rar}" id="mxStage"><div class="mxrays"></div><div class="mxchestw wobble" id="mxChest" role="button" aria-label="Open chest">${chestSVG(f.chest.rar)}</div><div class="mxcoins" id="mxCoins"></div></div>
+      <div class="mxgain" id="mxGain"></div><p class="mxo-p" id="mxChestMsg">Tap the chest to open it.</p>`,
+    mount: (root, go, next) => {
+      const chest = root.querySelector("#mxChest");
+      let opened = false;
+      const open = () => { if(opened) return; opened = true; go.disabled = true; mxOpenChest(root, f, () => { go.disabled = false; go.textContent = "Continue"; }); };
+      chest.onclick = open;
+      go.onclick = () => { if(!opened){ open(); return; } haptic("select"); next(); };
+    }
+  });
+  mxFlow(steps, done);
+}
+function mxOpenChest(root, f, finished){
+  const stage = root.querySelector("#mxStage"), chest = root.querySelector("#mxChest"), host = root.querySelector("#mxCoins"),
+        chip = root.querySelector("#mxChip"), bal = root.querySelector("#mxBal"), gain = root.querySelector("#mxGain"), msg = root.querySelector("#mxChestMsg");
+  const coins = f.chest.coins;
+  haptic("buildup"); chest.classList.remove("wobble"); chest.classList.add("open"); stage.classList.add("open"); msg.textContent = "";
+  setTimeout(() => {
+    haptic("levelhit");
+    gain.classList.add("show"); gain.innerHTML = `${coinSVG(34)}<span>+${coins}</span>`;
+    const n = Math.max(8, Math.min(24, Math.round(coins / 3.5))), per = coins / n, land = [];
+    for(let k = 0; k < n; k++){
+      const c = document.createElement("div"); c.className = "mxcoin"; c.innerHTML = coinSVG(); host.appendChild(c);
+      const ang = (-90 + (Math.random() * 130 - 65)) * Math.PI / 180, dist = 60 + Math.random() * 90;
+      const dx = Math.cos(ang) * dist, dy = Math.sin(ang) * dist, ly = dy + 95 + Math.random() * 35;
+      land.push({ c, x: dx * 1.1, y: ly });
+      c.animate([
+        { transform: "translate(-50%,-50%) translate(0px,0px) scale(.3) rotate(0deg)", opacity: 0 },
+        { transform: `translate(-50%,-50%) translate(${dx * .6}px,${dy}px) scale(1) rotate(${Math.random() * 200}deg)`, opacity: 1, offset: .45 },
+        { transform: `translate(-50%,-50%) translate(${dx * 1.1}px,${ly}px) scale(1) rotate(${Math.random() * 360}deg)`, opacity: 1 }
+      ], { duration: 900 + Math.random() * 300, delay: k * 35, easing: "cubic-bezier(.3,.7,.4,1)", fill: "forwards" });
+    }
+    setTimeout(() => {
+      const sr = stage.getBoundingClientRect(), ox = sr.left + sr.width / 2, oy = sr.top + sr.height * .44, cr = chip.getBoundingClientRect();
+      const tx = cr.left + cr.width / 2 - ox, ty = cr.top + cr.height / 2 - oy;
+      let shown = f.coinsBefore, arrived = 0;
+      land.forEach((L, k) => {
+        L.c.getAnimations().forEach(a => a.cancel());
+        L.c.style.transform = `translate(-50%,-50%) translate(${L.x}px,${L.y}px)`;
+        const a = L.c.animate([
+          { transform: `translate(-50%,-50%) translate(${L.x}px,${L.y}px) scale(1)` },
+          { transform: `translate(-50%,-50%) translate(${tx}px,${ty}px) scale(.55)` }
+        ], { duration: 620, delay: k * 32, easing: "cubic-bezier(.5,0,.8,.5)", fill: "forwards" });
+        a.onfinish = () => {
+          L.c.remove(); shown += per; bal.textContent = Math.round(shown);
+          chip.classList.remove("bump"); void chip.offsetWidth; chip.classList.add("bump"); haptic("tap");
+          if(++arrived === land.length){ bal.textContent = f.coinsAfter; msg.textContent = `${mxName()} will help you spend these soon.`; finished(); }
+        };
+      });
+    }, 1350 + n * 35);
+  }, 430);
+}
+
+/* ---------- naming + settings ---------- */
+const MX_NAMES = ["Pip","Bloop","Mochi","Zuko","Nova","Gizmo","Waffle","Fizz"];
+function openMascotName(first){
+  const cur = (data.mascot && data.mascot.name) || "";
+  const sug = MX_NAMES.filter(n => n !== cur).sort(() => Math.random() - .5).slice(0, 4);
+  modal(`<div class="sh mxname"><div style="display:grid;place-items:center">${mascot(first ? "wave" : "happy", {size:120, cls: animOn() ? "idle" : ""})}</div>
+    <h2 style="text-align:center">${first ? "Meet your study buddy" : "Rename your buddy"}</h2>
+    <p class="muted" style="text-align:center;margin:.3rem 0 1rem">${first ? "Pick a name. They'll cheer you on in every lesson." : "Pick a new name for your buddy."}</p>
+    <input class="input" id="mxNameIn" maxlength="16" autocomplete="off" placeholder="Type a name" value="${esc(cur)}" onkeydown="if(event.key==='Enter')mxNameSave()">
+    <div class="mxsug">${sug.map(n => `<button class="chip2" onclick="document.getElementById('mxNameIn').value='${n}'">${n}</button>`).join("")}</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="mxNameSave()">Save name</button>
+    <button class="btn btn-ghost" style="width:100%" onclick="mxNameSkip()">${first ? "Maybe later" : "Cancel"}</button></div>`);
+}
+function mxNameSave(){
+  const el = document.getElementById("mxNameIn"); if(!el) return;
+  const n = el.value.replace(/[<>]/g, "").replace(/\s+/g, " ").trim().slice(0, 16);
+  if(!n){ toast("Type a name first"); return; }
+  data.mascot = data.mascot || {}; data.mascot.name = n; data.mascot.asked = 1; save(); closeModal();
+  toast(`${n} is ready to cheer you on!`); haptic("good");
+}
+function mxNameSkip(){ data.mascot = data.mascot || {}; data.mascot.asked = 1; save(); closeModal(); }
+function mxSub(){
+  if(motionReduced()) return "Paused · Reduce motion is on";
+  return settings.mascotAnim !== false ? "On · reactions, combos and chest openings" : "Off · simple results, no mascot motion";
+}
+function toggleMx(){
+  settings.mascotAnim = settings.mascotAnim === false; saveSettings(); applyMx();
+  const sw = document.getElementById("swMx");
+  if(sw){ sw.classList.toggle("on", settings.mascotAnim !== false); sw.setAttribute("aria-checked", settings.mascotAnim !== false); }
+  const sub = document.getElementById("mxSub"); if(sub) sub.textContent = mxSub();
+  haptic("select");
+}
 
 window.addEventListener("hashchange", route);
 route();
