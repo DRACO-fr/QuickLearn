@@ -883,58 +883,88 @@ html[data-mx="off"] .celeb.mxc .confetti{display:none}
 </style>
 
 <style id="ql-startup-buffer-style">
-#ql-startup-buffer{position:fixed;inset:0;z-index:2147483647;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:0;background:#f2a65a;color:#fffaf3;font-family:inherit;opacity:1;transition:opacity .3s ease;overflow:hidden}
-#ql-startup-buffer .mascot-stage{width:150px;height:150px;display:grid;place-items:center;margin-top:-10px;animation:qlMascotFloat 2s ease-in-out infinite}
-#ql-startup-buffer .ql-mascot{width:124px;height:124px;overflow:visible}
-#ql-startup-buffer .ql-brow{fill:#b94f27;transform-box:fill-box;transform-origin:center;animation:qlBrow 2.8s ease-in-out infinite}
-#ql-startup-buffer .ql-eye{fill:#fffdf8}
-#ql-startup-buffer .ql-pupil{fill:#3d2922;animation:qlLook 3.4s ease-in-out infinite}
-#ql-startup-buffer .ql-mouth{animation:qlSmile 2.8s ease-in-out infinite;transform-box:fill-box;transform-origin:center}
-#ql-startup-buffer .ql-cheek{fill:#ee7752;opacity:.88}
-#ql-startup-buffer .ql-wordmark{margin-top:17px;font-size:21px;line-height:1;font-weight:800;letter-spacing:-.45px;color:#fffaf3}
-#ql-startup-buffer .ql-wordmark span{color:#8e3f22}
-#ql-startup-buffer p{margin:15px 0 0;color:#873f27;font-size:12px;letter-spacing:.045em;font-weight:600}
-#ql-startup-buffer .track{width:116px;height:3px;background:#d88348;border-radius:9px;overflow:hidden;margin-top:22px}
-#ql-startup-buffer .track i{display:block;height:100%;width:36%;background:#fff4d9;border-radius:9px;animation:qlStartTravel 1.15s ease-in-out infinite}
-@keyframes qlMascotFloat{0%,100%{transform:translateY(0) rotate(-1deg)}50%{transform:translateY(-7px) rotate(1deg)}}
-@keyframes qlBrow{0%,30%,100%{transform:translateY(0) rotate(0)}42%,58%{transform:translateY(-2px) rotate(-7deg)}}
-@keyframes qlLook{0%,20%,100%{transform:translateX(0)}35%,48%{transform:translateX(2px)}65%,78%{transform:translateX(-2px)}}
-@keyframes qlSmile{0%,35%,100%{transform:scaleY(1)}45%,58%{transform:scaleY(.78)}}
-@keyframes qlStartTravel{0%{transform:translateX(-120%)}100%{transform:translateX(390%)}}
-@media(prefers-reduced-motion:reduce){#ql-startup-buffer *{animation-duration:2s!important}}
+/* QuickLearn launch screen — warm take on a mascot splash: solid colour, animated face, wordmark low on the screen */
+#ql-startup-buffer{--ql-bg:#F8A14C;--ql-horn:#D4571F;--ql-brow:#E0802B;--ql-ink:#2B1308;--ql-tongue:#FF4A3D;position:fixed;inset:0;z-index:2147483647;background:var(--ql-bg);overflow:hidden;opacity:1;font-family:var(--font-sans,"DM Sans",system-ui,sans-serif);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
+#ql-startup-buffer .ql-stage{position:absolute;left:50%;top:49.7%;width:min(55.6vw,25.6vh);aspect-ratio:600/560;transform:translate(-50%,-50%)}
+#ql-startup-buffer .ql-face-svg{display:block;width:100%;height:100%;overflow:visible;animation:qlPop .5s cubic-bezier(.2,.9,.3,1.15) both}
+#ql-startup-buffer .ql-word{position:absolute;left:0;right:0;top:89%;transform:translateY(-50%);text-align:center;color:#fffdf9;font-weight:600;font-size:min(10.7vw,5vh);line-height:1;letter-spacing:-.01em;white-space:nowrap;animation:qlWordIn .45s ease-out both}
+#ql-startup-buffer .ql-face{transform-box:view-box;transform-origin:300px 290px;animation:qlFace 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-horn{fill:var(--ql-horn)}
+#ql-startup-buffer .ql-brow{fill:none;stroke:var(--ql-brow);stroke-width:14;stroke-linecap:round;transform-box:fill-box;transform-origin:center}
+#ql-startup-buffer .ql-brow.l{animation:qlBrowL 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-brow.r{animation:qlBrowR 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-white{fill:#fff}
+#ql-startup-buffer .ql-pupil{fill:var(--ql-ink)}
+#ql-startup-buffer .ql-look{animation:qlLook 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-eye-r{transform-box:fill-box;transform-origin:center;animation:qlEyeR 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-lid{fill:var(--ql-bg);animation:qlLid 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-wink{fill:none;stroke:var(--ql-ink);stroke-width:12;stroke-linecap:round;stroke-linejoin:round;opacity:0;animation:qlWink 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-nose{fill:var(--ql-brow)}
+#ql-startup-buffer .ql-mouth{transform-box:view-box;transform-origin:299px 404px;animation:qlMouth 4.4s ease-in-out .6s infinite}
+#ql-startup-buffer .ql-mouth-bg{fill:var(--ql-ink)}
+#ql-startup-buffer .ql-tongue{fill:var(--ql-tongue)}
+#ql-startup-buffer .ql-teeth{fill:#fff}
+@keyframes qlPop{from{opacity:0;transform:scale(.72)}to{opacity:1;transform:scale(1)}}
+@keyframes qlWordIn{from{opacity:0}to{opacity:1}}
+@keyframes qlFace{0%,28%{transform:rotate(0) scale(1)}34%,46%{transform:rotate(8deg) scale(1)}53%,62%{transform:rotate(0) scale(1)}69%,82%{transform:rotate(0) scale(1.1) translateY(-6px)}90%,100%{transform:rotate(0) scale(1)}}
+@keyframes qlLid{0%,30%{transform:translateY(0)}35%,45%{transform:translateY(-76px)}51%,100%{transform:translateY(0)}}
+@keyframes qlEyeR{0%,31%{transform:scaleY(1)}35%,45%{transform:scaleY(.04)}50%,100%{transform:scaleY(1)}}
+@keyframes qlWink{0%,32%{opacity:0}35%,45%{opacity:1}49%,100%{opacity:0}}
+@keyframes qlBrowL{0%,30%{transform:translateY(0) rotate(0)}35%,45%{transform:translateY(-16px) rotate(-3deg)}51%,66%{transform:translateY(0) rotate(0)}71%,82%{transform:translateY(-9px) rotate(0)}90%,100%{transform:translateY(0) rotate(0)}}
+@keyframes qlBrowR{0%,30%{transform:translateY(0) rotate(0)}35%,45%{transform:translate(2px,34px) rotate(6deg)}51%,66%{transform:translateY(0) rotate(0)}71%,82%{transform:translateY(-9px) rotate(0)}90%,100%{transform:translateY(0) rotate(0)}}
+@keyframes qlLook{0%,6%{transform:translate(0,0)}12%,20%{transform:translate(-6px,-3px)}26%,30%{transform:translate(0,0)}52%,60%{transform:translate(5px,2px)}66%,100%{transform:translate(0,0)}}
+@keyframes qlMouth{0%,28%{transform:scale(1,1)}34%,46%{transform:scale(1.03,.97)}53%,62%{transform:scale(1,1)}69%,82%{transform:scale(1.34,1.16)}90%,100%{transform:scale(1,1)}}
+/* hand-off: face shrinks away, then the whole screen fades into sign-in / home */
+#ql-startup-buffer.out{opacity:0;pointer-events:none;transition:opacity .24s ease .12s}
+#ql-startup-buffer.out .ql-face-svg{animation:qlOut .34s cubic-bezier(.5,0,.9,.5) forwards}
+#ql-startup-buffer.out .ql-word{transition:opacity .2s ease;opacity:0;animation:none}
+@keyframes qlOut{from{opacity:1;transform:scale(1)}to{opacity:0;transform:scale(.42)}}
+html[data-motion="reduced"] #ql-startup-buffer .ql-stage *,html[data-motion="reduced"] #ql-startup-buffer .ql-word{animation:none!important}
+@media(prefers-reduced-motion:reduce){#ql-startup-buffer .ql-stage *,#ql-startup-buffer .ql-word{animation:none!important}}
 </style>
-<script>window.__qlStartupAt=Date.now();window.__qlStartupMinDone=false;window.__qlAuthReady=false;setTimeout(function(){window.__qlStartupMinDone=true;if(window.__qlAuthReady)window.__qlFinishStartup&&window.__qlFinishStartup()},2000)</script>
+<script>window.__qlStartupAt=Date.now();window.__qlStartupMinDone=true;window.__qlAuthReady=false;(function(){var m=document.querySelector('meta[name="theme-color"]');if(m){window.__qlThemeColor=m.getAttribute("content");m.setAttribute("content","#F8A14C")}})()</script>
 </head>
 <body>
-<div id="ql-startup-buffer" aria-live="polite">
-  <div class="mascot-stage" aria-hidden="true">
-    <svg class="ql-mascot" viewBox="0 0 140 140" role="img" aria-label="QuickLearn mascot">
-      <path d="M36 39 Q27 18 33 14 Q43 13 51 33" fill="#d56a36"/>
-      <path d="M89 32 Q99 12 107 17 Q111 21 102 42" fill="#d56a36"/>
-      <path class="ql-brow" d="M28 49 Q37 38 48 46 Q39 43 29 53Z"/>
-      <path class="ql-brow" d="M88 45 Q100 37 109 47 L108 51 Q98 44 89 49Z"/>
-      <ellipse class="ql-eye" cx="42" cy="64" rx="13" ry="17"/>
-      <ellipse class="ql-eye" cx="96" cy="64" rx="13" ry="17"/>
-      <ellipse class="ql-pupil" cx="44" cy="66" rx="6.8" ry="10"/>
-      <ellipse class="ql-pupil" cx="98" cy="66" rx="6.8" ry="10"/>
-      <circle cx="46" cy="61" r="2.5" fill="#fff"/>
-      <circle cx="100" cy="61" r="2.5" fill="#fff"/>
-      <ellipse class="ql-cheek" cx="24" cy="81" rx="7" ry="4"/>
-      <ellipse class="ql-cheek" cx="115" cy="81" rx="7" ry="4"/>
-      <path class="ql-mouth" d="M49 82 Q69 96 90 81 Q89 103 69 103 Q52 101 49 82Z" fill="#4a2b24"/>
-      <path class="ql-mouth" d="M55 87 Q69 93 84 87 Q80 98 69 98 Q59 97 55 87Z" fill="#ff6b58"/>
-      <path d="M62 87 L76 87 L73 92 L65 92Z" fill="#fffaf3"/>
+<div id="ql-startup-buffer" role="status" aria-label="QuickLearn is loading">
+  <div class="ql-stage" aria-hidden="true">
+    <svg class="ql-face-svg" viewBox="0 0 600 560" focusable="false">
+      <defs><clipPath id="qlMouthClip"><path d="M196 408Q196 403 202 403L396 403Q402 403 402 409C402 462 358 496 299 496C240 496 196 462 196 408Z"/></clipPath></defs>
+      <g class="ql-face">
+        <path class="ql-horn" d="M78 52C100 75 140 90 162 111C130 121 106 134 92 151C78 120 74 85 78 52Z"/>
+        <path class="ql-horn" d="M498 46C475 70 438 90 416 110C445 120 470 133 488 150C500 120 505 80 498 46Z"/>
+        <path class="ql-brow l" d="M90 203Q132 181 174 197"/>
+        <path class="ql-brow r" d="M410 190Q452 174 494 199"/>
+        <g class="ql-eye-l">
+          <rect class="ql-white" x="78" y="222" width="120" height="185" rx="60"/>
+          <g class="ql-look"><rect class="ql-pupil" x="104" y="246" width="82" height="140" rx="41"/><circle class="ql-white" cx="122" cy="277" r="21"/></g>
+        </g>
+        <g class="ql-eye-r">
+          <rect class="ql-white" x="388" y="222" width="120" height="183" rx="60"/>
+          <g class="ql-look"><rect class="ql-pupil" x="402" y="245" width="82" height="140" rx="41"/><circle class="ql-white" cx="426" cy="270" r="21"/></g>
+        </g>
+        <path class="ql-wink" d="M418 282Q388 292 388 320Q432 298 482 324"/>
+        <rect class="ql-lid" x="46" y="404" width="180" height="96"/>
+        <circle class="ql-nose" cx="267" cy="370" r="11"/><circle class="ql-nose" cx="318" cy="370" r="11"/>
+        <g class="ql-mouth">
+          <path class="ql-mouth-bg" d="M196 408Q196 403 202 403L396 403Q402 403 402 409C402 462 358 496 299 496C240 496 196 462 196 408Z"/>
+          <g clip-path="url(#qlMouthClip)"><ellipse class="ql-tongue" cx="299" cy="472" rx="88" ry="60"/></g>
+          <path class="ql-teeth" d="M218 403L380 403L378 440Q366 448 356 440L351 424Q299 432 247 424L242 440Q232 448 220 440Z"/>
+        </g>
+      </g>
     </svg>
   </div>
-  <div class="ql-wordmark">QuickLearn<span>.</span></div>
-  <p>Getting your study space ready</p>
-  <div class="track"><i></i></div>
+  <div class="ql-word">QuickLearn</div>
 </div>
 <script>
+/* Closes the launch screen the moment we know where to send the person (sign-in page or home). */
 window.__qlFinishStartup=function(){
- if(!window.__qlStartupMinDone||!window.__qlAuthReady)return;
+ if(!window.__qlAuthReady||window.__qlSplashClosing)return;
+ window.__qlSplashClosing=true;
+ const m=document.querySelector('meta[name="theme-color"]');if(m&&window.__qlThemeColor)m.setAttribute("content",window.__qlThemeColor);
  const splash=document.getElementById("ql-startup-buffer");
- if(splash){splash.style.opacity="0";setTimeout(()=>splash.remove(),300)}
+ if(!splash)return;
+ splash.classList.add("out");
+ setTimeout(()=>splash.remove(),460);
 };
 </script>
 <div class="shell">
@@ -4625,16 +4655,13 @@ let qlAccepted=localStorage.getItem(TERMS_KEY)==="yes";
 let qlGateMode="signin";
 let qlAuthResolved=false;
 function showAuthBuffer(){
- let el=document.getElementById("ql-auth-buffer");if(el)return;
- el=document.createElement("div");el.id="ql-auth-buffer";
- el.innerHTML='<div class="ql-loader-orbit"><span></span><span></span><span></span><b>Q</b></div><h1>QuickLearn<span>.</span></h1><p id="ql-auth-status">Preparing your study space…</p><div class="ql-loader-track"><i></i></div>';
- document.body.appendChild(el);
+ /* The launch screen is the only loader now; this just keeps the app hidden until we know who is signed in. */
+ if(qlAuthResolved)return;
  const nav=document.querySelector("nav.bottom");if(nav)nav.style.display="none";
  const shell=document.querySelector(".shell");if(shell)shell.style.visibility="hidden";
 }
 function hideAuthBuffer(){
  window.__qlAuthReady=true;
- const el=document.getElementById("ql-auth-buffer");if(el)el.remove();
  if(window.__qlFinishStartup)window.__qlFinishStartup();
 }
 function qlGateVisible(){return !!document.getElementById("ql-gate")}
@@ -4718,9 +4745,11 @@ if(typeof quickLearnAuth!=="undefined"&&quickLearnAuth){
    const gate=document.getElementById("ql-gate");if(gate)gate.remove();
    const nav=document.querySelector("nav.bottom");if(nav)nav.style.display="";
    const shell=document.querySelector(".shell");if(shell)shell.style.visibility="";
+   if(!window.__qlLanded){window.__qlLanded=true;if(location.hash&&location.hash!=="#/"){try{history.replaceState(null,"","#/")}catch(_){}}try{route()}catch(_){}}
  });
 }
 window.addEventListener("DOMContentLoaded",()=>{showAuthBuffer()});
+setTimeout(()=>{if(!qlAuthResolved){qlAuthResolved=true;hideAuthBuffer();renderGate("signin")}},8000);
 window.addEventListener("load",()=>{if(!qlAuthResolved)showAuthBuffer()});
 if(typeof quickLearnAuth==="undefined"||!quickLearnAuth){window.addEventListener("load",()=>{qlAuthResolved=true;hideAuthBuffer();renderGate("signin")})}
 // Guard navigation and plus menu, even if triggered by a deep link.
