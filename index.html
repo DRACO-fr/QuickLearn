@@ -94,10 +94,7 @@ nav.bottom{position:fixed;left:0;right:0;bottom:0;z-index:30;width:100%;max-widt
 .plusbtn:active{transform:scale(.95)}
 .modal-bg{position:fixed;inset:0;overflow-y:auto;z-index:50;display:flex;align-items:flex-end;justify-content:center;background:rgba(0,0,0,.6);padding:1rem}
 @media(min-width:640px){.modal-bg{align-items:center}}
-.modal{width:100%;max-width:28rem;min-width:0;background:var(--surface);border:1px solid var(--border);border-radius:1.25rem;padding:1.25rem}
-.modal:has(.settings-content){max-height:calc(100dvh - 1rem);overflow-y:auto;overscroll-behavior:contain;scrollbar-width:thin}
-.modal:has(.settings-content) .sh{padding-bottom:.5rem}
-.modal:has(.settings-content) .sh h2{position:sticky;top:0;z-index:2;background:var(--surface);padding:.45rem 0 .65rem}
+.modal{width:100%;max-width:28rem;min-width:0;max-height:min(88dvh,900px);overflow-y:auto;overscroll-behavior:contain;-webkit-overflow-scrolling:touch;background:var(--surface);border:1px solid var(--border);border-radius:1.25rem;padding:1.25rem}
 .flashcard{position:relative;width:100%;max-width:100%;overflow-wrap:anywhere;min-height:16rem;border-radius:1.5rem;border:1px solid var(--border);background:var(--surface);cursor:pointer;display:flex;align-items:center;justify-content:center;padding:2rem;text-align:center;transition:.2s;user-select:none}
 .flashcard:hover{border-color:var(--primary)}
 .flashcard .q{font-size:1.15rem;font-weight:600;line-height:1.5}
@@ -1229,7 +1226,7 @@ function hapticLevelUp(){
 
 function openSettings(){
   const light = settings.theme === "light";
-  modal(`<div class="sh settings-content"><h2>Settings</h2>
+  modal(`<div class="sh"><h2>Settings</h2>
     <div class="setrow"><span class="seti">📳</span><span class="sett"><b>Vibrations</b><small id="hapSub">${hapSub()}</small></span>
       <button id="swHap" data-nohap class="sw${settings.haptics?" on":""}" role="switch" aria-checked="${settings.haptics}" aria-label="Vibrations" onclick="toggleHaptics()"><i></i></button></div>
     <button class="btn btn-secondary" data-nohap style="width:100%;margin:.1rem 0 .8rem" onclick="haptic('easy')">✨ Try haptics</button>
@@ -3450,7 +3447,7 @@ function applyMx(){ document.documentElement.setAttribute("data-mx", animOn() ? 
 applyMx();
 window.addEventListener("hashchange", () => mxClose());
 
-const MX_C = { body:"#57cfc3", dark:"#149b9b", deep:"#087f83", belly:"#ffc83d", ink:"#123c3b" };
+const MX_C = { body:"#3cbbca", dark:"#2a98ad", deep:"#1d7f93", belly:"#8fe0e8", ink:"#0f3340" };
 // Outfit registry. The store (added later) only needs to sell these and set data.mascot.worn[slot] = id.
 const MX_OUTFITS = {
   party:  { slot:"hat",  name:"Party hat", price:60,  svg:`<g transform="rotate(-9 100 44)"><path d="M100 4 L127 47 Q100 54 73 47Z" fill="#ff7a59"/><path d="M89 21 L113 23 M83 34 L119 36" stroke="#ffd166" stroke-width="5" stroke-linecap="round"/><circle cx="100" cy="5" r="6.5" fill="#ffd166"/></g>` },
@@ -3471,8 +3468,8 @@ function mascot(mood, o){
   const eyeOpen = (px, py, r, pr) => `<g class="mx-eyes"><circle cx="78" cy="88" r="${r}" fill="#fff"/><circle cx="122" cy="88" r="${r}" fill="#fff"/><circle cx="${78+px}" cy="${88+py}" r="${pr}" fill="${ink}"/><circle cx="${122+px}" cy="${88+py}" r="${pr}" fill="${ink}"/><circle cx="${76+px}" cy="${85+py}" r="2.2" fill="#fff"/><circle cx="${120+px}" cy="${85+py}" r="2.2" fill="#fff"/></g>`;
   const eyeHappy = `<g class="mx-eyes">${ln("M66 94 Q78 76 90 94", 5.5)}${ln("M110 94 Q122 76 134 94", 5.5)}</g>`;
   const eyeSleep = `<g>${ln("M66 90 Q78 100 90 90", 5)}${ln("M110 90 Q122 100 134 90", 5)}</g>`;
-  const smile = ln("M87 113 Q100 126 113 113", 4);
-  const cheeks = `<ellipse cx="59" cy="108" rx="11" ry="6.5" fill="#ff8fa3" opacity=".68"/><ellipse cx="141" cy="108" rx="11" ry="6.5" fill="#ff8fa3" opacity=".68"/>`;
+  const smile = ln("M86 112 Q100 125 114 112", 4.5) + `<path d="M105 116 L109.5 126 L113.5 114Z" fill="#fff"/>`;
+  const cheeks = `<ellipse cx="60" cy="108" rx="9" ry="5.5" fill="#ff8fa3" opacity=".5"/><ellipse cx="140" cy="108" rx="9" ry="5.5" fill="#ff8fa3" opacity=".5"/>`;
   const mouthBig = `<clipPath id="${id}m"><path d="M72 102 Q100 107 128 102 Q126 148 100 150 Q74 148 72 102Z"/></clipPath><path d="M72 102 Q100 107 128 102 Q126 148 100 150 Q74 148 72 102Z" fill="#0b3340"/><g clip-path="url(#${id}m)"><ellipse cx="100" cy="146" rx="19" ry="14" fill="#ff6a78"/></g><path d="M76 103 Q100 108 124 103 L123.5 112 Q100 117 76.5 112Z" fill="#fff"/>`;
   const mouthMid = `<clipPath id="${id}m"><path d="M80 106 Q100 110 120 106 Q118 134 100 136 Q82 134 80 106Z"/></clipPath><path d="M80 106 Q100 110 120 106 Q118 134 100 136 Q82 134 80 106Z" fill="#0b3340"/><g clip-path="url(#${id}m)"><ellipse cx="100" cy="134" rx="14" ry="10" fill="#ff6a78"/></g>`;
   const heart = (x, y, d) => `<g transform="translate(${x} ${y})"><path class="mx-heart" style="animation-delay:${d}s" d="M0 -3 C-5 -11 -15 -3 0 9 C15 -3 5 -11 0 -3Z" fill="#ff5c7a"/></g>`;
@@ -3498,7 +3495,7 @@ function mascot(mood, o){
     case "wave": eyes = eyeOpen(2, 1, 11, 6); mouth = smile; cheek = cheeks; wave = 1; break;
     default: eyes = eyeOpen(1, 2, 11, 6); mouth = smile;
   }
-  const BODY = "M100 38 C65 38 39 62 39 103 C37 143 57 166 78 171 L69 194 L91 194 L100 176 L109 194 L131 194 L122 171 C143 166 163 143 161 103 C161 62 135 38 100 38Z";
+  const BODY = "M100 34 C66 34 46 62 42 100 C38 140 56 176 100 178 C144 176 162 140 158 100 C154 62 134 34 100 34Z";
   let armsBack;
   if(armsUp){
     armsBack = `<g class="mx-armL"><path d="M50 114 Q30 98 26 68" stroke="${C.body}" stroke-width="21" stroke-linecap="round" fill="none"/></g><g class="mx-armR"><path d="M150 114 Q170 98 174 68" stroke="${C.dark}" stroke-width="21" stroke-linecap="round" fill="none"/></g>`;
@@ -3509,20 +3506,36 @@ function mascot(mood, o){
   }
   const hat = MX_OUTFITS[W.hat] && MX_OUTFITS[W.hat].slot === "hat" ? MX_OUTFITS[W.hat].svg : "";
   const face = MX_OUTFITS[W.face] && MX_OUTFITS[W.face].slot === "face" ? MX_OUTFITS[W.face].svg : "";
+  const tail = `<path d="M62 153 C43 169 25 179 10 173 C23 188 48 190 72 174" fill="#F2A33A" stroke="#A94D2A" stroke-width="3" stroke-linejoin="round"/>`;
+  const wings = `<path d="M55 112 C35 92 22 85 14 94 C18 107 15 114 7 119 C23 125 29 134 35 143 L60 137Z" fill="#FFC94D" stroke="#D77B27" stroke-width="3" stroke-linejoin="round"/><path d="M145 112 C165 92 178 85 186 94 C182 107 185 114 193 119 C177 125 171 134 165 143 L140 137Z" fill="#FFC94D" stroke="#D77B27" stroke-width="3" stroke-linejoin="round"/>`;
+  const spots = `<g fill="#FFE5A1"><ellipse cx="51" cy="145" rx="3.5" ry="2.5"/><ellipse cx="47" cy="151" rx="2.5" ry="2"/><ellipse cx="149" cy="145" rx="3.5" ry="2.5"/><ellipse cx="153" cy="151" rx="2.5" ry="2"/><ellipse cx="67" cy="166" rx="3" ry="6"/><ellipse cx="133" cy="166" rx="3" ry="6"/></g>`;
   return `<div class="mxw ${o.cls || ""}" style="--s:${size}px"><svg class="mx" viewBox="0 0 200 200" role="img" aria-label="${esc(mxName())}, your study buddy" xmlns="http://www.w3.org/2000/svg">
-<defs><clipPath id="${id}c"><path d="${BODY}"/></clipPath></defs>
-<ellipse cx="100" cy="189" rx="52" ry="6.5" fill="#000" opacity=".25"/>
-${armsBack}
-<path d="M55 151 Q36 174 17 168 Q28 190 59 177 L72 164Z" fill="${C.body}"/><path d="M29 179 L37 188 L42 178Z" fill="#ffc83d"/>
-<path d="M57 61 C47 42 48 25 58 24 C70 23 82 36 91 49 Q76 45 66 57Z" fill="${C.deep}"/><path d="M143 61 C153 42 152 25 142 24 C130 23 118 36 109 49 Q124 45 134 57Z" fill="${C.deep}"/>
-<!-- tiny friendly dragon wings -->
-<path d="M47 116 Q25 92 13 104 Q18 117 10 124 Q25 142 49 139Z" fill="#ffc83d"/><path d="M153 116 Q175 92 187 104 Q182 117 190 124 Q175 142 151 139Z" fill="#ffc83d"/>
-<path d="${BODY}" fill="${C.body}"/>
-<ellipse cx="76" cy="66" rx="13" ry="7" transform="rotate(-35 76 66)" fill="#fff" opacity=".22"/>
-<g clip-path="url(#${id}c)"><path d="M128 28 C178 56 186 140 138 192 L204 204 L204 18Z" fill="${C.dark}" opacity=".55"/><path d="M78 119 Q100 112 122 119 L128 163 Q100 181 72 163Z" fill="${C.belly}"/><path d="M80 132 Q100 137 120 132 M77 145 Q100 150 123 145 M75 157 Q100 162 125 157" stroke="#e8a927" stroke-width="2.5" stroke-linecap="round" fill="none"/></g>
-<ellipse cx="74" cy="177" rx="20" ry="9" fill="${C.dark}"/><ellipse cx="126" cy="177" rx="20" ry="9" fill="${C.deep}"/>
-<path d="M66 180 L66 174 M74 181 L74 174 M82 180 L82 174 M118 180 L118 174 M126 181 L126 174 M134 180 L134 174" stroke="${C.ink}" stroke-opacity=".35" stroke-width="2" stroke-linecap="round"/>
-${cheek}${eyes}${brows}${mouth}${face}${hat}${extra}</svg></div>`;
+<defs><linearGradient id="${id}body" x1="0" y1="0" x2="1" y2="1"><stop stop-color="#FFCA67"/><stop offset="1" stop-color="#F28B43"/></linearGradient><linearGradient id="${id}belly" x1="0" y1="0" x2="0" y2="1"><stop stop-color="#FFE8A3"/><stop offset="1" stop-color="#FFC94D"/></linearGradient><clipPath id="${id}c"><path d="M100 43 C61 43 39 68 39 105 C39 139 56 158 100 158 C144 158 161 139 161 105 C161 68 139 43 100 43Z"/></clipPath></defs>
+<ellipse cx="100" cy="190" rx="54" ry="5" fill="#000" opacity=".18"/>
+${tail}${wings}
+<!-- little dragon feet and rounded body -->
+<path d="M66 147 C57 164 55 183 63 190 L88 190 L94 158Z" fill="#F6A64B" stroke="#A94D2A" stroke-width="3"/><path d="M106 158 L112 190 L137 190 C145 183 143 164 134 147Z" fill="#F6A64B" stroke="#A94D2A" stroke-width="3"/>
+<path d="M58 185 Q67 178 76 185 Q83 179 90 188 L90 193 L56 193Z" fill="#C66C32"/><path d="M110 188 Q117 179 124 185 Q133 178 144 185 L146 193 L110 193Z" fill="#C66C32"/>
+<!-- tiny back spikes -->
+<path d="M49 133 L40 127 L47 142 L39 142 L54 151Z" fill="#D97732"/><path d="M52 148 L44 144 L51 158 L43 158 L59 164Z" fill="#D97732"/>
+<!-- arms with little dragon claws -->
+<path d="M53 119 Q36 125 27 141 Q25 149 34 153 Q44 157 57 143 L68 132Z" fill="#F6A64B" stroke="#A94D2A" stroke-width="3"/><path d="M147 119 Q164 125 173 141 Q175 149 166 153 Q156 157 143 143 L132 132Z" fill="#F6A64B" stroke="#A94D2A" stroke-width="3"/>
+<path d="M29 145 l-7 0 5 6 M35 150 l-5 5 8 0 M171 145 l7 0 -5 6 M165 150 l5 5 -8 0" fill="none" stroke="#D97732" stroke-width="3" stroke-linecap="round"/>
+<!-- large round dragon head -->
+<path d="M100 35 C61 35 36 61 35 99 C33 132 54 153 100 154 C146 153 167 132 165 99 C164 61 139 35 100 35Z" fill="url(#${id}body)" stroke="#A94D2A" stroke-width="3"/>
+<!-- upright rounded horns -->
+<path d="M55 59 Q43 38 43 24 Q60 29 72 48Z" fill="#D97732" stroke="#A94D2A" stroke-width="3" stroke-linejoin="round"/><path d="M145 59 Q157 38 157 24 Q140 29 128 48Z" fill="#D97732" stroke="#A94D2A" stroke-width="3" stroke-linejoin="round"/>
+<!-- golden belly -->
+<path d="M77 137 Q70 145 71 162 L76 181 Q100 194 124 181 L129 162 Q130 145 123 137Z" fill="url(#${id}belly)" stroke="#D77B27" stroke-width="2.5"/>
+<path d="M80 151 Q100 157 120 151 M78 164 Q100 171 122 164 M82 177 Q100 182 118 177" fill="none" stroke="#E9A63B" stroke-width="2.5" stroke-linecap="round"/>
+${spots}
+<!-- soft brows and oversized friendly eyes -->
+<path d="M58 73 Q70 65 81 73 M119 73 Q130 65 142 73" fill="none" stroke="#C66C32" stroke-width="4" stroke-linecap="round"/>
+<g class="mx-eyes"><ellipse cx="72" cy="94" rx="17" ry="23" fill="#FFFDF8"/><ellipse cx="128" cy="94" rx="17" ry="23" fill="#FFFDF8"/><ellipse cx="75" cy="96" rx="10" ry="16" fill="#38231C"/><ellipse cx="125" cy="96" rx="10" ry="16" fill="#38231C"/><circle cx="71" cy="88" r="5.5" fill="#fff"/><circle cx="121" cy="88" r="5.5" fill="#fff"/></g>
+<ellipse cx="88" cy="111" rx="3" ry="2.5" fill="#C66C32"/><ellipse cx="112" cy="111" rx="3" ry="2.5" fill="#C66C32"/>
+<ellipse cx="53" cy="112" rx="9" ry="5" fill="#F78C83" opacity=".62"/><ellipse cx="147" cy="112" rx="9" ry="5" fill="#F78C83" opacity=".62"/>
+${mood === "sad" ? ln("M88 127 Q100 116 112 127",4) : mood === "wow" ? `<ellipse cx="100" cy="126" rx="6" ry="8" fill="#63321F"/>` : ln("M86 122 Q100 132 114 122",4)}
+<path d="M95 125 L99 132 L103 125Z" fill="#FFF9E9"/>${face}${hat}${extra}</svg></div>`;
 }
 
 /* ---------- treasure chest ---------- */
