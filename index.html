@@ -4251,5 +4251,213 @@ document.head.appendChild(st);
 })();
 
 </script>
+<!-- ===== QuickLearn additions: AI assistant · day planner · streaks · exam calendar ===== -->
+<style id="qx-css">
+.qs-card{margin:.2rem 1.1rem .7rem;padding:1rem;border-radius:1.2rem;background:linear-gradient(135deg,#4a2410,#2a1510);border:1px solid #a94d2a;display:flex;flex-direction:column;gap:.7rem;cursor:pointer;color:#fff}
+.qs-top{display:flex;align-items:center;gap:.8rem}
+.qs-fl{font-size:2.6rem;line-height:1;display:inline-block;animation:flameWiggle 1.8s ease-in-out infinite}
+.qs-n{font-family:var(--font-display);font-size:2.1rem;font-weight:800;color:#ffb15f;line-height:1}
+.qs-s{font-size:.8rem;color:#e8c9b0}
+.qs-wk{display:grid;grid-template-columns:repeat(7,1fr);gap:.3rem}
+.qs-wk i{display:flex;flex-direction:column;align-items:center;gap:.1rem;padding:.3rem 0;border-radius:.6rem;background:#ffffff14;font-style:normal;font-size:.85rem;min-height:2.6rem}
+.qs-wk i small{font-size:.62rem;opacity:.7}.qs-wk i.on{background:#ff8a3d44}.qs-wk i.td{outline:2px solid #ffb15f}
+.qs-pill{padding:.4rem .75rem;font-size:1rem}.qs-pill.done{border-color:#7ad98b;color:#b6f0c0}
+.qt-card{margin:0 1.1rem .8rem;padding:.9rem 1rem;border-radius:1.1rem;background:var(--surface);border:1px solid var(--border)}
+.qt-card div.r{display:flex;gap:.6rem;font-size:.85rem;padding:.2rem 0}.qt-card b{min-width:3rem;color:var(--muted-fg);font-weight:600}
+.qc{padding:0 1.1rem}
+.qc-h{display:flex;align-items:center;gap:.4rem;margin:.4rem 0}
+.qc-h h3{flex:1;text-align:center;font-size:1rem}
+.qc-h button{background:var(--surface);border:1px solid var(--border);color:var(--foreground);border-radius:.7rem;min-width:2.2rem;height:2.2rem;cursor:pointer;font-size:.8rem}
+.qc-g{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:3px}
+.qc-w{text-align:center;font-size:.65rem;font-weight:700;color:var(--muted-fg);padding:.15rem 0}
+.qc-c{height:clamp(2.4rem,6vh,3.2rem);border-radius:.6rem;border:1px solid transparent;background:var(--surface);color:var(--foreground);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:.15rem;padding:0;cursor:pointer;min-width:0}
+.qc-c b{font-size:.82rem;font-weight:600}.qc-c u{display:flex;gap:2px;height:6px;text-decoration:none}
+.qc-c.t{border-color:var(--primary)}.qc-c.s{background:var(--primary);color:var(--primary-fg)}
+.k-exam{background:#ff6b4a}.k-study{background:#e29a2d}.k-activity{background:#3fc4b0}.k-other{background:#9a8af0}
+.qc-c u i{width:6px;height:6px;border-radius:50%;display:block}
+.qc-c.s .k-study{background:#fff}
+.qc-lg{display:flex;gap:.9rem;font-size:.7rem;color:var(--muted-fg);margin:.5rem 0;flex-wrap:wrap}.qc-lg i{display:inline-block;width:8px;height:8px;border-radius:50%;margin-right:.3rem}
+.qc-ev{display:flex;gap:.6rem;align-items:center;width:100%;text-align:left;background:var(--surface);border:1px solid var(--border);border-radius:.9rem;padding:.6rem .8rem;margin-top:.4rem;color:var(--foreground);cursor:pointer;font-size:.88rem}
+.qc-ev em{font-style:normal;font-size:.72rem;color:var(--muted-fg);min-width:3.1rem}.qc-ev s{width:4px;align-self:stretch;border-radius:4px;text-decoration:none}
+.qc-ev.ro{opacity:.6;padding:.35rem .8rem;font-size:.8rem}.qc-ev.dn span{text-decoration:line-through;opacity:.6}
+.qc-ac{display:flex;gap:.5rem;margin:.7rem 0}.qc-ac .btn{flex:1;min-height:40px;padding:0 .4rem;font-size:.8rem}
+#qai{position:fixed;inset:0;z-index:70;display:none;flex-direction:column;background:var(--background);max-width:720px;margin:0 auto;color:var(--foreground)}
+#qai.on{display:flex}
+.qa-h{display:flex;align-items:center;justify-content:space-between;padding:calc(.8rem + env(safe-area-inset-top)) 1.1rem .8rem;border-bottom:1px solid var(--border);font-family:var(--font-display)}
+.qa-h button{background:none;border:0;color:var(--foreground);font-size:1.2rem;cursor:pointer}
+.qa-m{flex:1;overflow-y:auto;padding:1rem 1.1rem;display:flex;flex-direction:column;gap:.6rem}
+.qa-b{max-width:88%;padding:.65rem .9rem;border-radius:1.1rem;font-size:.9rem;line-height:1.5;overflow-wrap:anywhere}
+.qa-b.u{align-self:flex-end;background:var(--primary);color:var(--primary-fg);border-bottom-right-radius:.3rem}
+.qa-b.a{align-self:flex-start;background:var(--surface);border:1px solid var(--border);border-bottom-left-radius:.3rem}
+.qa-b p{margin:.2rem 0}
+.qa-act{display:flex;gap:.5rem;align-items:center;justify-content:space-between;margin-top:.5rem;padding:.5rem .6rem;border-radius:.8rem;background:var(--surface-2);font-size:.8rem}
+.qa-act .btn{min-height:32px;font-size:.75rem;padding:0 .7rem}
+.qa-chips{display:flex;gap:.4rem;overflow-x:auto;padding:.3rem 1.1rem;scrollbar-width:none}.qa-chips button{flex:none;border:1px solid var(--border);background:var(--surface);color:var(--foreground);border-radius:999px;padding:.45rem .8rem;font-size:.78rem;cursor:pointer}
+.qa-i{display:flex;gap:.5rem;padding:.6rem 1.1rem calc(.8rem + env(safe-area-inset-bottom));align-items:flex-end}
+.qa-i textarea{flex:1;min-height:44px;max-height:7rem;border-radius:1.2rem;border:1px solid var(--border);background:var(--surface-2);color:var(--foreground);padding:.7rem 1rem;font-size:16px;resize:none;outline:none}
+#qaiFab{position:fixed;right:max(1rem,calc(50% - 360px + 1rem));bottom:calc(5.4rem + env(safe-area-inset-bottom));z-index:29;width:3.1rem;height:3.1rem;border-radius:50%;border:0;background:linear-gradient(135deg,#e29a2d,#ff7c5b);color:#1b0f08;font-size:1.35rem;box-shadow:0 10px 26px -8px rgba(226,154,45,.8);cursor:pointer}
+</style>
+<div id="qai"><div class="qa-h"><b>✨ Study assistant</b><button onclick="QX.close()" aria-label="Close">✕</button></div><div class="qa-m" id="qaiM"></div><div class="qa-chips" id="qaiC"></div><div class="qa-i"><textarea id="qaiT" rows="1" placeholder="Ask anything, or say what to schedule…"></textarea><button class="btn btn-primary" onclick="QX.send()" aria-label="Send">➤</button></div></div>
+<script>
+(function(){
+/* ---------- helpers & storage (load() drops unknown keys, so restore the plan) ---------- */
+try{const r=JSON.parse(localStorage.getItem(DATA_KEY)||"{}");if(r.plan&&!data.plan)data.plan=r.plan}catch(_){}
+const DN=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"],MS=[3,7,14,30,60,100,365];
+const iso=d=>d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+const pd=s=>{const a=s.split("-").map(Number);return new Date(a[0],a[1]-1,a[2])};
+const mins=t=>{const a=String(t).split(":").map(Number);return a[0]*60+(a[1]||0)};
+const hm=m=>String(Math.floor(m/60)%24).padStart(2,"0")+":"+String(m%60).padStart(2,"0");
+const P=()=>{const p=data.plan=data.plan||{};p.ev=p.ev||[];p.act=p.act||[];p.chat=p.chat||[];p.set=Object.assign({wake:"07:00",sleep:"22:30",ws:"08:00",we:"15:00",days:[1,2,3,4,5],study:90,pref:"after",len:14,meals:1,review:"17:00",remind:10},p.set||{});return p};
+const TY={exam:"Exam",study:"Study",activity:"Activity",other:"Other"};
+function evOn(ds){const r=[],d=pd(ds);
+  data.subjects.forEach(s=>examsOf(s.id).forEach(e=>{if(e.date===ds)r.push({id:"x"+e.id,type:"exam",title:s.name+(e.title?" · "+e.title:""),start:"",end:""})}));
+  P().ev.forEach(e=>{if(e.date===ds)r.push(e)});
+  P().act.forEach(a=>{if(a.days.includes(d.getDay())&&!(a.skip||[]).includes(ds))r.push({id:a.id,type:"activity",title:a.title,start:a.start,end:a.end,rec:1})});
+  return r.sort((a,b)=>(a.start||"").localeCompare(b.start||""))}
+/* ---------- 3. STREAKS ---------- */
+const pdays=()=>{const s=new Set(Object.keys(data.game.log||{}));Object.entries(data.reviewLog||{}).forEach(([k,v])=>{if(v&&v.n)s.add(k)});return s};
+const cur=()=>{const g=data.game,t=localISODate(),l=g.lastPracticeDate||"";return l===t||dayDiff(l,t)===1?(g.streak||0):0};
+window.markPractice=function(){const g=data.game,t=localISODate();if(g.lastPracticeDate===t)return;g.streak=dayDiff(g.lastPracticeDate,t)===1?(g.streak||0)+1:1;g.lastPracticeDate=t;g.best=Math.max(g.best||0,g.streak);(g.log=g.log||{})[t]=1;save()};
+window.streakBadge=function(){const n=cur(),d=data.game.lastPracticeDate===localISODate();return `<button class="streak-pill qs-pill${d?" done":""}" onclick="event.stopPropagation();QX.streak()" aria-label="${n} day streak"><span class="flame">🔥</span><span>${n}</span></button>`};
+function weekStrip(){const S=pdays(),t=new Date(),dw=(t.getDay()+6)%7;let o="";for(let i=0;i<7;i++){const d=new Date(t);d.setDate(t.getDate()-dw+i);const s=iso(d);o+=`<i class="${S.has(s)?"on":""}${s===localISODate()?" td":""}"><small>${"MTWTFSS"[i]}</small>${S.has(s)?"🔥":""}</i>`}return o}
+function streakCard(){const n=cur(),done=data.game.lastPracticeDate===localISODate(),nx=MS.find(m=>m>n)||n+100;
+  return `<div class="qs-card" onclick="QX.streak()"><div class="qs-top"><span class="qs-fl">🔥</span><div><div class="qs-n">${n} day${n==1?"":"s"}</div><div class="qs-s">${done?"✅ Streak secured today":n?"Practice today to keep your streak alive":"Start your streak today"}</div></div>${done?"":`<button class="btn btn-primary" style="margin-left:auto;min-height:38px" onclick="event.stopPropagation();go('#/study')">Practice</button>`}</div><div class="qs-wk">${weekStrip()}</div><div class="progress" style="margin:0"><div style="width:${Math.min(100,n/nx*100)}%"></div></div><div class="qs-s">${nx-n} more day${nx-n==1?"":"s"} to the ${nx}-day milestone · Best ${Math.max(data.game.best||0,n)}</div></div>`}
+function todayCard(){const ds=localISODate(),ev=evOn(ds).filter(e=>e.type!=="routine"),has=P().ev.some(e=>e.src==="plan");
+  return `<div class="qt-card"><div class="row" style="justify-content:space-between;margin-bottom:.3rem"><b style="font-size:.95rem">📅 Today</b><button class="btn btn-secondary" style="min-height:34px;font-size:.75rem" onclick="QX.plan()">${has?"Re-plan":"Plan my days"}</button></div>${ev.length?ev.slice(0,4).map(e=>`<div class="r"><b>${e.start||"All day"}</b><span>${esc(e.title)}</span></div>`).join(""):`<div class="muted">Nothing scheduled — let me build your daily plan.</div>`}</div>`}
+const _rh=window.renderHome;
+window.renderHome=function(){_rh();const k=view.querySelector(".kh.home");if(k)k.insertAdjacentHTML("afterend",streakCard()+todayCard())};
+/* month grid shared by the exam calendar and the streak sheet */
+function cells(y,m,fn,cls){const off=(new Date(y,m,1).getDay()+6)%7,dim=new Date(y,m+1,0).getDate(),rows=Math.ceil((off+dim)/7);let o="";
+  for(let i=0;i<rows*7;i++){const dn=i-off+1;o+=dn<1||dn>dim?"<span></span>":fn(iso(new Date(y,m,dn)),dn)}
+  return `<div class="qc-g ${cls||""}">${"MTWTFSS".split("").map(c=>`<div class="qc-w">${c}</div>`).join("")}${o}</div>`}
+const mlabel=(y,m)=>new Date(y,m,1).toLocaleDateString(undefined,{month:"long",year:"numeric"});
+let sm={y:new Date().getFullYear(),m:new Date().getMonth()};
+function streakSheet(){const n=cur(),S=pdays(),g=data.game;
+  modal(`<div class="sh" style="max-height:80vh;overflow-y:auto"><div style="text-align:center"><div style="font-size:3rem">🔥</div><h2 style="font-size:2rem;color:#ffb15f">${n} day streak</h2><p class="muted">Best ever: ${Math.max(g.best||0,n)} · Active days: ${S.size}</p></div>
+  <div class="qc-h"><button onclick="QX.sm(-1)">‹</button><h3>${mlabel(sm.y,sm.m)}</h3><button onclick="QX.sm(1)">›</button></div>
+  ${cells(sm.y,sm.m,(ds,dn)=>`<div class="qc-c${ds===localISODate()?" t":""}" style="cursor:default"><b>${dn}</b><span style="font-size:.8rem;height:.9rem">${S.has(ds)?"🔥":""}</span></div>`)}
+  <div class="row" style="flex-wrap:wrap;margin:.8rem 0">${MS.map(m=>`<span class="chip tone${n>=m?2:0}" style="margin:0">${n>=m?"✅":"🔒"} ${m} days</span>`).join("")}</div>
+  <p class="muted">Finish any flashcard session or lesson to keep your streak alive. Your plan adds a short “Flashcard review” slot every day.</p>
+  <button class="btn btn-primary" style="width:100%" onclick="closeModal();go('#/study')">Practice now</button></div>`)}
+/* ---------- 4. EXAM CALENDAR (replaces the old exam timeline) ---------- */
+const cal={y:new Date().getFullYear(),m:new Date().getMonth(),sel:localISODate()};
+window.examTimeline=function(w,has){
+  const body=cells(cal.y,cal.m,(ds,dn)=>{const ty=[...new Set(evOn(ds).map(e=>e.type).filter(t=>t!=="routine"))].slice(0,3);
+    return `<button class="qc-c${ds===localISODate()?" t":""}${ds===cal.sel?" s":""}" onclick="QX.pick('${ds}')"><b>${dn}</b><u>${ty.map(t=>`<i class="k-${t}"></i>`).join("")}</u></button>`});
+  const ev=evOn(cal.sel),main=ev.filter(e=>e.type!=="routine"),ro=ev.filter(e=>e.type==="routine");
+  const row=e=>`<button class="qc-ev${e.type==="routine"?" ro":""}${e.done?" dn":""}" onclick="${e.type==="exam"?"openExamScheduleModal()":`QX.evMenu('${e.id}','${cal.sel}')`}"><s class="k-${e.type==="routine"?"other":e.type}"></s><em>${e.start?e.start+(e.end?"–"+e.end:""):"All day"}</em><span style="flex:1">${esc(e.title)}</span>${e.done?"✓":""}</button>`;
+  return `<div class="qc"><div class="qc-h"><button onclick="QX.mo(-1)" aria-label="Previous month">‹</button><h3>${mlabel(cal.y,cal.m)}</h3><button onclick="QX.mo(1)" aria-label="Next month">›</button><button onclick="QX.today()">Today</button></div>${body}
+  <div class="qc-lg"><span><i class="k-exam"></i>Exam</span><span><i class="k-study"></i>Study</span><span><i class="k-activity"></i>Activity</span></div>
+  <b style="font-size:.9rem">${pd(cal.sel).toLocaleDateString(undefined,{weekday:"long",day:"numeric",month:"short"})}</b>
+  ${main.length?main.map(row).join(""):`<div class="muted" style="margin-top:.4rem">Nothing planned this day.</div>`}${ro.map(row).join("")}
+  <div class="qc-ac"><button class="btn btn-secondary" onclick="QX.add('${cal.sel}')">＋ Add</button><button class="btn btn-primary" onclick="QX.plan()">🗓 Plan my days</button><button class="btn btn-secondary" onclick="openExamScheduleModal()">🎯 Exams</button></div></div>`};
+/* ---------- add / edit events ---------- */
+const sel=(id,o,c)=>`<select id="${id}" class="input" style="appearance:auto">${o.map(x=>`<option value="${x[0]}"${String(x[0])===String(c)?" selected":""}>${x[1]}</option>`).join("")}</select>`;
+const redraw=()=>{if(/^#\/study/.test(location.hash)||!location.hash.slice(2))route()};
+function evForm(ds){modal(`<div class="sh"><h2>Add to calendar</h2><input id="qe_t" class="input" placeholder="What? e.g. Maths revision" style="margin:.5rem 0"><div class="grid2">${sel("qe_k",[["study","📖 Study"],["activity","⚽ Activity"],["other","📌 Other"]],"study")}${sel("qe_s",[["","No subject"]].concat(data.subjects.map(s=>[s.id,s.name])),"")}<input id="qe_d" type="date" class="input" value="${ds}"><div class="row"><input id="qe_a" type="time" class="input" value="16:00"><input id="qe_b" type="time" class="input" value="17:00"></div></div><div style="margin-top:.5rem">${sel("qe_w",[["0","Just once"],["1","Repeat every week"]],"0")}</div><div class="row" style="justify-content:flex-end;margin-top:1rem"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="QX.saveEv()">Save</button></div></div>`)}
+/* ---------- 2. DAY PLANNER ---------- */
+function parseActs(t){return t.split("\n").map(l=>{const m=l.trim().match(/^(.*?)\s+((?:(?:sun|mon|tue|wed|thu|fri|sat)[a-z]*[\s,]*)+)\s*(\d{1,2}:\d{2})\s*(?:-|–|to)\s*(\d{1,2}:\d{2})$/i);if(!m)return null;
+  return {id:uid(),title:m[1].trim(),days:[...new Set((m[2].toLowerCase().match(/sun|mon|tue|wed|thu|fri|sat/g)||[]).map(x=>DN.findIndex(n=>n.toLowerCase()===x)))],start:hm(mins(m[3])),end:hm(mins(m[4]))}}).filter(Boolean)}
+const fmtActs=()=>P().act.map(a=>`${a.title} ${a.days.map(d=>DN[d]).join(" ")} ${a.start}-${a.end}`).join("\n");
+function planSheet(){const s=P().set,chip=i=>`<button type="button" class="chip2 qp-d${s.days.includes(i)?" on":""}" data-i="${i}" onclick="this.classList.toggle('on')">${DN[i]}</button>`,L=t=>`<label class="muted" style="display:block">${t}`;
+  modal(`<div class="sh" style="max-height:80vh;overflow-y:auto"><h2>🗓 Plan my days</h2><p class="muted" style="margin:.3rem 0 .6rem">I’ll build your daily routine, activities and study sessions (weighted by your exams), plus a daily streak review — with reminders.</p>
+  <div class="grid2">${L("Wake up")}<input id="qp_wake" type="time" class="input" value="${s.wake}"></label>${L("Bedtime")}<input id="qp_sleep" type="time" class="input" value="${s.sleep}"></label>${L("School / work starts")}<input id="qp_ws" type="time" class="input" value="${s.ws}"></label>${L("School / work ends")}<input id="qp_we" type="time" class="input" value="${s.we}"></label></div>
+  <div class="muted" style="margin:.6rem 0 .3rem">School / work days</div><div class="row" style="flex-wrap:wrap">${[1,2,3,4,5,6,0].map(chip).join("")}</div>
+  <div class="grid2" style="margin-top:.6rem">${L("Study per day")}${sel("qp_study",[[45,"45 min"],[60,"1 hour"],[90,"1.5 hours"],[120,"2 hours"],[180,"3 hours"],[240,"4 hours"]],s.study)}</label>${L("Best study time")}${sel("qp_pref",[["after","After school/work"],["morn","Morning"],["eve","Evening"]],s.pref)}</label>${L("Streak review at")}<input id="qp_rev" type="time" class="input" value="${s.review}"></label>${L("Plan length")}${sel("qp_len",[[7,"1 week"],[14,"2 weeks"],[28,"4 weeks"]],s.len)}</label>${L("Meals in plan")}${sel("qp_meals",[[1,"Yes"],[0,"No"]],s.meals)}</label>${L("Remind me")}${sel("qp_rem",[[0,"Never"],[5,"5 min before"],[10,"10 min before"],[15,"15 min before"],[30,"30 min before"],[60,"1 hour before"]],s.remind)}</label></div>
+  <div class="muted" style="margin:.6rem 0 .3rem">Regular activities — one per line, e.g. <i>Football Tue Thu 16:30-18:00</i></div><textarea id="qp_acts" class="input" style="min-height:5rem">${esc(fmtActs())}</textarea>
+  <div class="row" style="margin-top:.6rem"><button class="btn btn-secondary" style="flex:1;font-size:.78rem" onclick="QX.notif()">🔔 Allow alerts</button><button class="btn btn-secondary" style="flex:1;font-size:.78rem" onclick="QX.ics()">📥 Add to phone calendar</button></div>
+  <p class="muted" style="font-size:.72rem">Alerts pop up while QuickLearn is open. For reminders when it’s closed, add the plan to your phone calendar.</p>
+  <div class="row" style="justify-content:flex-end;margin-top:.6rem"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="QX.build()">Build my plan</button></div></div>`)}
+function build(o){const p=P(),s=Object.assign(p.set,o.set),today=localISODate(),now=new Date(),nowM=now.getHours()*60+now.getMinutes()+15;let n=0;
+  p.act=o.acts;p.ev=p.ev.filter(e=>!(e.src==="plan"&&e.date>=today));
+  const subs=data.subjects.map(x=>({s:x,ex:upcomingExams(x.id)}));
+  for(let i=0;i<s.len;i++){const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+i),ds=iso(d),dow=d.getDay(),work=s.days.includes(dow);
+    const add=(t,ty,a,b,sid,x)=>{p.ev.push(Object.assign({id:uid(),date:ds,title:t,type:ty,start:hm(a),end:hm(b),sid:sid||"",src:"plan"},x));if(ty==="study")n++};
+    const wake=mins(s.wake),bed=mins(s.sleep),busy=[[wake,wake+(s.meals?60:30)],[bed-45,bed]];
+    add("☀️ Wake up","routine",wake,wake+30);
+    if(s.meals){[["🍳 Breakfast",wake+30,wake+60],["🥗 Lunch",750,780],["🍝 Dinner",1110,1155]].forEach(m=>{add(m[0],"routine",m[1],m[2]);busy.push([m[1],m[2]])})}
+    add("🌙 Wind down","routine",bed-45,bed);
+    if(work){busy.push([mins(s.ws),mins(s.we)]);add("🏫 School / work","routine",mins(s.ws),mins(s.we))}
+    const day=evOn(ds);day.filter(e=>e.start&&e.end&&e.src!=="plan").forEach(e=>busy.push([mins(e.start),mins(e.end)]));
+    const nxt=iso(new Date(now.getFullYear(),now.getMonth(),now.getDate()+i+1));
+    let bud=day.some(e=>e.type==="exam")?0:s.study*(evOn(nxt).some(e=>e.type==="exam")?1.3:1);
+    const wt=subs.map(x=>{const e=x.ex.find(z=>z.date>=ds);if(!e&&x.ex.length)return null;const dl=e?Math.max(1,Math.round((pd(e.date)-d)/864e5)):30;return [x.s,Math.pow(dl,-.7)*(1.4-masteryOf(x.s)/100)]}).filter(Boolean);
+    let free=[[Math.max(wake+60,i?0:nowM),bed-45]];
+    busy.sort((a,b)=>a[0]-b[0]).forEach(b=>{free=free.flatMap(f=>b[1]<=f[0]||b[0]>=f[1]?[f]:[[f[0],Math.max(f[0],b[0])],[Math.min(f[1],b[1]),f[1]]]).filter(f=>f[1]-f[0]>0)});
+    const take=(a,b)=>{free=free.flatMap(f=>b<=f[0]||a>=f[1]?[f]:[[f[0],Math.max(f[0],a)],[Math.min(f[1],b),f[1]]]).filter(f=>f[1]-f[0]>0)};
+    const r=mins(s.review),rs=free.find(f=>f[0]<=r&&r+15<=f[1])?r:(free.find(f=>f[1]-f[0]>=15)||[null])[0];
+    if(rs!=null&&!(i===0&&rs<nowM)){add("🔥 Flashcard review","study",rs,rs+15,"",{rev:1});take(rs,rs+15)}
+    const pt=s.pref==="morn"?540:s.pref==="eve"?1110:(work?mins(s.we)+30:600),got={};
+    free=free.filter(f=>f[1]-f[0]>=30).sort((a,b)=>Math.abs(a[0]-pt)-Math.abs(b[0]-pt));
+    for(const f of free){let t=f[0];while(bud>=25&&t+25<=f[1]){const len=Math.min(45,bud,f[1]-t);if(len<25)break;
+      const pk=wt.length?wt.reduce((a,b)=>b[1]/((got[b[0].id]||0)+30)>a[1]/((got[a[0].id]||0)+30)?b:a)[0]:null;
+      add("📖 "+(pk?pk.name:"Study session"),"study",t,t+len,pk&&pk.id);if(pk)got[pk.id]=(got[pk.id]||0)+len;bud-=len;t+=len+10}}}
+  save()}
+/* ---------- reminders ---------- */
+function ping(e,st){const m=`⏰ ${e.title} ${e.type==="exam"?"is today":"at "+hm(st)}`;toast(m);haptic("select");
+  try{if("Notification"in window&&Notification.permission==="granted"){const t=e.title.replace(/^\S+\s/,"");navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r?r.showNotification("QuickLearn",{body:m,icon:"icon-192.png"}):new Notification("QuickLearn",{body:m}))||0}}catch(_){}}
+function tick(){const p=P(),lead=p.set.remind,now=new Date(),f=p.fired=p.fired||{};if(!lead)return;
+  [0,1].forEach(k=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k),ds=iso(d);evOn(ds).forEach(e=>{if(e.type==="routine"&&!/Wind/.test(e.title))return;
+    const st=e.start?mins(e.start):e.type==="exam"?420:null;if(st==null||e.done)return;
+    const at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,st).getTime()-lead*6e4,key=e.id+ds;
+    if(now>=at&&now<at+(lead+5)*6e4&&!f[key]){f[key]=+now;ping(e,st);save()}})});
+  for(const k in f)if(now-f[k]>1728e5)delete f[k]}
+function ics(){const lead=P().set.remind||10,z=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z",L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//QuickLearn//EN"],c0=t=>t.replace(/[,;\n]/g," ");
+  for(let k=0;k<45;k++){const d=new Date();d.setDate(d.getDate()+k);const ds=iso(d),c=ds.replace(/-/g,"");evOn(ds).forEach(e=>{if(e.type==="routine")return;
+    L.push("BEGIN:VEVENT","UID:"+e.id+c+"@quicklearn","DTSTAMP:"+z,"SUMMARY:"+c0(e.title));
+    if(e.start)L.push("DTSTART:"+c+"T"+e.start.replace(":","")+"00","DTEND:"+c+"T"+(e.end||e.start).replace(":","")+"00");else L.push("DTSTART;VALUE=DATE:"+c);
+    L.push("BEGIN:VALARM","TRIGGER:-PT"+(e.start?lead+"M":"12H"),"ACTION:DISPLAY","DESCRIPTION:"+c0(e.title),"END:VALARM","END:VEVENT")})}
+  L.push("END:VCALENDAR");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([L.join("\r\n")],{type:"text/calendar"}));a.download="quicklearn-plan.ics";document.body.appendChild(a);a.click();a.remove();toast("Saved — open the file to add it to your phone calendar")}
+/* ---------- 1. AI ASSISTANT ---------- */
+const qa=()=>document.getElementById("qai");
+function ctx(){const g=data.game,t=localISODate(),s=P().set;return `Today: ${new Date().toDateString()} (${t}). Streak: ${cur()} days (practised today: ${g.lastPracticeDate===t}). Level ${g.level}. Cards due: ${dueCards().length}.\nSubjects:\n`+(data.subjects.map(x=>`- ${x.name}: mastery ${masteryOf(x)}%, upcoming exams: ${examsOf(x.id).filter(e=>e.date>=t).map(e=>e.date+(e.title?" "+e.title:"")).join(", ")||"none"}`).join("\n")||"- none yet")+"\nSchedule, next 3 days:\n"+[0,1,2].map(k=>{const d=new Date();d.setDate(d.getDate()+k);const ds=iso(d);return ds+": "+(evOn(ds).filter(e=>e.type!=="routine").map(e=>(e.start||"all-day")+" "+e.title).join("; ")||"nothing")}).join("\n")+`\nRoutine: wake ${s.wake}, bed ${s.sleep}, school/work ${s.ws}-${s.we}`}
+function draw(){const m=document.getElementById("qaiM"),h=P().chat;
+  m.innerHTML=h.length?h.map((c,i)=>c.r==="u"?`<div class="qa-b u">${esc(c.t)}</div>`:`<div class="qa-b a">${c.tmp?"<span class=\"spin\"></span> Thinking…":md(cleanAiText(c.t))}${(c.a||[]).map((a,j)=>`<div class="qa-act"><span>${a.type==="add_event"?"📅 "+esc(a.title)+" · "+esc(a.date)+" "+esc(a.start||"")+"–"+esc(a.end||""):a.type==="add_exam"?"🎯 Exam: "+esc(a.subject)+" · "+esc(a.date):"🗓 Open the day planner"}</span><button class="btn ${a.ok?"btn-ghost":"btn-primary"}" onclick="QX.act(${i},${j})">${a.ok?"Added ✓":a.type==="plan"?"Open":"Add"}</button></div>`).join("")}${c.key?`<button class="btn btn-secondary" style="margin-top:.5rem" onclick="QX.close();openKeyModal()">Open AI key</button>`:""}</div>`).join(""):`<div class="qa-b a">Hi! I’m your study coach 👋 I can plan your day, build a revision timetable, add exams or activities to your calendar, and help you keep your streak. What do you need?</div>`;
+  m.scrollTop=m.scrollHeight;
+  document.getElementById("qaiC").innerHTML=h.length?"":["🗓 Plan my days","What should I study today?","Build a revision timetable for my next exam","How do I protect my streak?"].map((t,i)=>`<button onclick="${i?`QX.send(this.textContent)`:"QX.close();QX.plan()"}">${t}</button>`).join("")}
+function fabSync(){const nav=document.querySelector("nav.bottom"),f=document.getElementById("qaiFab");if(f)f.style.display=(nav&&nav.style.display==="none")||qa().classList.contains("on")?"none":""}
+async function send(txt){txt=(txt||document.getElementById("qaiT").value).trim();if(!txt)return;const p=P(),T=document.getElementById("qaiT");T.value="";
+  const hist=p.chat.slice(-8).map(c=>(c.r==="u"?"Student: ":"Coach: ")+c.t).join("\n");
+  p.chat.push({r:"u",t:txt});const tmp={r:"a",t:"",tmp:1};p.chat.push(tmp);draw();
+  const prompt=`You are QuickLearn's friendly study coach inside a flashcard app. Be warm, concrete and brief (under 120 words unless asked for a plan). Use the student's data below.\n\n${ctx()}\n\nReply with ONLY JSON: {"reply":"markdown text","actions":[]}. Allowed actions — include them only when the student wants something scheduled: {"type":"add_event","title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","kind":"study|activity","subject":"optional subject name","weekly":false} | {"type":"add_exam","subject":"","date":"YYYY-MM-DD","title":""} | {"type":"plan"} (opens the full day planner).\n\nConversation so far:\n${hist}\nStudent: ${txt}`;
+  try{const raw=await gemini(prompt);let j=null;try{j=jparse(raw)}catch(_){}
+    if(!j||typeof j!=="object"||Array.isArray(j))j={reply:raw};tmp.tmp=0;tmp.t=String(j.reply||"I’m not sure — could you rephrase that?");tmp.a=(Array.isArray(j.actions)?j.actions:[]).filter(a=>a&&["add_event","add_exam","plan"].includes(a.type)).slice(0,6)}
+  catch(e){tmp.tmp=0;tmp.t=e.message;tmp.key=/key/i.test(e.message)}
+  p.chat=p.chat.slice(-30);save();draw()}
+function act(i,j){const a=P().chat[i].a[j];if(a.ok&&a.type!=="plan")return;
+  if(a.type==="plan"){QX.close();planSheet();return}
+  if(!/^\d{4}-\d{2}-\d{2}$/.test(a.date||"")){toast("I couldn’t read that date — try again");return}
+  if(a.type==="add_exam"){const s=findOrCreateSubject(a.subject);if(!s||!addExam(s.id,a.date,a.title)){toast("That exam is already added");return}}
+  else{const s=data.subjects.find(x=>x.name.toLowerCase()===String(a.subject||"").toLowerCase()),b=a.start&&/^\d{1,2}:\d{2}$/.test(a.start)?hm(mins(a.start)):"16:00",e=a.end&&/^\d{1,2}:\d{2}$/.test(a.end)?hm(mins(a.end)):hm(mins(b)+60);
+    if(a.kind==="activity"&&a.weekly)P().act.push({id:uid(),title:a.title,days:[pd(a.date).getDay()],start:b,end:e});
+    else P().ev.push({id:uid(),date:a.date,title:a.title||"Study",type:a.kind==="activity"?"activity":"study",start:b,end:e,sid:s?s.id:""})}
+  a.ok=1;save();draw();toast("Added to your calendar")}
+/* ---------- public handlers ---------- */
+window.QX={streak:()=>streakSheet(),sm(d){const x=new Date(sm.y,sm.m+d,1);sm={y:x.getFullYear(),m:x.getMonth()};streakSheet()},
+  pick(ds){cal.sel=ds;renderStudy()},mo(d){const x=new Date(cal.y,cal.m+d,1);cal.y=x.getFullYear();cal.m=x.getMonth();renderStudy()},
+  today(){const n=new Date();cal.y=n.getFullYear();cal.m=n.getMonth();cal.sel=localISODate();renderStudy()},
+  add:evForm,plan:planSheet,ics,send,act,
+  notif:async()=>{if(!("Notification"in window)){toast("Alerts aren’t supported here — add the plan to your phone calendar instead");return}const r=await Notification.requestPermission();toast(r==="granted"?"Alerts on — they appear while QuickLearn is open":"Alerts are blocked — you’ll still see in-app reminders")},
+  saveEv(){const t=document.getElementById("qe_t").value.trim(),ds=document.getElementById("qe_d").value,a=document.getElementById("qe_a").value,b=document.getElementById("qe_b").value,k=document.getElementById("qe_k").value;
+    if(!t||!ds||!a||!b||mins(b)<=mins(a)){toast("Add a title, date and a valid start/end time");return}
+    if(document.getElementById("qe_w").value==="1")P().act.push({id:uid(),title:t,days:[pd(ds).getDay()],start:a,end:b});
+    else P().ev.push({id:uid(),date:ds,title:t,type:k,start:a,end:b,sid:document.getElementById("qe_s").value});
+    save();closeModal();cal.sel=ds;redraw();toast("Saved to your calendar")},
+  evMenu(id,ds){const p=P(),e=p.ev.find(x=>x.id===id),a=p.act.find(x=>x.id===id),t=e||a;if(!t)return;
+    modal(`<div class="sh"><h2 style="font-size:1.05rem">${esc(t.title)}</h2><p class="muted">${t.start}–${t.end}${a?" · repeats weekly":""}</p>${e&&e.type==="study"?`<button class="btn btn-success" style="width:100%;margin:.4rem 0" onclick="QX.done('${id}')">${e.done?"Mark as not done":"✓ Mark as done"}</button>`:""}${a?`<button class="btn btn-secondary" style="width:100%;margin:.4rem 0" onclick="QX.del('${id}','${ds}',1)">Skip just this day</button>`:""}<button class="btn btn-danger" style="width:100%;margin:.4rem 0" onclick="QX.del('${id}','${ds}')">${a?"Delete every week":"Delete"}</button><button class="btn btn-ghost" style="width:100%" onclick="closeModal()">Close</button></div>`)},
+  done(id){const e=P().ev.find(x=>x.id===id);if(e)e.done=!e.done;save();closeModal();redraw()},
+  del(id,ds,skip){const p=P(),a=p.act.find(x=>x.id===id);if(a&&skip)(a.skip=a.skip||[]).push(ds);else{p.ev=p.ev.filter(x=>x.id!==id);p.act=p.act.filter(x=>x.id!==id)}save();closeModal();redraw()},
+  build(){const g=id=>document.getElementById(id).value,days=[...document.querySelectorAll(".qp-d.on")].map(b=>+b.dataset.i),txt=g("qp_acts").trim(),acts=parseActs(txt),bad=txt?txt.split("\n").filter(l=>l.trim()).length-acts.length:0;
+    build({len:+g("qp_len"),meals:+g("qp_meals"),acts,set:{wake:g("qp_wake"),sleep:g("qp_sleep"),ws:g("qp_ws"),we:g("qp_we"),days,study:+g("qp_study"),pref:g("qp_pref"),review:g("qp_rev"),len:+g("qp_len"),meals:+g("qp_meals"),remind:+g("qp_rem")}});
+    closeModal();cal.sel=localISODate();redraw();toast(bad?`Plan built — I couldn’t read ${bad} activity line${bad>1?"s":""}`:"Your plan is ready — check the My exams calendar")},
+  chat(){qa().classList.add("on");fabSync();draw();setTimeout(()=>document.getElementById("qaiT").focus(),50)},close(){qa().classList.remove("on");fabSync()}};
+document.getElementById("qaiT").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
+const nv=document.querySelector("nav.bottom");{const ab=document.createElement("button");ab.className="navitem";ab.setAttribute("aria-label","Study assistant");ab.style.fontSize="1.35rem";ab.textContent="✨";ab.onclick=()=>QX.chat();nv.appendChild(ab)}new MutationObserver(fabSync).observe(nv,{attributes:true,attributeFilter:["style"]});
+window.addEventListener("hashchange",()=>setTimeout(fabSync,0));fabSync();
+setTimeout(tick,3000);setInterval(tick,30000);document.addEventListener("visibilitychange",()=>{if(!document.hidden)tick()});
+if(!location.hash||location.hash==="#/"||/^#\/study/.test(location.hash))try{route()}catch(_){}
+})();
+</script>
+
 </body>
 </html>
