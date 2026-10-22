@@ -3888,5 +3888,34 @@ setInterval(()=>{ if(jobs.some(j=>j.status==="running")) checkJobs(); }, 4000);
 jobs = jobs.filter(j => j.status === "running");   // stale finished/failed pills don't come back after a restart
 saveJobs(); renderJobs(); checkJobs();
 </script>
+<script>
+/* Automatically show the sign-in dialog when QuickLearn opens for a signed-out visitor. */
+(function () {
+  let handledInitialAuthState = false;
+  let stopInitialAuthWatch = null;
+  function showSignInIfNeeded(user) {
+    if (handledInitialAuthState) return;
+    handledInitialAuthState = true;
+    if (typeof stopInitialAuthWatch === 'function') stopInitialAuthWatch();
+    if (!user && typeof openAccountModal === 'function') openAccountModal();
+  }
+  window.addEventListener('load', function () {
+    if (typeof quickLearnAuth !== 'undefined' && quickLearnAuth) {
+      try {
+        stopInitialAuthWatch = quickLearnAuth.onAuthStateChanged(showSignInIfNeeded, function () {
+          if (!handledInitialAuthState) {
+            handledInitialAuthState = true;
+            if (typeof openAccountModal === 'function') openAccountModal();
+          }
+        });
+      } catch (e) {
+        if (typeof openAccountModal === 'function') openAccountModal();
+      }
+    } else if (typeof openAccountModal === 'function') {
+      openAccountModal();
+    }
+  });
+})();
+</script>
 </body>
 </html>
