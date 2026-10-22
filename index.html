@@ -2868,7 +2868,7 @@ function renderStudy(){
   const chip=(k,l)=>`<button class="chip2 ${exTab===k?"on":""}" onclick="exTab='${k}';renderStudy()">${l}</button>`;
   const col=d=>d<=1?"#ff7b7b":d<=4?"#f5b84a":"#aaa";
   let body;
-  if(exTab==="prep") body=`<div class="lbl">Exams</div><div class="ex">${PREP.map(p=>`<a class="ext" href="${esc(prepUrl(p[1]))}" target="_blank" rel="noopener"><span class="e">${p[0]}</span>${p[1]}</a>`).join("")}</div>`;
+  if(exTab==="prep") body=examPrepBody();
   else body=`${examTimeline(withExam,has)}
     <div class="lbl">Study</div><div class="rows" style="padding-top:0">
     ${dueNow.length?listRow("#3b290f",IC.card,`${dueNow.length} card${dueNow.length===1?"":"s"} due`,has?"for your closest exam":"today","startSession(window.__dueNowCards,'Study all due cards','#/study')"):`<div class="empty2" style="padding:1.5rem 1rem"><p>All caught up 🎉</p></div>`}
@@ -2877,7 +2877,7 @@ function renderStudy(){
     ${hardCards().length?listRow("#3a1d28","🔥",`${hardCards().length} hard card${hardCards().length===1?"":"s"}`,"Cards you miss or flagged · practice them","startHardSession('#/study')"):""}
     <div id="studyAdvice"></div>
     ${byDeck.map(x=>listRow("#4a1d12",IC.doc,esc(x.deck.title),x.due+" due",`studyDue('${x.deck.id}')`)).join("")}</div>`;
-  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 AP, SAT, & ACT Prep")}</div>`+body;
+  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 Exam courses")}</div>`+body;
 }
 
 /* ---- Deck = note page ---- */
@@ -3525,17 +3525,13 @@ ${tail}${wings}
 <path d="M100 35 C61 35 36 61 35 99 C33 132 54 153 100 154 C146 153 167 132 165 99 C164 61 139 35 100 35Z" fill="url(#${id}body)" stroke="#A94D2A" stroke-width="3"/>
 <!-- upright rounded horns -->
 <path d="M55 59 Q43 38 43 24 Q60 29 72 48Z" fill="#D97732" stroke="#A94D2A" stroke-width="3" stroke-linejoin="round"/><path d="M145 59 Q157 38 157 24 Q140 29 128 48Z" fill="#D97732" stroke="#A94D2A" stroke-width="3" stroke-linejoin="round"/>
+<!-- head crest -->
+<path d="M86 40 L92 21 L100 36 L108 21 L114 40Z" fill="#D97732" stroke="#A94D2A" stroke-width="3" stroke-linejoin="round"/>
 <!-- golden belly -->
 <path d="M77 137 Q70 145 71 162 L76 181 Q100 194 124 181 L129 162 Q130 145 123 137Z" fill="url(#${id}belly)" stroke="#D77B27" stroke-width="2.5"/>
 <path d="M80 151 Q100 157 120 151 M78 164 Q100 171 122 164 M82 177 Q100 182 118 177" fill="none" stroke="#E9A63B" stroke-width="2.5" stroke-linecap="round"/>
 ${spots}
-<!-- soft brows and oversized friendly eyes -->
-<path d="M58 73 Q70 65 81 73 M119 73 Q130 65 142 73" fill="none" stroke="#C66C32" stroke-width="4" stroke-linecap="round"/>
-<g class="mx-eyes"><ellipse cx="72" cy="94" rx="17" ry="23" fill="#FFFDF8"/><ellipse cx="128" cy="94" rx="17" ry="23" fill="#FFFDF8"/><ellipse cx="75" cy="96" rx="10" ry="16" fill="#38231C"/><ellipse cx="125" cy="96" rx="10" ry="16" fill="#38231C"/><circle cx="71" cy="88" r="5.5" fill="#fff"/><circle cx="121" cy="88" r="5.5" fill="#fff"/></g>
-<ellipse cx="88" cy="111" rx="3" ry="2.5" fill="#C66C32"/><ellipse cx="112" cy="111" rx="3" ry="2.5" fill="#C66C32"/>
-<ellipse cx="53" cy="112" rx="9" ry="5" fill="#F78C83" opacity=".62"/><ellipse cx="147" cy="112" rx="9" ry="5" fill="#F78C83" opacity=".62"/>
-${mood === "sad" ? ln("M88 127 Q100 116 112 127",4) : mood === "wow" ? `<ellipse cx="100" cy="126" rx="6" ry="8" fill="#63321F"/>` : ln("M86 122 Q100 132 114 122",4)}
-<path d="M95 125 L99 132 L103 125Z" fill="#FFF9E9"/>${face}${hat}${extra}</svg></div>`;
+${mxFace(mood)}${face}${hat}${extra}</svg></div>`;
 }
 
 /* ---------- treasure chest ---------- */
@@ -3950,6 +3946,310 @@ saveJobs(); renderJobs(); checkJobs();
     }
   });
 })();
+</script>
+<script>
+/* ================= QuickLearn add-on: exam-prep courses · warm dragon faces · sectioned settings · voice ================= */
+(function(){
+"use strict";
+/* ---------- 1. Exam-prep course catalog ---------- */
+const DEF=["Core ideas","Apply it","Exam practice"];
+const SAT_UNITS=[
+ ["Craft & Structure",["Words in context","Text structure & purpose","Cross-text connections"]],
+ ["Information & Ideas",["Central ideas & details","Command of evidence","Inferences"]],
+ ["Standard English",["Sentence boundaries","Form, structure & sense","Punctuation"]],
+ ["Expression of Ideas",["Transitions","Rhetorical synthesis"]],
+ ["Math: Algebra",["Linear equations","Systems of equations","Linear inequalities","Linear functions"]],
+ ["Math: Advanced",["Quadratics","Exponentials","Equivalent expressions","Nonlinear functions"]],
+ ["Math: Data & Problem Solving",["Ratios & percentages","Tables & scatterplots","Probability","Statistics & inference"]],
+ ["Math: Geometry & Trig",["Area & volume","Lines, angles & triangles","Circles","Right-triangle trig"]]
+];
+const SATNOTE="Digital SAT style. For Reading & Writing questions, put the short passage (1-4 sentences) inside the question text before the question. For math use plain text (no LaTeX) and 4 options.";
+const EXAMS={
+ sat:{emoji:"🏛️",name:"SAT",sub:"Reading & Writing + Math",note:SATNOTE,units:SAT_UNITS},
+ psat10:{emoji:"🏛️",name:"PSAT 10",sub:"Same skills as the SAT, a step easier",note:SATNOTE+" Use PSAT 10 / NMSQT difficulty.",units:SAT_UNITS},
+ psat89:{emoji:"🏫",name:"PSAT 8/9",sub:"Grade 8-9 reading, writing & math",note:SATNOTE+" Use PSAT 8/9 difficulty (grades 8-9).",units:SAT_UNITS},
+ act:{emoji:"🏤",name:"ACT",sub:"English, Math, Reading & Science",note:"ACT style. Math questions have 5 options (A-E); all other sections have 4. English questions quote the sentence in the question text. Science questions describe the data or experiment in the question text.",units:[
+  ["English: Production of Writing",["Topic development","Organization & cohesion"]],
+  ["English: Knowledge of Language",["Concision & word choice","Style & tone"]],
+  ["English: Conventions",["Punctuation","Grammar & usage","Sentence structure"]],
+  ["Math: Pre-algebra & Algebra",["Number & percent","Linear equations","Inequalities & absolute value"]],
+  ["Math: Intermediate Algebra",["Functions","Quadratics & polynomials","Coordinate geometry"]],
+  ["Math: Geometry & Trig",["Plane geometry","Triangles & trig","Statistics & probability"]],
+  ["Reading",["Key ideas & details","Craft & structure","Integration of knowledge"]],
+  ["Science",["Data representation","Research summaries","Conflicting viewpoints"]]]},
+ lsat:{emoji:"⚖️",name:"LSAT",sub:"Logical Reasoning + Reading Comprehension",note:"LSAT style. Each question includes its stimulus (3-6 sentences) inside the question text and has 5 options (A-E). Note: the Analytical Reasoning (logic games) section was removed from the LSAT in 2024, so do not write logic games.",units:[
+  ["LR basics",["Parts of an argument","Conditional logic","Contrapositives & quantifiers"]],
+  ["Assumption questions",["Necessary assumption","Sufficient assumption","Strengthen & weaken"]],
+  ["Flaws & reasoning",["Flaw questions","Method of reasoning","Parallel reasoning"]],
+  ["Inference & principles",["Must be true","Most strongly supported","Principle questions"]],
+  ["Paradox & evaluation",["Resolve the paradox","Evaluate the argument"]],
+  ["Reading Comprehension",["Passage mapping","Main point & purpose","Author attitude & tone","Comparative passages"]]]},
+ cte:{emoji:"🏫",name:"CTE",sub:"Career & Technical Education overview",note:"General Career & Technical Education certification-style questions at an introductory level.",units:[
+  ["Workplace readiness & ethics"],["Safety & compliance"],["Business & marketing basics"],["IT fundamentals"],["Health science basics"],["Skilled trades & engineering basics"],["Career planning & communication"]]},
+ ap_calc:{ap:1,emoji:"📐",name:"AP Calculus AB",sub:"8 units",units:[["Limits & continuity"],["Differentiation basics"],["Chain, implicit & inverse"],["Contextual applications"],["Analytical applications"],["Integration & accumulation"],["Differential equations"],["Applications of integration"]]},
+ ap_bio:{ap:1,emoji:"🧬",name:"AP Biology",sub:"8 units",units:[["Chemistry of life"],["Cell structure & function"],["Cellular energetics"],["Cell communication & cycle"],["Heredity"],["Gene expression & regulation"],["Natural selection"],["Ecology"]]},
+ ap_chem:{ap:1,emoji:"🧪",name:"AP Chemistry",sub:"9 units",units:[["Atomic structure"],["Bonding"],["Intermolecular forces"],["Chemical reactions"],["Kinetics"],["Thermodynamics"],["Equilibrium"],["Acids & bases"],["Electrochemistry"]]},
+ ap_phys:{ap:1,emoji:"⚛️",name:"AP Physics 1",sub:"7 units",units:[["Kinematics"],["Dynamics"],["Circular motion & gravitation"],["Energy"],["Momentum"],["Simple harmonic motion"],["Torque & rotation"]]},
+ ap_stats:{ap:1,emoji:"📊",name:"AP Statistics",sub:"9 units",units:[["One-variable data"],["Two-variable data"],["Collecting data"],["Probability"],["Random variables"],["Sampling distributions"],["Inference: proportions"],["Inference: means"],["Chi-square & slopes"]]},
+ ap_ush:{ap:1,emoji:"🗽",name:"AP US History",sub:"9 periods",units:[["1491-1607"],["1607-1754"],["1754-1800"],["1800-1848"],["1844-1877"],["1865-1898"],["1890-1945"],["1945-1980"],["1980-present"]]},
+ ap_psych:{ap:1,emoji:"🧠",name:"AP Psychology",sub:"9 units",units:[["Scientific foundations"],["Biological bases"],["Sensation & perception"],["Learning"],["Cognition"],["Development"],["Motivation & personality"],["Clinical psychology"],["Social psychology"]]},
+ ap_lang:{ap:1,emoji:"✍️",name:"AP English Language",sub:"Rhetoric & argument",units:[["Rhetorical situation"],["Claims & evidence"],["Reasoning & organization"],["Style & word choice"],["Synthesis essay"],["Argument essay"],["Rhetorical analysis essay"]]},
+ ap_macro:{ap:1,emoji:"📈",name:"AP Macroeconomics",sub:"6 units",units:[["Basic economic concepts"],["Indicators & the business cycle"],["National income & prices"],["Financial sector"],["Stabilization policies"],["Open economy"]]}
+};
+Object.keys(EXAMS).forEach(k=>{const e=EXAMS[k];if(e.ap)e.note="AP exam style for "+e.name+": college-level multiple-choice questions with 4 options; include any stimulus (short passage, data or scenario) in the question text."});
+const qlDeck=k=>data.decks.find(d=>d.examKey===k);
+function buildCourse(k){const e=EXAMS[k];return {title:e.name,exam:k,done:{},units:e.units.map(u=>({title:u[0],lessons:(u[1]||DEF).map(t=>({title:t,qs:[]}))}))}}
+function sub(k){const d=qlDeck(k),c=d&&courseOf(d.id);if(c&&c.units&&c.units.length){const tot=c.units.reduce((a,u)=>a+u.lessons.length,0),dn=Object.keys(c.done||{}).length;return dn?dn+"/"+tot+" lessons done":"Tap to continue · "+tot+" lessons"}const e=EXAMS[k];const tot=e.units.reduce((a,u)=>a+(u[1]||DEF).length,0);return e.sub+" · "+tot+" lessons"}
+window.openExamCourse=function(k){
+  let d=qlDeck(k);
+  if(!d){d=createDeck(EXAMS[k].name+" prep");if(!d)return;d.examKey=k;d.subject="Exam prep"}
+  const c=courseOf(d.id);
+  if(!c||!c.units||!c.units.length)(data.courses=data.courses||{})[d.id]=buildCourse(k);
+  save();go("#/course/"+d.id);
+};
+window.openAPPicker=function(){
+  const rows=Object.keys(EXAMS).filter(k=>EXAMS[k].ap).map(k=>sheetRow("#40330f",EXAMS[k].emoji,EXAMS[k].name+" <small style='opacity:.6'>· "+sub(k)+"</small>","openExamCourse('"+k+"')")).join("");
+  modal('<div class="sh"><h2>AP courses</h2>'+rows+'<button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Close</button></div>');
+};
+window.examPrepBody=function(){
+  const main=["sat","psat10","psat89","act","lsat","cte"].map(k=>listRow("#3b290f",EXAMS[k].emoji,EXAMS[k].name,sub(k),"openExamCourse('"+k+"')")).join("");
+  const ap=listRow("#4a231d","👑","AP","10 subjects · calculus, biology, history & more","openAPPicker()");
+  const links=PREP.map(p=>'<a class="ext" href="'+esc(prepUrl(p[1]))+'" target="_blank" rel="noopener"><span class="e">'+p[0]+'</span>'+p[1]+'</a>').join("");
+  return '<div class="lbl">Courses</div><div class="rows" style="padding-top:0">'+main+ap+'</div><div class="lbl">Free practice tests</div><div class="ex">'+links+'</div>';
+};
+/* lazy lesson generation (cached once made) */
+const _startLesson=startLesson;
+startLesson=function(id,u,l){
+  const c=courseOf(id),ls=c&&c.units[u]&&c.units[u].lessons[l];
+  if(c&&c.exam&&ls&&(!ls.qs||!ls.qs.length)){genExamLesson(id,u,l);return}
+  return _startLesson(id,u,l);
+};
+async function genExamLesson(id,u,l,attempt){
+  const c=courseOf(id),e=EXAMS[c.exam],un=c.units[u],ls=un.lessons[l];
+  modal('<div class="sh gen-progress" style="text-align:center">'+(animOn()?mascot("think",{size:104,cls:"idle"}):'<div class="genorb"></div>')+'<h2>Preparing your lesson</h2><p class="muted">'+esc(c.title)+' · '+esc(un.title)+' · '+esc(ls.title)+'</p><div class="progress"><div style="width:55%"></div></div></div>');
+  const prompt="You are an expert "+c.title+" tutor. Write 8 practice questions for the lesson \""+ls.title+"\" in the unit \""+un.title+"\" of a "+c.title+" prep course. "+e.note+" Questions must be accurate, test-realistic and get gradually harder. Mix: 6 multiple choice (t:\"mc\"), 1 true/false (t:\"tf\") and 1 fill-in-the-blank (t:\"fb\", the question text contains ____ and o lists the choices). Vary where the correct answer sits. Give each a one or two sentence explanation e. Reply with ONLY JSON, no markdown: {\"title\":\""+ls.title+"\",\"qs\":[{\"t\":\"mc\",\"q\":\"...\",\"o\":[\"..\",\"..\",\"..\",\"..\"],\"a\":0,\"e\":\"...\"},{\"t\":\"tf\",\"q\":\"...\",\"a\":true,\"e\":\"...\"},{\"t\":\"fb\",\"q\":\"... ____ ...\",\"o\":[\"..\",\"..\",\"..\"],\"a\":1,\"e\":\"...\"}]} (a is the zero-based index of the right option for mc and fb).";
+  try{
+    const raw=await gemini(prompt);
+    const obj=jparse(raw);const lesson={title:ls.title,qs:obj.qs||[]};
+    if(!validCourseLesson(lesson))throw new Error("The AI reply had no usable questions.");
+    ls.qs=lesson.qs;save();closeModal();_startLesson(id,u,l);
+  }catch(err){
+    if(!attempt&&!/API key|offline/i.test(String(err&&err.message)))return genExamLesson(id,u,l,1);
+    closeModal();toast(err&&err.message?err.message:"Couldn't build that lesson. Try again.");
+  }
+}
+const _renderCourse=renderCourse;
+renderCourse=function(id){
+  _renderCourse(id);
+  const c=courseOf(id);if(!c||!c.exam)return;
+  const b=[...view.querySelectorAll("button")].find(x=>/Rebuild course/.test(x.textContent));
+  if(b){b.textContent="Reset progress";b.removeAttribute("onclick");b.onclick=()=>askConfirm("Reset this course?","Your lesson progress resets. Lessons you already opened stay saved.","Reset",true).then(ok=>{if(ok){c.done={};save();renderCourse(id)}})}
+};
+
+/* ---------- 2. Mascot faces (every mood now has its own expression) ---------- */
+window.mxFace=function(mood){
+  const INK="#38231C",BR="#C66C32",CH="#F78C83",MO="#63321F";
+  const brow=d=>'<path d="'+d+'" fill="none" stroke="'+BR+'" stroke-width="4" stroke-linecap="round"/>';
+  const arc=(d,w)=>'<path d="'+d+'" fill="none" stroke="'+INK+'" stroke-width="'+(w||6)+'" stroke-linecap="round" stroke-linejoin="round"/>';
+  const eyes=o=>{o=Object.assign({ex:17,ey:23,l:3,r:-3,y:2,pw:10,ph:16},o||{});return '<g class="mx-eyes"><ellipse cx="72" cy="94" rx="'+o.ex+'" ry="'+o.ey+'" fill="#FFFDF8"/><ellipse cx="128" cy="94" rx="'+o.ex+'" ry="'+o.ey+'" fill="#FFFDF8"/><ellipse cx="'+(72+o.l)+'" cy="'+(94+o.y)+'" rx="'+o.pw+'" ry="'+o.ph+'" fill="'+INK+'"/><ellipse cx="'+(128+o.r)+'" cy="'+(94+o.y)+'" rx="'+o.pw+'" ry="'+o.ph+'" fill="'+INK+'"/><circle cx="'+(69+o.l)+'" cy="'+(87+o.y)+'" r="5" fill="#fff"/><circle cx="'+(125+o.r)+'" cy="'+(87+o.y)+'" r="5" fill="#fff"/></g>'};
+  const nose='<ellipse cx="88" cy="111" rx="3" ry="2.5" fill="'+BR+'"/><ellipse cx="112" cy="111" rx="3" ry="2.5" fill="'+BR+'"/>';
+  const cheeks='<ellipse cx="53" cy="112" rx="9" ry="5" fill="'+CH+'" opacity=".62"/><ellipse cx="147" cy="112" rx="9" ry="5" fill="'+CH+'" opacity=".62"/>';
+  const fang=x=>'<path d="M'+(x-4)+' 125 L'+x+' 132 L'+(x+4)+' 125Z" fill="#FFF9E9"/>';
+  const calm=brow("M58 73 Q70 65 81 73")+brow("M119 73 Q130 65 142 73");
+  switch(mood){
+    case "happy": return calm+arc("M57 98 Q72 76 87 98")+arc("M113 98 Q128 76 143 98")+nose+cheeks+'<path d="M82 118 Q100 142 118 118Z" fill="'+MO+'"/><ellipse cx="100" cy="132" rx="9" ry="4.5" fill="#FF7A8A"/>';
+    case "cheer": return brow("M58 68 Q70 58 81 68")+brow("M119 68 Q130 58 142 68")+arc("M57 98 Q72 76 87 98")+arc("M113 98 Q128 76 143 98")+nose+cheeks+'<path d="M74 116 Q100 156 126 116Z" fill="'+MO+'"/><ellipse cx="100" cy="138" rx="13" ry="7" fill="#FF7A8A"/><path d="M80 117 Q100 124 120 117 L119 121 Q100 128 81 121Z" fill="#FFF9E9"/>';
+    case "wave": return calm+eyes({l:4,r:4,y:0})+nose+cheeks+arc("M86 122 Q100 134 114 122",4)+fang(99);
+    case "sad": return brow("M58 79 L84 68")+brow("M116 68 L142 79")+eyes({l:0,r:0,y:6})+nose+arc("M88 129 Q100 117 112 129",4)+'<path d="M56 108 q-6 11 0 15 q6 -4 0 -15z" fill="#9be7ff"/>';
+    case "wow": return brow("M56 64 Q70 54 84 64")+brow("M116 64 Q130 54 144 64")+eyes({ex:19,ey:26,l:0,r:0,y:0,pw:9,ph:13})+nose+cheeks+'<ellipse cx="100" cy="128" rx="7" ry="10" fill="'+MO+'"/>';
+    case "think": return brow("M56 62 Q70 52 84 64")+brow("M118 75 L142 70")+eyes({l:5,r:5,y:-6})+nose+arc("M88 126 Q94 120 100 126 T112 126",4)+fang(107)+'<text x="38" y="42" font-size="26" font-weight="800" fill="#ff8a65" font-family="Sora,system-ui,sans-serif">!</text>';
+    case "sleep": return calm+arc("M58 94 Q72 106 86 94",5)+arc("M114 94 Q128 106 142 94",5)+nose+cheeks+arc("M92 122 Q100 128 108 122",4);
+    default: return calm+eyes()+nose+cheeks+arc("M86 122 Q100 132 114 122",4)+fang(99);
+  }
+};
+
+/* ---------- 3. Voice (read aloud · voice commands · dictation) ---------- */
+const DEFAULTS={voiceAuto:false,voiceCmd:false,voiceDictate:true,voiceRate:1,voiceLang:"en-US",voiceName:"",textSize:100,keepAwake:false};
+Object.keys(DEFAULTS).forEach(k=>{if(settings[k]===undefined)settings[k]=DEFAULTS[k]});
+const SR=window.SpeechRecognition||window.webkitSpeechRecognition,TTS=!!window.speechSynthesis;
+window.qlSpeak=function(text){
+  if(!TTS)return;
+  try{speechSynthesis.cancel();
+    const u=new SpeechSynthesisUtterance(String(text||"").replace(/_{2,}/g," blank ").replace(/[*_#`]/g,"").replace(/\s+/g," ").trim());
+    u.lang=settings.voiceLang||"en-US";u.rate=settings.voiceRate||1;
+    const v=speechSynthesis.getVoices().find(x=>x.name===settings.voiceName);if(v){u.voice=v;u.lang=v.lang}
+    speechSynthesis.speak(u);}catch(_){}
+};
+window.qlReadCurrent=function(){
+  if(session&&session.cards&&session.cards[session.idx]){const c=session.cards[session.idx];qlSpeak(session.flipped?c.answer:c.question);return}
+  if(LS){const q=LS.qs[LS.i];if(!q)return;const opts=q.t==="tf"?["True","False"]:(q.o||[]);qlSpeak(q.q+(opts.length?". Options: "+opts.map((o,i)=>String.fromCharCode(65+i)+", "+o).join(". "):""))}
+};
+let rec=null,listening=false;
+function micUI(){const b=document.getElementById("vmicBtn");if(b){b.classList.toggle("on",listening);b.textContent=listening?"🎤 Listening…":"🎤 Voice"}}
+window.qlListen=function(on){
+  if(!SR){toast("Voice commands aren’t supported in this browser");return}
+  listening=!!on;
+  if(!on){try{rec&&rec.stop()}catch(_){}rec=null;micUI();return}
+  const r=new SR();r.lang=settings.voiceLang||"en-US";r.continuous=false;r.interimResults=false;
+  r.onresult=e=>{try{voiceCmd(e.results[e.results.length-1][0].transcript)}catch(_){}};
+  r.onend=()=>{if(listening&&session&&rec===r){try{r.start()}catch(_){}}else{listening=false;micUI()}};
+  r.onerror=e=>{if(e.error==="not-allowed"||e.error==="service-not-allowed"){listening=false;toast("Microphone permission was blocked")}};
+  rec=r;try{r.start()}catch(_){}micUI();
+};
+window.qlToggleMic=function(){qlListen(!listening)};
+function voiceCmd(t){
+  t=String(t).toLowerCase();
+  if(!session||session.idx>=session.cards.length)return;
+  if(/\b(read|repeat|say it)\b/.test(t)){qlReadCurrent();return}
+  if(!session.flipped){if(/\b(flip|show|answer|reveal|turn)\b/.test(t))flipCard();return}
+  if(/\b(again|wrong|missed|forgot|forget)\b/.test(t))rate("again");
+  else if(/\b(hard|difficult)\b/.test(t))rate("hard");
+  else if(/\beasy\b/.test(t))rate("easy");
+  else if(/\b(good|right|correct|got it)\b/.test(t))rate("good");
+}
+function bar(mic){return '<div class="vbar" data-nohap><button class="btn btn-secondary" onclick="qlReadCurrent()">🔊 Read aloud</button>'+(mic?'<button id="vmicBtn" class="btn btn-secondary'+(listening?' on':'')+'" onclick="qlToggleMic()">'+(listening?"🎤 Listening…":"🎤 Voice")+'</button>':"")+'</div>'}
+const _renderSession=renderSession;
+renderSession=function(){
+  _renderSession.apply(this,arguments);
+  const s=session;if(!s||s.idx>=s.cards.length){if(listening)qlListen(false);return}
+  const fc=view.querySelector(".flashcard");
+  if(fc&&fc.parentElement&&!fc.parentElement.querySelector(".vbar")&&(TTS||SR))fc.parentElement.insertAdjacentHTML("beforeend",bar(!!(settings.voiceCmd&&SR)));
+  const key=s.idx+":"+s.flipped;
+  if(settings.voiceAuto&&s._said!==key){s._said=key;qlReadCurrent()}
+};
+const _renderLesson=renderLesson;
+renderLesson=function(){
+  _renderLesson.apply(this,arguments);
+  const s=LS;if(!s||!s.qs[s.i])return;
+  const row=view.querySelector(".mxrow");
+  if(row&&!view.querySelector(".vbar")&&TTS)row.insertAdjacentHTML("afterend",bar(false));
+  if(settings.voiceAuto&&s.chk===null&&s._said!==s.i){s._said=s.i;qlReadCurrent()}
+};
+window.addEventListener("hashchange",()=>{if(TTS)try{speechSynthesis.cancel()}catch(_){}if(listening)qlListen(false)});
+/* dictation mic on text areas */
+let drec=null,dbtn=null;
+window.qlDictate=function(btn){
+  const ta=btn.previousElementSibling;if(!ta)return;
+  if(drec){try{drec.stop()}catch(_){}return}
+  if(!SR){toast("Dictation isn’t supported in this browser");return}
+  const r=new SR();r.lang=settings.voiceLang||"en-US";r.continuous=true;r.interimResults=false;
+  r.onresult=e=>{let t="";for(let i=e.resultIndex;i<e.results.length;i++)if(e.results[i].isFinal)t+=e.results[i][0].transcript;
+    if(t){ta.value+=(ta.value&&!/\s$/.test(ta.value)?" ":"")+t.trim();ta.dispatchEvent(new Event("input",{bubbles:true}))}};
+  r.onend=()=>{drec=null;if(dbtn)dbtn.textContent="🎤 Dictate";dbtn=null};
+  r.onerror=e=>{if(e.error==="not-allowed")toast("Microphone permission was blocked")};
+  drec=r;dbtn=btn;btn.textContent="⏹ Stop dictating";try{r.start()}catch(_){drec=null}
+};
+let pend=false;
+function decorate(){
+  pend=false;if(!SR||settings.voiceDictate===false)return;
+  document.querySelectorAll("textarea.input:not([data-mic])").forEach(ta=>{
+    ta.setAttribute("data-mic","1");
+    ta.insertAdjacentHTML("afterend",'<button type="button" class="btn btn-ghost vdict" data-nohap onclick="qlDictate(this)">🎤 Dictate</button>');
+  });
+}
+new MutationObserver(()=>{if(!pend){pend=true;requestAnimationFrame(decorate)}}).observe(document.body,{childList:true,subtree:true});
+
+/* ---------- 4. Display + device helpers ---------- */
+function applyText(){document.documentElement.style.fontSize=(settings.textSize||100)+"%"}
+applyText();
+let wl=null;
+async function wake(){
+  try{
+    if(settings.keepAwake&&"wakeLock" in navigator&&document.visibilityState==="visible"){if(!wl){wl=await navigator.wakeLock.request("screen");wl.addEventListener("release",()=>{wl=null})}}
+    else if(wl){await wl.release();wl=null}
+  }catch(_){wl=null}
+}
+document.addEventListener("visibilitychange",wake);wake();
+window.qlExport=function(){
+  const blob=new Blob([JSON.stringify({app:"quicklearn",exported:new Date().toISOString(),data:data,settings:settings},null,2)],{type:"application/json"});
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="quicklearn-backup-"+todayISO()+".json";
+  document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast("Backup downloaded");
+};
+window.qlImport=function(file){
+  if(!file)return;
+  const fr=new FileReader();
+  fr.onload=()=>{
+    try{
+      const o=JSON.parse(fr.result);if(!o||!o.data||!Array.isArray(o.data.decks))throw new Error("bad");
+      askConfirm("Restore this backup?","This replaces everything stored on this device.","Restore",true).then(ok=>{
+        if(!ok)return;localStorage.setItem(DATA_KEY,JSON.stringify(o.data));
+        if(o.settings)localStorage.setItem(SETTINGS_KEY,JSON.stringify(o.settings));location.reload();
+      });
+    }catch(_){toast("That file isn’t a QuickLearn backup")}
+  };
+  fr.readAsText(file);
+};
+
+/* ---------- 5. Settings, organised into sections ---------- */
+window.qlSet=function(k,v){settings[k]=v;saveSettings();if(k==="textSize")applyText();};
+window.qlTog=function(k,el){
+  settings[k]=!settings[k];saveSettings();
+  el.classList.toggle("on",settings[k]);el.setAttribute("aria-checked",settings[k]);haptic("select");
+  if(k==="keepAwake")wake();
+  if(k==="voiceCmd"&&!settings.voiceCmd&&listening)qlListen(false);
+  if(k==="voiceCmd"&&settings.voiceCmd&&!SR)toast("Voice commands need a browser with speech recognition (Chrome, Edge or Safari)");
+  if(k==="voiceAuto"&&settings.voiceAuto&&!TTS)toast("Read aloud isn’t supported in this browser");
+};
+window.qlSegSet=function(k,v,el){
+  qlSet(k,v);[...el.parentElement.children].forEach(b=>b.classList.toggle("on",b===el));haptic("select");
+  if(k==="voiceRate")qlSpeak("This is how fast I will read.");
+};
+window.qlFillVoices=function(){
+  const sel=document.getElementById("qlVoiceSel");if(!sel||!TTS)return;
+  const lang=(settings.voiceLang||"en-US").slice(0,2).toLowerCase();
+  const vs=speechSynthesis.getVoices().filter(v=>v.lang.toLowerCase().startsWith(lang));
+  sel.innerHTML='<option value="">Automatic</option>'+vs.map(v=>'<option value="'+esc(v.name)+'"'+(v.name===settings.voiceName?" selected":"")+'>'+esc(v.name)+' ('+esc(v.lang)+')</option>').join("");
+};
+if(TTS)speechSynthesis.onvoiceschanged=window.qlFillVoices;
+window.qlLang=function(v){settings.voiceLang=v;settings.voiceName="";saveSettings();qlFillVoices()};
+const sw=(ic,t,s,k,on)=>'<div class="setrow" style="cursor:default"><span class="seti">'+ic+'</span><span class="sett"><b>'+t+'</b><small>'+s+'</small></span><button data-nohap class="sw'+(on?" on":"")+'" role="switch" aria-checked="'+!!on+'" aria-label="'+t+'" onclick="qlTog(\''+k+'\',this)"><i></i></button></div>';
+const seg=(k,opts,cur)=>'<div class="seg full" data-nohap>'+opts.map(o=>'<button class="'+(o[0]===cur?"on":"")+'" onclick="qlSegSet(\''+k+'\','+JSON.stringify(o[0]).replace(/"/g,"&quot;")+',this)">'+o[1]+'</button>').join("")+'</div>';
+const head=(ic,t)=>'<div class="label" style="margin:1.2rem 0 .45rem">'+ic+' '+t+'</div>';
+const nav=(ic,t,s,fn)=>'<button class="setrow" onclick="'+fn+'"><span class="seti">'+ic+'</span><span class="sett"><b>'+t+'</b><small>'+s+'</small></span><span style="opacity:.5">›</span></button>';
+window.openSettings=function(){
+  const light=settings.theme==="light",S=settings;
+  const langs=[["en-US","English (US)"],["en-GB","English (UK)"],["en-ZA","English (South Africa)"],["af-ZA","Afrikaans"],["es-ES","Spanish"],["fr-FR","French"],["de-DE","German"]];
+  const voice=
+    sw("🔊","Read cards aloud","Speaks each question and answer automatically","voiceAuto",S.voiceAuto)+
+    sw("🎤","Voice commands","Say “flip”, “good”, “hard”, “again” or “easy” while studying cards","voiceCmd",S.voiceCmd)+
+    sw("📝","Dictation in notes","Adds a mic button under note boxes so you can speak your notes","voiceDictate",S.voiceDictate!==false)+
+    '<div class="setrow" style="cursor:default"><span class="seti">🌍</span><span class="sett"><b>Voice language</b><small>Used for reading aloud and listening</small></span></div>'+
+    '<select class="input" style="margin:.1rem 0 .6rem" onchange="qlLang(this.value)">'+langs.map(l=>'<option value="'+l[0]+'"'+(l[0]===S.voiceLang?" selected":"")+'>'+l[1]+'</option>').join("")+'</select>'+
+    (TTS?'<div class="setrow" style="cursor:default"><span class="seti">🗣️</span><span class="sett"><b>Voice</b><small>Pick the voice that reads to you</small></span></div><select id="qlVoiceSel" class="input" style="margin:.1rem 0 .6rem" onchange="qlSet(\'voiceName\',this.value)"></select>':'<div class="empty" style="margin:.4rem 0">Read aloud isn’t available in this browser.</div>')+
+    '<div class="setrow" style="cursor:default"><span class="seti">⏩</span><span class="sett"><b>Reading speed</b><small>Tap to hear a sample</small></span></div>'+
+    seg("voiceRate",[[0.8,"Slow"],[1,"Normal"],[1.25,"Fast"],[1.5,"Faster"]],S.voiceRate)+
+    '<button class="btn btn-secondary" data-nohap style="width:100%;margin:.5rem 0 0" onclick="qlSpeak(\'Hi! This is how I will read your flashcards.\')">▶ Hear a sample</button>';
+  const display=
+    '<div class="setrow" style="cursor:default"><span class="seti" id="themeIc">'+(light?"☀️":"🌙")+'</span><span class="sett"><b>Appearance</b><small id="themeSub">'+(light?"Day mode":"Night mode")+'</small></span></div>'+
+    '<div class="seg full" data-nohap><button id="thNight" class="'+(light?"":"on")+'" onclick="setTheme(\'dark\')">🌙 Night</button><button id="thDay" class="'+(light?"on":"")+'" onclick="setTheme(\'light\')">☀️ Day</button></div>'+
+    '<div class="setrow" style="cursor:default"><span class="seti">🔠</span><span class="sett"><b>Text size</b><small>Make notes and cards easier to read</small></span></div>'+
+    seg("textSize",[[90,"Small"],[100,"Default"],[115,"Large"],[130,"XL"]],S.textSize)+
+    '<div class="setrow" style="cursor:default"><span class="seti">🎞️</span><span class="sett"><b>Reduce motion</b><small id="motSub">'+motSub()+'</small></span><button id="swMot" data-nohap class="sw'+(motionReduced()?" on":"")+'" role="switch" aria-checked="'+motionReduced()+'" aria-label="Reduce motion" onclick="toggleMotion()"><i></i></button></div>'+
+    sw("💡","Keep screen awake","Stops your phone dimming while you study","keepAwake",S.keepAwake);
+  const feel=
+    '<div class="setrow" style="cursor:default"><span class="seti">📳</span><span class="sett"><b>Vibrations</b><small id="hapSub">'+hapSub()+'</small></span><button id="swHap" data-nohap class="sw'+(S.haptics?" on":"")+'" role="switch" aria-checked="'+S.haptics+'" aria-label="Vibrations" onclick="toggleHaptics()"><i></i></button></div>'+
+    '<button class="btn btn-secondary" data-nohap style="width:100%;margin:.1rem 0 .2rem" onclick="haptic(\'easy\')">✨ Try haptics</button>';
+  const buddy=
+    '<div class="setrow" style="cursor:default"><span class="seti">🎭</span><span class="sett"><b>Show mascot</b><small id="mxVisibleSub">'+(S.mascotVisible===false?"Off · mascot hidden throughout the app":"On · show your QuickLearn buddy")+'</small></span><button id="swMxVisible" data-nohap class="sw'+(S.mascotVisible!==false?" on":"")+'" role="switch" aria-checked="'+(S.mascotVisible!==false)+'" aria-label="Show mascot" onclick="toggleMascotVisible()"><i></i></button></div>'+
+    '<div class="setrow" style="cursor:default"><span class="seti">✨</span><span class="sett"><b>Mascot animations</b><small id="mxSub">'+mxSub()+'</small></span><button id="swMx" data-nohap class="sw'+(S.mascotAnim!==false?" on":"")+'" role="switch" aria-checked="'+(S.mascotAnim!==false)+'" aria-label="Mascot animations" onclick="toggleMx()"><i></i></button></div>'+
+    nav("✏️","Buddy name",esc(data.mascot&&data.mascot.name?data.mascot.name:"Not named yet")+" · "+(data.game.coins||0)+" coins","openMascotName(false)");
+  const acct=
+    (quickLearnUser?'<div class="setrow"><span class="seti">🚪</span><span class="sett"><b>Account</b><small>'+esc(quickLearnUser.email||quickLearnUser.displayName||"Signed in")+'</small></span><button class="btn btn-secondary" style="flex:none" onclick="quickLearnSignOut();closeModal()">Sign out</button></div>':nav("👤","Sign in","Keep your decks and courses with your account","closeModal();openAccountModal()"))+
+    nav("🔑","AI key","Needed for AI flashcards, courses and exam lessons","closeModal();openKeyModal()");
+  const dataSec=
+    nav("⬇️","Export backup","Download all your decks, cards and progress","qlExport()")+
+    nav("⬆️","Import backup","Restore from a QuickLearn backup file","document.getElementById(\'qlImp\').click()")+
+    '<input type="file" id="qlImp" accept="application/json,.json" hidden onchange="qlImport(this.files[0]);this.value=\'\'">';
+  modal('<div class="sh"><h2>Settings</h2><div style="max-height:68vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -.25rem;padding:0 .25rem">'+
+    head("🎧","Voice & listening")+voice+head("🎨","Display & comfort")+display+head("🕹️","Feedback")+feel+head("🐉","Study buddy")+buddy+head("👤","Account & AI")+acct+head("💾","Your data")+dataSec+
+    '</div><button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Done</button></div>');
+  qlFillVoices();
+};
+const st=document.createElement("style");
+st.textContent=".vbar{display:flex;gap:.5rem;justify-content:center;margin-top:.9rem}.vbar .btn{min-height:40px;font-size:.8rem}.vbar .btn.on{background:var(--primary);color:var(--primary-fg)}.vdict{min-height:34px!important;font-size:.78rem;margin-top:.25rem}select.input{appearance:auto}";
+document.head.appendChild(st);
+})();
+
 </script>
 </body>
 </html>
