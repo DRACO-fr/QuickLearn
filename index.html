@@ -4459,5 +4459,57 @@ if(!location.hash||location.hash==="#/"||/^#\/study/.test(location.hash))try{rou
 })();
 </script>
 
+<!-- ===== QuickLearn additions: Focus mode · sound effects ===== -->
+<style id="qf-css">
+#qfGray,#qfExit{display:none}
+html[data-focus] #qfGray{display:block;position:fixed;inset:0;pointer-events:none;z-index:9999;background:#808080;mix-blend-mode:saturation}
+html[data-focus] #qfExit{display:block;position:fixed;top:calc(.35rem + env(safe-area-inset-top));right:.6rem;z-index:80;font-size:.65rem;padding:.25rem .6rem;border-radius:999px;border:1px solid var(--border);background:var(--surface);color:var(--muted-fg);opacity:.7;cursor:pointer}
+html[data-focus] *{animation:none!important;transition:none!important}
+html[data-focus] .qs-card,html[data-focus] .qt-card,html[data-focus] #qaBtn,html[data-focus] .stats,html[data-focus] .streak-pill,html[data-focus] .xpfloat,html[data-focus] .mxflame,html[data-focus] .mxsticker,html[data-focus] .cbig,html[data-focus] .mxo-mascot{display:none!important}
+</style>
+<div id="qfGray"></div><button id="qfExit" onclick="QF.focus(false)">🎯 Focus on · Exit</button>
+<script>
+(function(){
+const focus=()=>!!settings.focus;
+const apply=()=>document.documentElement.toggleAttribute("data-focus",focus());
+/* ---------- sounds (synthesised, no files) ---------- */
+let ctx=null;const AC=window.AudioContext||window.webkitAudioContext;
+const N=(f,t,d,ty,v)=>({f,t,d,ty:ty||"sine",v:v||.07});
+const SND={
+ select:[N(660,0,.05,"sine",.04)],tap:[N(520,0,.04,"sine",.04)],
+ flip:[N(420,0,.06,"triangle",.06),N(560,.05,.07,"triangle",.05)],
+ good:[N(660,0,.12),N(880,.09,.18)],
+ easy:[N(660,0,.1),N(880,.08,.1),N(1175,.16,.22)],
+ again:[N(220,0,.22,"sawtooth",.035),N(165,.12,.25,"sawtooth",.03)],
+ complete:[N(523,0,.15),N(659,.12,.15),N(784,.24,.15),N(1047,.36,.4)],
+ levelhit:[N(392,0,.2,"triangle",.09),N(784,.1,.45,"triangle",.07)],
+ sparkle:[N(1319,0,.1),N(1760,.08,.25)],
+ streak:[N(523,0,.1),N(659,.09,.1),N(784,.18,.1),N(1047,.27,.1),N(1319,.36,.35)]};
+function snd(name){if(settings.sound===false||focus()||!AC)return;const p=SND[name];if(!p)return;
+ try{ctx=ctx||new AC();if(ctx.state==="suspended")ctx.resume();const t0=ctx.currentTime;
+  p.forEach(n=>{const o=ctx.createOscillator(),g=ctx.createGain(),s=t0+n.t;o.type=n.ty;o.frequency.value=n.f;g.gain.setValueAtTime(0,s);g.gain.linearRampToValueAtTime(n.v,s+.01);g.gain.exponentialRampToValueAtTime(.0001,s+n.d);o.connect(g);g.connect(ctx.destination);o.start(s);o.stop(s+n.d+.03)})}catch(_){}}
+const _h=window.haptic;window.haptic=function(n){snd(n);return _h.apply(this,arguments)};
+const _m=window.markPractice;window.markPractice=function(){const b=data.game.lastPracticeDate;_m();if(b!==data.game.lastPracticeDate)setTimeout(()=>snd("streak"),400)};
+/* ---------- focus mode ---------- */
+const _t=window.toast;window.toast=function(m,k){if(focus()&&!/couldn.?t|can.?t|failed|error|offline|invalid|key/i.test(m))return;return _t(m,k)};
+window.QF={focus(on){if(on===undefined)on=!focus();
+  if(on){settings.focusPrev={haptics:settings.haptics,mascotVisible:settings.mascotVisible,reduceMotion:settings.reduceMotion};settings.haptics=false;settings.mascotVisible=false;settings.reduceMotion=true}
+  else{const p=settings.focusPrev||{};settings.haptics=p.haptics;settings.mascotVisible=p.mascotVisible;settings.reduceMotion=p.reduceMotion;delete settings.focusPrev}
+  settings.focus=on;saveSettings();apply();applyMotion();try{route()}catch(_){}},
+ snd(){settings.sound=settings.sound===false;saveSettings();snd("good")}};
+/* ---------- settings rows + home shortcut ---------- */
+const row=(ic,t,s,on,fn)=>`<div class="setrow" style="cursor:default"><span class="seti">${ic}</span><span class="sett"><b>${t}</b><small>${s}</small></span><button data-nohap class="sw${on?" on":""}" role="switch" aria-checked="${on}" aria-label="${t}" onclick="${fn}"><i></i></button></div>`;
+const _os=window.openSettings;
+window.openSettings=function(){_os();const sc=document.querySelector("#modal-root .sh > div");if(!sc)return;
+ sc.insertAdjacentHTML("afterbegin",`<div class="label" style="margin:.2rem 0 .45rem">🎯 Focus & sound</div>`+
+  row("🎯","Focus mode","Greyscale, no mascot, haptics, sounds, animations or streak/XP badges",focus(),"QF.focus();openSettings()")+
+  row("🔊","Sound effects","Soft tones when you flip, answer and finish",settings.sound!==false,"QF.snd();this.classList.toggle('on');this.setAttribute('aria-checked',this.classList.contains('on'))"))};
+const _rh=window.renderHome;
+window.renderHome=function(){_rh();const r=view.querySelector(".qt-card .row");if(r)r.insertAdjacentHTML("afterbegin",`<button class="btn btn-secondary" style="min-height:34px;font-size:.75rem" onclick="QF.focus(true)">🎯 Focus</button>`)};
+const nv=document.querySelector("nav.bottom"),ab=[...nv.querySelectorAll(".navitem")].pop();if(ab&&ab.textContent==="✨")ab.id="qaBtn";
+apply();
+})();
+</script>
+
 </body>
 </html>
