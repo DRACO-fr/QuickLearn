@@ -5050,6 +5050,10 @@ const gs=q=>"https://www.google.com/search?q="+encodeURIComponent(q);
 const DBE="https://www.education.gov.za/Curriculum/NationalSeniorCertificate(NSC)Examinations/NSCPastExaminationpapers.aspx";
 /* Verified direct PDF links go here, keyed "COUNTRY|grade|Subject|term" -> url. */
 const PDFS={};
+const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("ql-papers",1);r.onupgradeneeded=()=>r.result.createObjectStore("pdfs");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
+const idbSet=async(k,b)=>{const d=await idb();return new Promise((res,rej)=>{const x=d.transaction("pdfs","readwrite");x.objectStore("pdfs").put(b,k);x.oncomplete=res;x.onerror=()=>rej(x.error)})};
+const idbGet=async k=>{const d=await idb();return new Promise((res,rej)=>{const r=d.transaction("pdfs").objectStore("pdfs").get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})};
+const patch=fn=>{const s=ST();fn(s);put(s)};
 const ZA_SR=["Mathematics","Mathematical Literacy","Physical Sciences","Life Sciences","Accounting","Business Studies","Economics","Geography","History","Information Technology","Computer Applications Technology","Tourism","Consumer Studies","Engineering Graphics & Design","Agricultural Sciences","Religion Studies","Dramatic Arts","Visual Arts","Music","Life Orientation"];
 const ZA_JR=["Mathematics","Natural Sciences","Social Sciences","Economic & Management Sciences","Technology","Creative Arts","Life Orientation"];
 const ZA_L=["English","Afrikaans","isiZulu","isiXhosa","Sesotho","Setswana","Sepedi","Xitsonga","Tshivenda","siSwati","isiNdebele"];
@@ -5144,11 +5148,14 @@ async function build(){
  draw(steps.length-1);await wait(pace);
  closeModal();exTab="papers";
  if(!/^#\/study/.test(location.hash))go("#/study");else renderStudy();
- toast("Your papers are ready · "+items.length+" papers added");
+ toast("Your papers are ready · searching the web for PDFs…");
+ autoFetch();
 }
 function skip(){put({...ST(),skipped:true});closeModal()}
 /* ---------- library ---------- */
-const pdfOf=it=>{const s=ST();return (s.pdfs&&s.pdfs[it.key])||PDFS[it.key]||""};
+const userPdf=it=>{const s=ST();return (s.pdfs&&s.pdfs[it.key])||PDFS[it.key]||""};
+const foundOf=it=>(ST().found||{})[it.key]||null;
+const pdfOf=it=>userPdf(it)||(foundOf(it)&&foundOf(it).url)||"";
 function bodyHTML(){
  const s=ST(),p=s.profile;
  if(!p)return `<div style="padding:1rem"><div class="empty">Tell us your grade, country and subjects and we'll load your past papers for terms 1 to 4.<br><br><button class="btn btn-primary" onclick="qlPapers.setup()">Set up my papers</button></div></div>`;
@@ -5156,20 +5163,26 @@ function bodyHTML(){
  const total=items.length,dn=items.filter(i=>done[i.key]).length;
  const groups=p.subjects.map(sub=>{
   const rows=items.filter(i=>i.subject===sub).map(i=>{
-   const pdf=pdfOf(i),chk=done[i.key];
-   const btns=pdf?`<button class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem" onclick="qlPapers.dl('${i.id}')">Download PDF</button>`
-    :i.links.map((l,n)=>`<a class="btn ${n?"btn-ghost":"btn-secondary"}" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join("");
-   return `<div style="padding:.7rem 0;border-top:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:.6rem;align-items:center"><b style="font-size:.9rem">${esc(c.terms[i.term-1])}</b><button class="chip2 ${chk?"on":""}" onclick="qlPapers.done('${i.id}')">${chk?"✓ Done":"Mark done"}</button></div><div class="muted" style="margin:.25rem 0 .5rem">${esc(i.note)}</div><div style="display:flex;flex-wrap:wrap;gap:.4rem">${btns}<button class="btn btn-ghost" style="min-height:2.1rem;padding:0 .6rem;font-size:.75rem" onclick="qlPapers.link('${i.id}')">${pdf?"Change":"＋ Add"} PDF link</button></div></div>`;
+   const up=userPdf(i),f=foundOf(i),pdf=pdfOf(i),chk=done[i.key];
+   const hubs=i.links.map((l,n)=>`<a class="btn ${n||f?"btn-ghost":"btn-secondary"}" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join("");
+   const btns=(up||(f&&f.state==="saved"))?`<button class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem" onclick="qlPapers.dl('${i.id}')">Download PDF</button>`
+    :f?`<a class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(f.url)}" target="_blank" rel="noopener">Open PDF</a>${hubs}`:hubs;
+   const meta=f?`<div class="muted" style="margin:-.2rem 0 .5rem">${esc([f.year,f.source].filter(Boolean).join(" · "))} · ${f.state==="saved"?"saved on this device":"found by AI, not verified"}</div>`:"";
+   return `<div style="padding:.7rem 0;border-top:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:.6rem;align-items:center"><b style="font-size:.9rem">${esc(c.terms[i.term-1])}</b><button class="chip2 ${chk?"on":""}" onclick="qlPapers.done('${i.id}')">${chk?"✓ Done":"Mark done"}</button></div><div class="muted" style="margin:.25rem 0 .5rem">${esc(i.note)}</div>${meta}<div style="display:flex;flex-wrap:wrap;gap:.4rem">${btns}<button class="btn btn-ghost" style="min-height:2.1rem;padding:0 .6rem;font-size:.75rem" onclick="qlPapers.link('${i.id}')">${pdf?"Change":"＋ Add"} PDF link</button></div></div>`;
   }).join("");
   return `<details class="panel" style="margin-bottom:.6rem"><summary style="cursor:pointer;font-weight:600">${esc(sub)} <span class="muted">· ${items.filter(i=>i.subject===sub&&done[i.key]).length}/4</span></summary>${rows}</details>`;
  }).join("");
- return `<div style="padding:.4rem 1.1rem 6rem"><div class="panel" style="margin-bottom:.9rem"><b>${c.gl} ${p.grade} · ${esc(c.name)} · ${esc(p.lang)}</b><div class="muted" style="margin:.2rem 0 .1rem">${dn} of ${total} papers done · official source: ${esc(items[0]?items[0].src:"")}</div><div class="progress"><div style="width:${total?Math.round(dn/total*100):0}%"></div></div><button class="btn btn-ghost" style="padding:0;min-height:2rem;margin-top:.4rem;font-size:.8rem" onclick="qlPapers.setup()">Change grade, country or subjects</button></div>${groups}</div>`;
+ return `<div style="padding:.4rem 1.1rem 6rem"><div class="panel" style="margin-bottom:.9rem"><b>${c.gl} ${p.grade} · ${esc(c.name)} · ${esc(p.lang)}</b><div class="muted" style="margin:.2rem 0 .1rem">${dn} of ${total} papers done · official source: ${esc(items[0]?items[0].src:"")}</div><div class="progress"><div style="width:${total?Math.round(dn/total*100):0}%"></div></div><button class="btn btn-ghost" style="padding:0;min-height:2rem;margin-top:.4rem;font-size:.8rem" onclick="qlPapers.setup()">Change grade, country or subjects</button></div><div class="panel" id="qlFs" style="margin-bottom:.9rem">${fsHTML()}</div>${groups}</div>`;
 }
 const find=id=>(ST().items||[]).find(i=>i.id===id);
 async function dl(id){
- const it=find(id),u=it&&pdfOf(it);if(!u)return;
- const name=(it.subject+" term "+it.term).replace(/[^\w ]+/g,"").replace(/ +/g,"-")+".pdf";
- try{const r=await fetch(u);if(!r.ok)throw 0;const b=await r.blob(),a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast("Downloaded "+name)}
+ const it=find(id);if(!it)return;
+ const name=(it.subject+" term "+it.term).replace(/[^\w ]+/g,"").replace(/ +/g," ").trim().replace(/ /g,"-")+".pdf";
+ const save=b=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast("Downloaded "+name)};
+ const up=userPdf(it);
+ if(!up){try{const b=await idbGet(it.key);if(b){save(b);return}}catch(e){}}
+ const u=pdfOf(it);if(!u)return;
+ try{const r=await fetch(u);if(!r.ok)throw 0;save(await r.blob())}
  catch(e){window.open(u,"_blank","noopener");toast("Opened in a new tab. Save it from there.")}
 }
 async function link(id){
@@ -5180,7 +5193,83 @@ async function link(id){
  const s=ST();s.pdfs=s.pdfs||{};if(u)s.pdfs[it.key]=u;else delete s.pdfs[it.key];put(s);renderStudy();
 }
 function done(id){const it=find(id);if(!it)return;const s=ST();s.done=s.done||{};s.done[it.key]=!s.done[it.key];put(s);renderStudy()}
-window.qlPapers={setup:openSetup,set,tog,build,skip,dl,link,done};
+/* ---------- AI web search + automatic PDF download ---------- */
+let running=false;
+function fsHTML(){
+ const s=ST(),f=s.fs||{},items=s.items||[],found=s.found||{};
+ const n=items.filter(i=>found[i.key]||userPdf(i)).length,saved=items.filter(i=>found[i.key]&&found[i.key].state==="saved").length;
+ const retry=`<button class="btn btn-secondary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;margin-top:.5rem" onclick="qlPapers.find()">Find missing PDFs</button>`;
+ if(running)return `<b>Searching the web for your PDFs…</b><div class="muted" style="margin:.2rem 0">${f.done||0} of ${f.total||0} subjects checked · ${n} papers found so far</div><div class="progress"><div style="width:${f.total?Math.round((f.done||0)/f.total*100):0}%"></div></div>`;
+ if(f.state==="nokey")return `<b>Add your Gemini API key to find PDFs automatically</b><div class="muted" style="margin:.2rem 0">Use the AI key button at the top right, then try again.</div>${retry}`;
+ if(f.state==="done"||f.state==="run")return `<b>${n} of ${items.length} papers found</b><div class="muted" style="margin:.2rem 0">${saved} saved on this device for offline use. ${f.msg?esc(f.msg)+" ":""}Papers without a PDF still link to the official site.</div>${n<items.length?retry:""}`;
+ return `<b>PDF search</b><div class="muted" style="margin:.2rem 0">Let the AI search the web for official PDFs of your papers.</div>${retry}`;
+}
+function liveFs(){const el=document.getElementById("qlFs");if(el)el.innerHTML=fsHTML()}
+async function askWeb(prompt){
+ const key=getKey();if(!key)throw new Error("NOKEY");
+ let last="busy";
+ for(let a=0;a<4;a++){
+  let r=null;
+  try{r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+GEMINI_MODEL+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}]})})}catch(e){r=null}
+  if(r&&r.ok){const j=await r.json();return (j.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")}
+  if(r&&(r.status===400||r.status===403))throw new Error("Your API key was rejected, or it can't use web search.");
+  last=r?"Gemini error "+r.status:"network";
+  await sleep(2500*(a+1));
+ }
+ throw new Error("Gemini is busy ("+last+")");
+}
+/* Try to download the PDF into the device. "saved" = verified real PDF stored; "link" = couldn't check (site blocks browsers); "bad" = dead link or not a PDF. */
+async function grab(it,url){
+ try{
+  const r=await fetch(url);if(!r.ok)return"bad";
+  const b=await r.blob();if(await b.slice(0,5).text()!=="%PDF-")return"bad";
+  await idbSet(it.key,b);return"saved";
+ }catch(e){return"link"}
+}
+async function findForSubject(p,sub){
+ const c=C[p.country],items=(ST().items||[]).filter(i=>i.subject===sub);
+ const prompt=`Use Google Search to find OFFICIAL past exam papers for a ${c.gl} ${p.grade} student in ${c.name}, subject "${sub}". Language: ${p.lang} (use the ${p.lang} version of the paper if one exists, otherwise English).
+Find the best match for each of these 4 school terms, preferring the most recent year available:
+${c.terms.map((x,i)=>(i+1)+". "+x).join("\n")}
+Rules: official sources only (government education departments or official exam boards). The url must be a DIRECT link to a PDF file that you actually saw in the search results. Never guess, construct or edit a URL. If you did not see a real PDF link for a term, use null.
+Return ONLY a JSON array with no markdown and no commentary: [{"term":1,"url":"https://...pdf" or null,"year":2024,"source":"site name"}, ...one item per term]`;
+ const raw=await askWeb(prompt);
+ const a=raw.indexOf("["),b=raw.lastIndexOf("]");if(a<0||b<a)return 0;
+ let arr;try{arr=JSON.parse(raw.slice(a,b+1))}catch(e){return 0}
+ let got=0;
+ for(const x of arr){
+  const it=items.find(i=>i.term===+x.term);
+  if(!it||!x.url||!/^https:\/\//i.test(x.url))continue;
+  const st=await grab(it,x.url);if(st==="bad")continue;
+  patch(s=>{s.found=s.found||{};s.found[it.key]={url:x.url,year:x.year||"",source:x.source||"",state:st}});got++;
+ }
+ return got;
+}
+async function autoFetch(){
+ if(running)return;
+ const p=ST().profile;if(!p)return;
+ if(!getKey()){patch(s=>{s.fs={state:"nokey"}});liveFs();return}
+ const found=ST().found||{},items=ST().items||[];
+ const todo=p.subjects.filter(sub=>items.some(i=>i.subject===sub&&!found[i.key]&&!userPdf(i)));
+ if(!todo.length){patch(s=>{s.fs={state:"done"}});liveFs();return}
+ running=true;let done=0,err="";
+ patch(s=>{s.fs={state:"run",done:0,total:todo.length}});liveFs();
+ const q=[...todo];
+ const worker=async()=>{
+  while(q.length){
+   const sub=q.shift();
+   try{await findForSubject(p,sub)}catch(e){if(e.message==="NOKEY")return;err=e.message}
+   done++;patch(s=>{s.fs=Object.assign(s.fs||{},{done,total:todo.length})});liveFs();
+  }
+ };
+ await Promise.all([worker(),worker()]);
+ running=false;
+ patch(s=>{s.fs={state:"done",msg:err?"Some searches failed: "+err:""}});
+ if(exTab==="papers"&&/^#\/study/.test(location.hash)&&!document.querySelector(".modal-bg"))renderStudy();else liveFs();
+ const n=(ST().items||[]).filter(i=>(ST().found||{})[i.key]).length;
+ toast("PDF search finished · "+n+" papers found");
+}
+window.qlPapers={setup:openSetup,set,tog,build,skip,dl,link,done,find:autoFetch};
 /* ---------- hooks ---------- */
 const _rs=renderStudy;
 renderStudy=function(){
@@ -5196,6 +5285,113 @@ function maybeSetup(n){
  if(!document.getElementById("ql-gate"))openSetup();
 }
 if(typeof quickLearnAuth!=="undefined"&&quickLearnAuth)quickLearnAuth.onAuthStateChanged(u=>{if(u)setTimeout(maybeSetup,1200)});
+})();
+</script>
+
+<style>
+/* ===== Opening & closing animations (everywhere) ===== */
+.modal-backdrop{animation:fade .22s ease both}
+.modal-backdrop .modal{animation:dialogIn .28s cubic-bezier(.2,.8,.2,1) both}
+.modal-backdrop.closing{animation:fadeOut .22s ease both;pointer-events:none}
+.modal-backdrop.closing .modal{animation:dialogOut .2s ease-in both}
+@keyframes navOut{to{transform:translateY(110%);opacity:0}}
+@keyframes navIn{from{transform:translateY(110%);opacity:0}}
+nav.bottom.navout{animation:navOut .24s ease-in both;pointer-events:none}
+nav.bottom.navin{animation:navIn .32s cubic-bezier(.2,.8,.2,1) both}
+@keyframes gateIn{from{opacity:0;transform:scale(1.02)}}
+@keyframes gateOut{to{opacity:0;transform:scale(.985)}}
+#ql-gate{animation:gateIn .38s cubic-bezier(.2,.8,.2,1) both}
+#ql-gate-out.gate-closing{animation:gateOut .28s ease-in both;pointer-events:none}
+.mxo.mx-closing{animation:fadeOut .26s ease-in both;pointer-events:none}
+@keyframes qlIn{from{opacity:0;transform:translateY(10px)}}
+.ql-in{animation:qlIn .3s cubic-bezier(.2,.8,.2,1) both}
+details>summary{cursor:pointer}
+</style>
+<script>
+(function(){
+const reduced=()=>{try{return motionReduced()}catch(e){return false}};
+
+/* 1. Full-page sign-in gate and mascot overlay: fade out instead of vanishing.
+      The closing copy gets a new id, and the gate's CSS is cloned for it. */
+try{
+ let css="";
+ for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(e){continue}
+  for(const r of rs){const t=r.cssText;if(/#ql-gate(?![\w-])/.test(t))css+=t.replace(/#ql-gate(?![\w-])/g,"#ql-gate-out")+"\n"}}
+ const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
+}catch(e){}
+const _rm=Element.prototype.remove;
+Element.prototype.remove=function(){
+ if(!reduced()&&this.dataset&&!this.dataset.qlOut){
+  if(this.id==="ql-gate"){this.dataset.qlOut=1;this.id="ql-gate-out";this.classList.add("gate-closing");setTimeout(()=>_rm.call(this),300);return}
+  if(this.id==="mxo"){this.dataset.qlOut=1;this.id="mxo-out";this.classList.add("mx-closing");setTimeout(()=>_rm.call(this),280);return}
+ }
+ return _rm.call(this);
+};
+
+/* 2. Bottom navigation slides away and back instead of snapping. */
+const nav=document.querySelector("nav.bottom");
+let d=null;
+if(nav){let pr=Object.getPrototypeOf(nav.style);while(pr&&!(d=Object.getOwnPropertyDescriptor(pr,"display")))pr=Object.getPrototypeOf(pr)}
+if(nav&&d&&d.set){
+ let tk=0;
+ Object.defineProperty(nav.style,"display",{configurable:true,
+  get(){return d.get.call(this)},
+  set(v){
+   const me=++tk,hidden=d.get.call(this)==="none";
+   if(reduced()){d.set.call(this,v);return}
+   if(v==="none"){
+    if(hidden)return;
+    nav.classList.remove("navin");nav.classList.add("navout");
+    setTimeout(()=>{if(me===tk){d.set.call(nav.style,"none");nav.classList.remove("navout")}},240);
+   }else{
+    nav.classList.remove("navout");d.set.call(this,v);
+    if(hidden){nav.classList.remove("navin");void nav.offsetWidth;nav.classList.add("navin");setTimeout(()=>nav.classList.remove("navin"),360)}
+   }
+  }});
+}
+
+/* 3. Collapsible sections (every <details>) open and close smoothly. */
+document.addEventListener("click",e=>{
+ const sm=e.target.closest&&e.target.closest("summary");if(!sm||e.target.closest("a,button,input,select,textarea"))return;
+ const el=sm.parentElement;if(!el||el.tagName!=="DETAILS"||reduced())return;
+ e.preventDefault();
+ const start=el.getBoundingClientRect().height;
+ const opening=el._qa?!el._qo:!el.open;
+ if(el._qa){el._qa.onfinish=el._qa.oncancel=null;el._qa.cancel()}
+ el._qo=opening;el.style.overflow="hidden";
+ let end;
+ if(opening){el.open=true;end=el.getBoundingClientRect().height}
+ else{el.open=false;end=el.getBoundingClientRect().height;el.open=true}
+ const a=el.animate({height:[start+"px",end+"px"]},{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"});
+ el._qa=a;
+ a.onfinish=()=>{el._qa=null;el.style.overflow="";if(!opening)el.open=false};
+});
+
+/* 4. Voice recorder sheet closes with the same exit animation as other sheets. */
+window.closeLessonRecorder=function(){
+ try{if(qlRecording)stopLessonRecording()}catch(e){}
+ const root=document.getElementById("modal-root"),bg=root&&root.querySelector(".modal-backdrop");
+ if(!bg)return;
+ if(reduced()){root.innerHTML="";return}
+ bg.classList.add("closing");setTimeout(()=>{if(bg.parentNode)_rm.call(bg)},260);
+};
+
+/* 5. Flashcard, quiz and lesson screens slide in when they open
+      (they already slide out through the normal page transition). */
+const slideIn=()=>{if(reduced())return;view.classList.remove("goR","goL");void view.offsetWidth;view.classList.add("goR");setTimeout(()=>view.classList.remove("goR"),340)};
+let _s=null,_q=null,_l=null;
+try{const f=renderSession;renderSession=function(){const n=session&&session!==_s;_s=session;f.apply(this,arguments);if(n)slideIn()}}catch(e){}
+try{const f=renderQuiz;renderQuiz=function(){const n=quizState&&quizState!==_q;_q=quizState;f.apply(this,arguments);if(n)slideIn()}}catch(e){}
+try{const f=renderLesson;renderLesson=function(){const n=LS&&LS!==_l;_l=LS;f.apply(this,arguments);if(n)slideIn()}}catch(e){}
+
+/* 6. Switching tabs inside the Study screen fades the new content in. */
+let lastTab=null;
+try{const f=renderStudy;renderStudy=function(){
+ f.apply(this,arguments);
+ const ch=view.querySelector(".chips");
+ if(ch&&lastTab!==null&&lastTab!==exTab&&!reduced()){for(let n=ch.nextElementSibling;n;n=n.nextElementSibling){n.classList.remove("ql-in");void n.offsetWidth;n.classList.add("ql-in")}}
+ lastTab=exTab;
+}}catch(e){}
 })();
 </script>
 
