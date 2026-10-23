@@ -1102,7 +1102,7 @@ function load(){
       decks:d.decks||[], subjects:d.subjects||[], notes:d.notes||[], cards:d.cards||[],
       examSchedule:sched, subjectScores:d.subjectScores||{}, studyFreq:d.studyFreq||{},
       game:Object.assign({ level:1, xp:0, day:"", base:0, conquered:0, coins:0 }, d.game||{}),
-      reviewLog:d.reviewLog||{}, courses:d.courses||{},
+      reviewLog:d.reviewLog||{}, courses:d.courses||{}, profile:d.profile||null, paperCourses:d.paperCourses||[],
       mascot:Object.assign({ name:"", asked:0, worn:{} }, d.mascot||{})
     };
   }catch{ return structuredClone(EMPTY); }
@@ -2957,6 +2957,7 @@ function renderStudy(){
   const col=d=>d<=1?"#ff7b7b":d<=4?"#f5b84a":"#aaa";
   let body;
   if(exTab==="prep") body=examPrepBody();
+  else if(exTab==="papers") body=window.papersBody();
   else body=`${examTimeline(withExam,has)}
     <div class="lbl">Study</div><div class="rows" style="padding-top:0">
     ${dueNow.length?listRow("#3b290f",IC.card,`${dueNow.length} card${dueNow.length===1?"":"s"} due`,has?"for your closest exam":"today","startSession(window.__dueNowCards,'Study all due cards','#/study')"):`<div class="empty2" style="padding:1.5rem 1rem"><p>All caught up 🎉</p></div>`}
@@ -2965,7 +2966,7 @@ function renderStudy(){
     ${hardCards().length?listRow("#3a1d28","🔥",`${hardCards().length} hard card${hardCards().length===1?"":"s"}`,"Cards you miss or flagged · practice them","startHardSession('#/study')"):""}
     <div id="studyAdvice"></div>
     ${byDeck.map(x=>listRow("#4a1d12",IC.doc,esc(x.deck.title),x.due+" due",`studyDue('${x.deck.id}')`)).join("")}</div>`;
-  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 Exam courses")}</div>`+body;
+  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 Exam courses")}${chip("papers","📄 My papers")}</div>`+body;
 }
 
 /* ---- Deck = note page ---- */
@@ -5040,366 +5041,238 @@ if(v)new MutationObserver(run).observe(v,{childList:true});
 run();
 })();
 </script>
-<script>
-/* ===== QuickLearn: onboarding + past exam papers library ===== */
-(function(){
-const KEY="quicklearn-papers-v1";
-const ST=()=>{try{return JSON.parse(localStorage.getItem(KEY))||{}}catch{return{}}};
-const put=s=>localStorage.setItem(KEY,JSON.stringify(s));
-const gs=q=>"https://www.google.com/search?q="+encodeURIComponent(q);
-const DBE="https://www.education.gov.za/Curriculum/NationalSeniorCertificate(NSC)Examinations/NSCPastExaminationpapers.aspx";
-/* Verified direct PDF links go here, keyed "COUNTRY|grade|Subject|term" -> url. */
-const PDFS={};
-const idb=()=>new Promise((res,rej)=>{const r=indexedDB.open("ql-papers",1);r.onupgradeneeded=()=>r.result.createObjectStore("pdfs");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)});
-const idbSet=async(k,b)=>{const d=await idb();return new Promise((res,rej)=>{const x=d.transaction("pdfs","readwrite");x.objectStore("pdfs").put(b,k);x.oncomplete=res;x.onerror=()=>rej(x.error)})};
-const idbGet=async k=>{const d=await idb();return new Promise((res,rej)=>{const r=d.transaction("pdfs").objectStore("pdfs").get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})};
-const patch=fn=>{const s=ST();fn(s);put(s)};
-const ZA_SR=["Mathematics","Mathematical Literacy","Physical Sciences","Life Sciences","Accounting","Business Studies","Economics","Geography","History","Information Technology","Computer Applications Technology","Tourism","Consumer Studies","Engineering Graphics & Design","Agricultural Sciences","Religion Studies","Dramatic Arts","Visual Arts","Music","Life Orientation"];
-const ZA_JR=["Mathematics","Natural Sciences","Social Sciences","Economic & Management Sciences","Technology","Creative Arts","Life Orientation"];
-const ZA_L=["English","Afrikaans","isiZulu","isiXhosa","Sesotho","Setswana","Sepedi","Xitsonga","Tshivenda","siSwati","isiNdebele"];
-const C={
- ZA:{name:"South Africa",gl:"Grade",grades:[8,9,10,11,12],langs:ZA_L,
-  subj:(g,l)=>[...(g>=10?ZA_SR:ZA_JR),...new Set([l+" Home Language","English Home Language","English First Additional Language","Afrikaans First Additional Language"])],
-  home:l=>l+" Home Language",
-  terms:["Term 1 · March control test","Term 2 · June exam","Term 3 · September trial","Term 4 · November final"]},
- GB:{name:"United Kingdom",gl:"Year",grades:[9,10,11,12,13],langs:["English","Welsh"],
-  subj:()=>["Mathematics","English Language","English Literature","Biology","Chemistry","Physics","Combined Science","Computer Science","History","Geography","French","Spanish","Business","Economics","Psychology","Art & Design"],
-  terms:["Autumn · November series","Winter · January series","Spring · mock exams","Summer · May-June series"]},
- US:{name:"United States",gl:"Grade",grades:[6,7,8,9,10,11,12],langs:["English","Spanish"],
-  subj:()=>["Algebra & Math","English Language Arts","Biology","Chemistry","Physics","US History","World History","Government","Computer Science","Spanish","AP Calculus","AP Biology","AP US History"],
-  terms:["Quarter 1","Quarter 2","Quarter 3","Quarter 4 · final"]},
- IN:{name:"India",gl:"Class",grades:[6,7,8,9,10,11,12],langs:["English","Hindi"],
-  subj:()=>["Mathematics","Science","Physics","Chemistry","Biology","English","Hindi","Social Science","Computer Science","Accountancy","Business Studies","Economics"],
-  terms:["Term 1 · unit test","Term 2 · half-yearly","Term 3 · pre-board","Term 4 · annual / board"]},
- XX:{name:"Other country",gl:"Grade",grades:[1,2,3,4,5,6,7,8,9,10,11,12],langs:["English","French","Spanish","Portuguese","Arabic","Other"],
-  subj:()=>["Mathematics","English","Science","Physics","Chemistry","Biology","History","Geography","Economics","Computer Science"],
-  terms:["Term 1","Term 2","Term 3","Term 4"]}
-};
-const homeSub=(cc,l)=>C[cc].home?C[cc].home(l):(["English","English Language","English Language Arts"].find(x=>C[cc].subj(0,l).includes(x))||null);
-function hub(cc,g,s,t){
- const q=`${s} ${C[cc].gl} ${g} term ${t} past exam paper memo`;
- if(cc==="ZA"){
-  if(+g===12){
-   const n=["Look under the Feb/March section — supplementary and control papers.","Look under the May/June section.","Trial exams are set by each province. Try your provincial site.","Look under the November NSC section."][t-1];
-   const l=[["allpastpapers.com",gs("site:allpastpapers.com "+q)],["DBE official page",DBE]]; if(t===3)l.push(["Search provincial trials",gs(q+" trial preparatory site:gov.za OR site:wcedeportal.co.za")]);
-   return {src:"allpastpapers.com",note:n,links:l};
-  }
-  return {src:"allpastpapers.com",note:"Papers below Grade 12 are set by provinces and schools.",links:[["allpastpapers.com",gs("site:allpastpapers.com "+q)]]};
- }
- if(cc==="GB")return {src:"Exam boards",note:"Boards publish by exam series, not school term.",links:[["AQA papers","https://www.aqa.org.uk/find-past-papers-and-mark-schemes"],["Edexcel papers","https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html"],["OCR papers","https://www.ocr.org.uk/qualifications/past-paper-finder/"]]};
- if(cc==="US")return {src:"College Board / NY Regents",note:"There is no national paper set. AP and Regents are the official ones.",links:[["NY Regents exams","https://www.nysedregents.org/"],["AP practice","https://apstudents.collegeboard.org/exam-practice"],["Search",gs(q)]]};
- if(cc==="IN")return {src:"CBSE",note:"Board papers are for classes 10 and 12.",links:[["CBSE official","https://www.cbse.gov.in/"],["Search",gs(q+" CBSE")]]};
- return {src:"Web search",note:"We couldn't find a national source for your country.",links:[["Search",gs(q)]]};
-}
-const keyOf=(cc,g,s,t)=>[cc,g,s,t].join("|");
-function buildItems(p){
- const out=[];
- p.subjects.forEach(s=>{for(let t=1;t<=4;t++){const h=hub(p.country,p.grade,s,t);out.push({id:uid(),subject:s,term:t,key:keyOf(p.country,p.grade,s,t),...h})}});
- return out;
-}
-/* ---------- setup ---------- */
-let S=null;
-const field=(l,h)=>`<label class="field-label" style="display:block;margin:.8rem 0 .3rem">${l}</label>${h}`;
-const opts=(a,v,f)=>a.map(x=>`<option value="${esc(f?x[0]:x)}" ${(f?x[0]:x)==v?"selected":""}>${esc(f?x[1]:x)}</option>`).join("");
-function setupHTML(){
- const c=C[S.country],list=c.subj(S.grade,S.lang);
- return `<div class="sh"><h2>Set up your account</h2>
- <p class="muted" style="text-align:center;margin:-.5rem 0 .6rem">We'll build your subjects and past papers for every term.</p>
- ${field("Country",`<select class="input" onchange="qlPapers.set('country',this.value)">${Object.keys(C).map(k=>`<option value="${k}" ${k===S.country?"selected":""}>${esc(C[k].name)}</option>`).join("")}</select>`)}
- ${field(c.gl,`<select class="input" onchange="qlPapers.set('grade',+this.value)">${opts(c.grades,S.grade)}</select>`)}
- ${field("Language",`<select class="input" onchange="qlPapers.set('lang',this.value)">${opts(c.langs,S.lang)}</select>`)}
- ${field("Your subjects ("+S.subjects.length+" selected)",`<div style="display:flex;flex-wrap:wrap;gap:.45rem">${list.map((s,i)=>`<button class="chip2 ${S.subjects.includes(s)?"on":""}" onclick="qlPapers.tog(${i})">${esc(s)}</button>`).join("")}</div>`)}
- <button class="btn btn-primary" style="width:100%;margin-top:1.1rem" onclick="qlPapers.build()">Build my papers</button>
- ${ST().profile?'<button class="btn btn-ghost" style="width:100%;margin-top:.3rem" onclick="closeModal()">Cancel</button>':'<button class="btn btn-ghost" style="width:100%;margin-top:.3rem" onclick="qlPapers.skip()">Skip for now</button>'}</div>`;
-}
-function redraw(){modal(setupHTML())}
-function openSetup(){
- const p=ST().profile;
- S=p?{...p,subjects:[...p.subjects]}:{country:"ZA",grade:12,lang:"English",subjects:[]};
- if(!p)S.subjects=[homeSub(S.country,S.lang)].filter(Boolean);
- redraw();
-}
-function set(k,v){
- S[k]=v;const c=C[S.country];
- if(k==="country"){S.grade=c.grades[c.grades.length-1];S.lang=c.langs[0];S.subjects=[homeSub(S.country,S.lang)].filter(Boolean)}
- if(k==="lang"&&c.home)S.subjects=S.subjects.filter(s=>!/ Home Language$/.test(s)||s==="English Home Language").concat(c.home(v)).filter((s,i,a)=>a.indexOf(s)===i);
- S.subjects=S.subjects.filter(s=>c.subj(S.grade,S.lang).includes(s));
- redraw();
-}
-function tog(i){
- const s=C[S.country].subj(S.grade,S.lang)[i];
- S.subjects=S.subjects.includes(s)?S.subjects.filter(x=>x!==s):[...S.subjects,s];redraw();
-}
-const wait=ms=>new Promise(r=>setTimeout(r,ms));
-async function build(){
- if(!S.subjects.length){toast("Pick at least one subject first");return}
- const p={country:S.country,grade:S.grade,lang:S.lang,subjects:[...S.subjects]};
- const steps=["Saving your profile","Creating your subject folders",...p.subjects.map(s=>"Preparing "+s+" papers"),"Finding official sources for "+C[p.country].name,"Finishing up"];
- const pace=Math.max(350,Math.min(900,9000/steps.length));
- const draw=i=>modal(`<div class="sh" style="text-align:center"><h2>Preparing your account</h2><p class="muted">${esc(steps[i])}…</p><div class="progress"><div style="width:${Math.round((i+1)/steps.length*100)}%"></div></div><p class="muted" style="margin-top:.8rem">Step ${i+1} of ${steps.length}</p></div>`);
- draw(0);await wait(pace);
- const old=ST();put({...old,profile:p,skipped:false});
- draw(1);await wait(pace);
- p.subjects.forEach(s=>{try{findOrCreateSubject(s)}catch(e){}});try{save()}catch(e){}
- for(let i=0;i<p.subjects.length;i++){draw(2+i);await wait(pace)}
- draw(steps.length-2);await wait(pace);
- const items=buildItems(p);
- put({...ST(),profile:p,items,pdfs:old.pdfs||{},done:old.done||{}});
- draw(steps.length-1);await wait(pace);
- closeModal();exTab="papers";
- if(!/^#\/study/.test(location.hash))go("#/study");else renderStudy();
- toast("Your papers are ready · importing PDFs…");
- autoFetch();
-}
-function skip(){put({...ST(),skipped:true});closeModal()}
-/* ---------- library ---------- */
-const userPdf=it=>{const s=ST();return (s.pdfs&&s.pdfs[it.key])||PDFS[it.key]||""};
-const foundOf=it=>(ST().found||{})[it.key]||null;
-const pdfOf=it=>userPdf(it)||(foundOf(it)&&foundOf(it).url)||"";
-function bodyHTML(){
- const s=ST(),p=s.profile;
- if(!p)return `<div style="padding:1rem"><div class="empty">Tell us your grade, country and subjects and we'll load your past papers for terms 1 to 4.<br><br><button class="btn btn-primary" onclick="qlPapers.setup()">Set up my papers</button></div></div>`;
- const c=C[p.country],items=s.items||[],done=s.done||{};
- const total=items.length,dn=items.filter(i=>done[i.key]).length;
- const groups=p.subjects.map(sub=>{
-  const rows=items.filter(i=>i.subject===sub).map(i=>{
-   const up=userPdf(i),f=foundOf(i),pdf=pdfOf(i),chk=done[i.key];
-   const hubs=i.links.map((l,n)=>`<a class="btn ${n||f?"btn-ghost":"btn-secondary"}" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join("");
-   const btns=(up||(f&&f.state==="saved"))?`<button class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem" onclick="qlPapers.dl('${i.id}')">Download PDF</button>`
-    :f?`<a class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(f.url)}" target="_blank" rel="noopener">Open PDF</a>${hubs}`:hubs;
-   const meta=f?`<div class="muted" style="margin:-.2rem 0 .5rem">imported · ${esc([f.year,f.source].filter(Boolean).join(" · "))} · ${f.state==="saved"?"saved on this device":"link to the official PDF"}</div>`:"";
-   return `<div style="padding:.7rem 0;border-top:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:.6rem;align-items:center"><b style="font-size:.9rem">${esc(c.terms[i.term-1])}</b><button class="chip2 ${chk?"on":""}" onclick="qlPapers.done('${i.id}')">${chk?"✓ Done":"Mark done"}</button></div><div class="muted" style="margin:.25rem 0 .5rem">${esc(i.note)}</div>${meta}<div style="display:flex;flex-wrap:wrap;gap:.4rem">${btns}<button class="btn btn-ghost" style="min-height:2.1rem;padding:0 .6rem;font-size:.75rem" onclick="qlPapers.link('${i.id}')">${pdf?"Change":"＋ Add"} PDF link</button></div></div>`;
-  }).join("");
-  return `<details class="panel" style="margin-bottom:.6rem"><summary style="cursor:pointer;font-weight:600">${esc(sub)} <span class="muted">· ${items.filter(i=>i.subject===sub&&done[i.key]).length}/4</span></summary>${rows}</details>`;
- }).join("");
- return `<div style="padding:.4rem 1.1rem 6rem"><div class="panel" style="margin-bottom:.9rem"><b>${c.gl} ${p.grade} · ${esc(c.name)} · ${esc(p.lang)}</b><div class="muted" style="margin:.2rem 0 .1rem">${dn} of ${total} papers done · official source: ${esc(items[0]?items[0].src:"")}</div><div class="progress"><div style="width:${total?Math.round(dn/total*100):0}%"></div></div><button class="btn btn-ghost" style="padding:0;min-height:2rem;margin-top:.4rem;font-size:.8rem" onclick="qlPapers.setup()">Change grade, country or subjects</button></div><div class="panel" id="qlFs" style="margin-bottom:.9rem">${fsHTML()}</div>${groups}</div>`;
-}
-const find=id=>(ST().items||[]).find(i=>i.id===id);
-async function dl(id){
- const it=find(id);if(!it)return;
- const name=(it.subject+" term "+it.term).replace(/[^\w ]+/g,"").replace(/ +/g," ").trim().replace(/ /g,"-")+".pdf";
- const save=b=>{const a=document.createElement("a");a.href=URL.createObjectURL(b);a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),5000);toast("Downloaded "+name)};
- const up=userPdf(it);
- if(!up){try{const b=await idbGet(it.key);if(b){save(b);return}}catch(e){}}
- const u=pdfOf(it);if(!u)return;
- try{const r=await fetch(u);if(!r.ok)throw 0;save(await r.blob())}
- catch(e){window.open(u,"_blank","noopener");toast("Opened in a new tab. Save it from there.")}
-}
-async function link(id){
- const it=find(id);if(!it)return;
- const v=await askText("Paste the direct PDF link","","https://…");
- if(v==null)return;const u=v.trim();
- if(u&&!/^https:\/\//i.test(u)){toast("That link must start with https://");return}
- const s=ST();s.pdfs=s.pdfs||{};if(u)s.pdfs[it.key]=u;else delete s.pdfs[it.key];put(s);renderStudy();
-}
-function done(id){const it=find(id);if(!it)return;const s=ST();s.done=s.done||{};s.done[it.key]=!s.done[it.key];put(s);renderStudy()}
-/* ---------- AI web search + automatic PDF download ---------- */
-let running=false;
-function fsHTML(){
- const s=ST(),f=s.fs||{},items=s.items||[],found=s.found||{};
- const n=items.filter(i=>found[i.key]||userPdf(i)).length,saved=items.filter(i=>found[i.key]&&found[i.key].state==="saved").length;
- const retry=`<button class="btn btn-secondary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;margin-top:.5rem" onclick="qlPapers.find()">Import missing PDFs</button>`;
- if(running)return `<b>Importing your PDFs…</b><div class="muted" style="margin:.2rem 0">${f.done||0} of ${f.total||0} subjects checked · ${n} papers imported so far</div><div class="progress"><div style="width:${f.total?Math.round((f.done||0)/f.total*100):0}%"></div></div>`;
- if(f.state==="nokey")return `<b>Add your Gemini API key to find PDFs automatically</b><div class="muted" style="margin:.2rem 0">Use the AI key button at the top right, then try again.</div>${retry}`;
- if(f.state==="done"||f.state==="run")return `<b>${n} of ${items.length} papers imported</b><div class="muted" style="margin:.2rem 0">${saved} saved on this device for offline use. ${f.msg?esc(f.msg)+" ":""}Papers without a PDF still link to the official site.</div>${n<items.length?retry:""}`;
- return `<b>PDF search</b><div class="muted" style="margin:.2rem 0">Let the AI find and import the official PDFs of your papers.</div>${retry}`;
-}
-function liveFs(){const el=document.getElementById("qlFs");if(el)el.innerHTML=fsHTML()}
-async function askWeb(prompt){
- const key=getKey();if(!key)throw new Error("NOKEY");
- let last="busy";
- for(let a=0;a<4;a++){
-  let r=null;
-  try{r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+GEMINI_MODEL+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools:[{google_search:{}}]})})}catch(e){r=null}
-  if(r&&r.ok){const j=await r.json();return (j.candidates?.[0]?.content?.parts||[]).map(x=>x.text||"").join("")}
-  if(r&&(r.status===400||r.status===403))throw new Error("Your API key was rejected, or it can't use web search.");
-  last=r?"Gemini error "+r.status:"network";
-  await sleep(2500*(a+1));
- }
- throw new Error("Gemini is busy ("+last+")");
-}
-/* Import: save a copy on the device when the site allows it ("saved"), otherwise keep the link ("link"). Only a failed response is skipped; the file is never read. */
-async function grab(it,url){
- try{
-  const r=await fetch(url);if(!r.ok)return"bad";
-  const b=await r.blob();
-  await idbSet(it.key,b);return"saved";
- }catch(e){return"link"}
-}
-async function findForSubject(p,sub){
- const c=C[p.country],items=(ST().items||[]).filter(i=>i.subject===sub);
- const prompt=`Use Google Search to find OFFICIAL past exam papers for a ${c.gl} ${p.grade} student in ${c.name}, subject "${sub}". Language: ${p.lang} (use the ${p.lang} version of the paper if one exists, otherwise English).
-Find the best match for each of these 4 school terms, preferring the most recent year available:
-${c.terms.map((x,i)=>(i+1)+". "+x).join("\n")}
-Rules: official sources only (government education departments or official exam boards). The url must be a DIRECT link to a PDF file that you actually saw in the search results. Never guess, construct or edit a URL. If you did not see a real PDF link for a term, use null.
-Return ONLY a JSON array with no markdown and no commentary: [{"term":1,"url":"https://...pdf" or null,"year":2024,"source":"site name"}, ...one item per term]`;
- const zaPrompt=`Use Google Search with the operator site:allpastpapers.com to find South African past exam papers for ${c.gl} ${p.grade}, subject "${sub}". Language: ${p.lang} (use the ${p.lang} version if one exists, otherwise English).
-Find the best match for each of these 4 school terms, preferring the most recent year available:
-${c.terms.map((x,i)=>(i+1)+". "+x).join("\n")}
-Rules: only links on allpastpapers.com that you actually saw in the search results. A direct PDF link is best, otherwise the paper's page on that site. Never guess, construct or edit a URL. If you did not see one for a term, use null.
-Return ONLY a JSON array with no markdown and no commentary: [{"term":1,"url":"https://allpastpapers.com/..." or null,"year":2024,"source":"allpastpapers.com"}, ...one item per term]`;
- const raw=await askWeb(p.country==="ZA"?zaPrompt:prompt);
- const a=raw.indexOf("["),b=raw.lastIndexOf("]");if(a<0||b<a)return 0;
- let arr;try{arr=JSON.parse(raw.slice(a,b+1))}catch(e){return 0}
- let got=0;
- for(const x of arr){
-  const it=items.find(i=>i.term===+x.term);
-  if(!it||!x.url||!/^https:\/\//i.test(x.url))continue;
-  if(p.country==="ZA"&&!/^https:\/\/([\w-]+\.)*allpastpapers\.com\//i.test(x.url))continue;
-  const st=await grab(it,x.url);if(st==="bad")continue;
-  patch(s=>{s.found=s.found||{};s.found[it.key]={url:x.url,year:x.year||"",source:x.source||"",state:st}});got++;
- }
- return got;
-}
-async function autoFetch(){
- if(running)return;
- const p=ST().profile;if(!p)return;
- if(!getKey()){patch(s=>{s.fs={state:"nokey"}});liveFs();return}
- const found=ST().found||{},items=ST().items||[];
- const todo=p.subjects.filter(sub=>items.some(i=>i.subject===sub&&!found[i.key]&&!userPdf(i)));
- if(!todo.length){patch(s=>{s.fs={state:"done"}});liveFs();return}
- running=true;let done=0,err="";
- patch(s=>{s.fs={state:"run",done:0,total:todo.length}});liveFs();
- const q=[...todo];
- const worker=async()=>{
-  while(q.length){
-   const sub=q.shift();
-   try{await findForSubject(p,sub)}catch(e){if(e.message==="NOKEY")return;err=e.message}
-   done++;patch(s=>{s.fs=Object.assign(s.fs||{},{done,total:todo.length})});liveFs();
-  }
- };
- await Promise.all([worker(),worker()]);
- running=false;
- patch(s=>{s.fs={state:"done",msg:err?"Some searches failed: "+err:""}});
- if(exTab==="papers"&&/^#\/study/.test(location.hash)&&!document.querySelector(".modal-bg"))renderStudy();else liveFs();
- const n=(ST().items||[]).filter(i=>(ST().found||{})[i.key]).length;
- toast("PDF import finished · "+n+" papers imported");
-}
-window.qlPapers={setup:openSetup,set,tog,build,skip,dl,link,done,find:autoFetch};
-/* ---------- hooks ---------- */
-const _rs=renderStudy;
-renderStudy=function(){
- _rs();
- const ch=view.querySelector(".chips");if(!ch)return;
- const b=document.createElement("button");b.className="chip2"+(exTab==="papers"?" on":"");b.textContent="📄 Past papers";
- b.onclick=()=>{exTab="papers";renderStudy()};ch.appendChild(b);
- if(exTab==="papers"){while(ch.nextSibling)ch.nextSibling.remove();ch.insertAdjacentHTML("afterend",bodyHTML())}
-};
-function maybeSetup(n){
- const s=ST();if(s.profile||s.skipped||typeof quickLearnUser==="undefined"||!quickLearnUser)return;
- if(document.getElementById("ql-gate")&&(n||0)<30)return setTimeout(()=>maybeSetup((n||0)+1),700);
- if(!document.getElementById("ql-gate"))openSetup();
-}
-if(typeof quickLearnAuth!=="undefined"&&quickLearnAuth)quickLearnAuth.onAuthStateChanged(u=>{if(u)setTimeout(maybeSetup,1200)});
-})();
-</script>
 
+<!-- ===== PAST PAPERS: put your links here ===== -->
+<script id="ql-papers-data">
+/* ================================================================
+   PAST PAPERS CATALOGUE  (you supply the links; the app does the rest)
+   Add one line per paper, e.g.
+   {country:"ZA", grade:9, subject:"maths", term:1, lang:"en", title:"Term 1 Test 2024", url:"https://…paper.pdf", memo:"https://…memo.pdf"},
+   - country: ZA  US  GB  AU  CA  OTHER
+   - grade:   a number (9 = Grade 9 / Year 9)
+   - term:    1, 2, 3 or 4
+   - lang:    "en", "af", ... (leave out if the paper suits every language)
+   - memo:    optional marking guideline link
+   - subject ids for South Africa:
+       hl fal maths ns ss ls geo hist tech ems lo arts
+       mathlit techmaths physci lifesci acc bus econ cat it egd agri
+       consumer tourism drama visual music relig hosp
+   You can also put the same list as JSON in a file called papers.json next to index.html.
+   ================================================================ */
+window.QL_PAPERS=[
+  // {country:"ZA", grade:9, subject:"maths", term:1, lang:"en", title:"Term 1 Test", url:"https://example.com/paper.pdf", memo:"https://example.com/memo.pdf"},
+];
+window.QL_PAPERS_URL="papers.json";
+</script>
 <style>
-/* ===== Opening & closing animations (everywhere) ===== */
-.modal-backdrop{animation:fade .22s ease both}
-.modal-backdrop .modal{animation:dialogIn .28s cubic-bezier(.2,.8,.2,1) both}
-.modal-backdrop.closing{animation:fadeOut .22s ease both;pointer-events:none}
-.modal-backdrop.closing .modal{animation:dialogOut .2s ease-in both}
-@keyframes navOut{to{transform:translateY(110%);opacity:0}}
-@keyframes navIn{from{transform:translateY(110%);opacity:0}}
-nav.bottom.navout{animation:navOut .24s ease-in both;pointer-events:none}
-nav.bottom.navin{animation:navIn .32s cubic-bezier(.2,.8,.2,1) both}
-@keyframes gateIn{from{opacity:0;transform:scale(1.02)}}
-@keyframes gateOut{to{opacity:0;transform:scale(.985)}}
-#ql-gate{animation:gateIn .38s cubic-bezier(.2,.8,.2,1) both}
-#ql-gate-out.gate-closing{animation:gateOut .28s ease-in both;pointer-events:none}
-.mxo.mx-closing{animation:fadeOut .26s ease-in both;pointer-events:none}
-@keyframes qlIn{from{opacity:0;transform:translateY(10px)}}
-.ql-in{animation:qlIn .3s cubic-bezier(.2,.8,.2,1) both}
-details>summary{cursor:pointer}
+#ql-onb{position:fixed;inset:0;z-index:99990;background:var(--background);color:var(--foreground);display:flex;flex-direction:column;font-family:var(--font-sans,"DM Sans",system-ui,sans-serif);padding:max(.9rem,env(safe-area-inset-top)) 1.2rem max(1rem,env(safe-area-inset-bottom));overflow:hidden}
+#ql-onb .ob-top{display:flex;align-items:center;justify-content:space-between;min-height:2.6rem;flex:none}
+#ql-onb .ob-dots{display:flex;gap:.35rem}
+#ql-onb .ob-dots i{width:1.5rem;height:.28rem;border-radius:9px;background:var(--surface-2)}
+#ql-onb .ob-dots i.on{background:var(--primary)}
+#ql-onb .ob-link{background:none;border:0;color:var(--muted-fg,#aaa);font:inherit;font-size:.95rem;padding:.5rem;cursor:pointer}
+#ql-onb .ob-main{flex:1;min-height:0;overflow-y:auto;padding:1rem 0 .6rem}
+#ql-onb h1{font-family:var(--font-display,"Sora",system-ui,sans-serif);font-size:1.7rem;line-height:1.15;margin:.4rem 0 .35rem;font-weight:700}
+#ql-onb .ob-sub{color:var(--muted-fg,#aaa);margin:0 0 1.2rem;font-size:.98rem}
+#ql-onb .ob-opt{display:flex;align-items:center;gap:.9rem;width:100%;background:var(--surface);border:1.5px solid transparent;color:inherit;font:inherit;font-size:1.05rem;text-align:left;border-radius:1.1rem;padding:.9rem 1rem;margin-bottom:.55rem;cursor:pointer}
+#ql-onb .ob-opt .em{font-size:1.5rem;line-height:1}
+#ql-onb .ob-opt.on{border-color:var(--primary);background:var(--surface-2)}
+#ql-onb .ob-grid{display:flex;flex-wrap:wrap;gap:.55rem}
+#ql-onb .ob-chip{display:flex;align-items:center;gap:.45rem;background:var(--surface);border:1.5px solid transparent;color:inherit;font:inherit;font-size:.98rem;border-radius:999px;padding:.7rem 1rem;cursor:pointer}
+#ql-onb .ob-chip.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+#ql-onb .ob-foot{flex:none;display:flex;gap:.6rem;padding-top:.6rem}
+#ql-onb .ob-foot .btn{flex:1;min-height:3rem}
+#ql-onb .ob-foot .btn[disabled]{opacity:.45;pointer-events:none}
+#ql-onb .ob-prep{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;min-height:0}
+#ql-onb .ob-prep h1{margin-top:1rem}
+#ql-onb .ob-bar{width:100%;max-width:22rem;height:.5rem;border-radius:999px;background:var(--surface-2);overflow:hidden;margin:1rem 0}
+#ql-onb .ob-bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .35s ease}
+#ql-onb .ob-steps{list-style:none;padding:0;margin:.4rem 0 0;width:100%;max-width:22rem;max-height:30vh;overflow:auto;text-align:left;font-size:.92rem;color:var(--muted-fg,#aaa)}
+#ql-onb .ob-steps li{padding:.22rem 0}
+#ql-onb .ob-steps li:before{content:"✓ ";color:var(--primary);font-weight:700}
+.pp-row{display:flex;align-items:center;gap:.6rem;background:var(--surface);border-radius:.9rem;padding:.65rem .7rem;margin-bottom:.45rem}
+.pp-row.done .pp-t{opacity:.55;text-decoration:line-through}
+.pp-chk{flex:none;width:1.7rem;height:1.7rem;border-radius:.5rem;border:1.5px solid var(--primary);background:transparent;color:var(--primary-fg);font-weight:800;cursor:pointer;padding:0}
+.pp-row.done .pp-chk{background:var(--primary)}
+.pp-t{flex:1;min-width:0;font-size:.95rem;overflow-wrap:anywhere}
+.pp-a{flex:none;text-decoration:none;font-size:.85rem;font-weight:600;border-radius:999px;padding:.4rem .8rem;background:var(--primary);color:var(--primary-fg)}
+.pp-a.alt{background:var(--surface-2);color:var(--foreground)}
 </style>
 <script>
 (function(){
-const reduced=()=>{try{return motionReduced()}catch(e){return false}};
-
-/* 1. Full-page sign-in gate and mascot overlay: fade out instead of vanishing.
-      The closing copy gets a new id, and the gate's CSS is cloned for it. */
-try{
- let css="";
- for(const sh of document.styleSheets){let rs;try{rs=sh.cssRules}catch(e){continue}
-  for(const r of rs){const t=r.cssText;if(/#ql-gate(?![\w-])/.test(t))css+=t.replace(/#ql-gate(?![\w-])/g,"#ql-gate-out")+"\n"}}
- const st=document.createElement("style");st.textContent=css;document.head.appendChild(st);
-}catch(e){}
-const _rm=Element.prototype.remove;
-Element.prototype.remove=function(){
- if(!reduced()&&this.dataset&&!this.dataset.qlOut){
-  if(this.id==="ql-gate"){this.dataset.qlOut=1;this.id="ql-gate-out";this.classList.add("gate-closing");setTimeout(()=>_rm.call(this),300);return}
-  if(this.id==="mxo"){this.dataset.qlOut=1;this.id="mxo-out";this.classList.add("mx-closing");setTimeout(()=>_rm.call(this),280);return}
+"use strict";
+const PREP_MIN_MS=6000; /* shortest time the "preparing your account" screen stays up */
+const $=id=>document.getElementById(id);
+const E=v=>String(v==null?"":v).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const rng=(a,b)=>Array.from({length:b-a+1},(_,i)=>a+i);
+const LANGS={en:"English",af:"Afrikaans",es:"Spanish",fr:"French"};
+const COUNTRIES=[
+ {id:"ZA",name:"South Africa",flag:"🇿🇦",label:"Grade",grades:rng(4,12),langs:["en","af"]},
+ {id:"US",name:"United States",flag:"🇺🇸",label:"Grade",grades:rng(3,12),langs:["en","es"]},
+ {id:"GB",name:"United Kingdom",flag:"🇬🇧",label:"Year",grades:rng(3,13),langs:["en"]},
+ {id:"AU",name:"Australia",flag:"🇦🇺",label:"Year",grades:rng(3,12),langs:["en"]},
+ {id:"CA",name:"Canada",flag:"🇨🇦",label:"Grade",grades:rng(3,12),langs:["en","fr"]},
+ {id:"OTHER",name:"Somewhere else",flag:"🌍",label:"Grade",grades:rng(3,12),langs:["en"]}
+];
+const cOf=id=>COUNTRIES.find(x=>x.id===id);
+function subjectsFor(cid,g,lang){
+ const S=(id,name,emoji)=>({id,name,emoji});
+ if(cid==="ZA"){
+  const hl=LANGS[lang]||"English",fal=lang==="af"?"English":"Afrikaans";
+  const core=[S("hl",hl+" Home Language","📖"),S("fal",fal+" First Additional Language","💬")];
+  if(g<=6)return core.concat([S("maths","Mathematics","➗"),S("ns","Natural Sciences & Technology","🔬"),S("ss","Social Sciences","🌍"),S("ls","Life Skills","🌱")]);
+  if(g<=9)return core.concat([S("maths","Mathematics","➗"),S("ns","Natural Sciences","🔬"),S("geo","Social Sciences: Geography","🗺️"),S("hist","Social Sciences: History","🏛️"),S("tech","Technology","⚙️"),S("ems","Economic & Management Sciences","💼"),S("lo","Life Orientation","🧭"),S("arts","Creative Arts","🎨")]);
+  return core.concat([S("maths","Mathematics","➗"),S("mathlit","Mathematical Literacy","🧮"),S("techmaths","Technical Mathematics","📐"),S("lo","Life Orientation","🧭"),S("physci","Physical Sciences","⚗️"),S("lifesci","Life Sciences","🧬"),S("geo","Geography","🗺️"),S("hist","History","🏛️"),S("acc","Accounting","📒"),S("bus","Business Studies","💼"),S("econ","Economics","📈"),S("cat","Computer Applications Technology","💻"),S("it","Information Technology","🖥️"),S("egd","Engineering Graphics & Design","📏"),S("agri","Agricultural Sciences","🌾"),S("consumer","Consumer Studies","🍳"),S("tourism","Tourism","🧳"),S("drama","Dramatic Arts","🎭"),S("visual","Visual Arts","🖼️"),S("music","Music","🎵"),S("relig","Religion Studies","🕊️"),S("hosp","Hospitality Studies","🍽️")]);
  }
- return _rm.call(this);
-};
-
-/* 2. Bottom navigation slides away and back instead of snapping. */
-const nav=document.querySelector("nav.bottom");
-let d=null;
-if(nav){let pr=Object.getPrototypeOf(nav.style);while(pr&&!(d=Object.getOwnPropertyDescriptor(pr,"display")))pr=Object.getPrototypeOf(pr)}
-if(nav&&d&&d.set){
- let tk=0;
- Object.defineProperty(nav.style,"display",{configurable:true,
-  get(){return d.get.call(this)},
-  set(v){
-   const me=++tk,hidden=d.get.call(this)==="none";
-   if(reduced()){d.set.call(this,v);return}
-   if(v==="none"){
-    if(hidden)return;
-    nav.classList.remove("navin");nav.classList.add("navout");
-    setTimeout(()=>{if(me===tk){d.set.call(nav.style,"none");nav.classList.remove("navout")}},240);
-   }else{
-    nav.classList.remove("navout");d.set.call(this,v);
-    if(hidden){nav.classList.remove("navin");void nav.offsetWidth;nav.classList.add("navin");setTimeout(()=>nav.classList.remove("navin"),360)}
-   }
-  }});
+ const nat=LANGS[lang]||"English";
+ if(g<=8)return [S("ela",nat+" Language Arts","📖"),S("maths","Mathematics","➗"),S("science","Science","🔬"),S("social","Social Studies","🌍"),S("pe","Physical Education","🏃"),S("arts","Arts","🎨")];
+ return [S("ela",nat+" Language Arts","📖"),S("maths","Mathematics","➗"),S("bio","Biology","🧬"),S("chem","Chemistry","⚗️"),S("phys","Physics","⚛️"),S("hist","History","🏛️"),S("geo","Geography","🗺️"),S("econ","Economics","📈"),S("cs","Computer Science","💻"),S("lang2","Second Language","💬")];
 }
+const okUrl=u=>typeof u==="string"&&/^https?:\/\//i.test(u.trim());
+const gLabel=(c,g)=>(c?c.label:"Grade")+" "+g;
 
-/* 3. Collapsible sections (every <details>) open and close smoothly. */
+/* ---------- state + overlay ---------- */
+let S=null;
+function overlay(){let o=$("ql-onb");if(!o){o=document.createElement("div");o.id="ql-onb";document.body.appendChild(o)}return o}
+function hideApp(on){const nav=document.querySelector("nav.bottom"),sh=document.querySelector(".shell");if(nav)nav.style.display=on?"none":"";if(sh)sh.style.visibility=on?"hidden":""}
+function stepsOf(){const c=cOf(S.country);return ["country","grade"].concat(c&&c.langs.length>1?["lang"]:[]).concat(["subjects"])}
+window.qlStartOnboarding=function(){
+ const p=data.profile&&!data.profile.skipped?data.profile:{};
+ S={idx:0,country:p.country||null,grade:p.grade||null,lang:p.lang||null,subs:new Set(p.subjects||[]),edit:!!p.country};
+ hideApp(true);draw();
+};
+function close(){const o=$("ql-onb");if(o)o.remove();hideApp(false)}
+function draw(){
+ const o=overlay(),steps=stepsOf(),st=steps[S.idx],c=cOf(S.country),n=steps.length;
+ let title="",sub="",body="",canNext=false;
+ if(st==="country"){
+  title="Where do you study?";sub="We'll match papers to your curriculum.";
+  body=COUNTRIES.map(x=>`<button class="ob-opt ${S.country===x.id?"on":""}" data-k="country" data-v="${x.id}"><span class="em">${x.flag}</span><b>${E(x.name)}</b></button>`).join("");
+  canNext=!!S.country;
+ }else if(st==="grade"){
+  title="Which "+c.label.toLowerCase()+" are you in?";sub="";
+  body='<div class="ob-grid">'+c.grades.map(g=>`<button class="ob-chip ${S.grade===g?"on":""}" data-k="grade" data-v="${g}">${E(gLabel(c,g))}</button>`).join("")+"</div>";
+  canNext=!!S.grade;
+ }else if(st==="lang"){
+  title="Which language do you study in?";sub="Papers are loaded in this language where they exist.";
+  body=c.langs.map(l=>`<button class="ob-opt ${S.lang===l?"on":""}" data-k="lang" data-v="${l}"><b>${E(LANGS[l]||l)}</b></button>`).join("");
+  canNext=!!S.lang;
+ }else{
+  const list=subjectsFor(S.country,S.grade,S.lang);
+  title="Pick your subjects";sub="We'll set up a course for each one, with Term 1–4 papers.";
+  body=`<div class="ob-grid">${list.map(x=>`<button class="ob-chip ${S.subs.has(x.id)?"on":""}" data-k="sub" data-v="${x.id}"><span>${x.emoji}</span>${E(x.name)}</button>`).join("")}</div><div style="margin-top:.8rem"><button class="ob-link" data-k="all" style="padding-left:0">${S.subs.size===list.length?"Clear all":"Select all"}</button></div>`;
+  canNext=S.subs.size>0;
+ }
+ const last=S.idx===n-1;
+ o.innerHTML=`<div class="ob-top"><div class="ob-dots">${steps.map((_,i)=>`<i class="${i<=S.idx?"on":""}"></i>`).join("")}</div><button class="ob-link" data-k="skip">${S.edit?"Cancel":"Skip for now"}</button></div>
+ <div class="ob-main"><h1>${E(title)}</h1>${sub?`<p class="ob-sub">${E(sub)}</p>`:""}${body}</div>
+ <div class="ob-foot">${S.idx>0?'<button class="btn btn-secondary" data-k="back">Back</button>':""}<button class="btn btn-primary" data-k="next" ${canNext?"":"disabled"}>${last?"Set up my account":"Continue"}</button></div>`;
+}
 document.addEventListener("click",e=>{
- const sm=e.target.closest&&e.target.closest("summary");if(!sm||e.target.closest("a,button,input,select,textarea"))return;
- const el=sm.parentElement;if(!el||el.tagName!=="DETAILS"||reduced())return;
- e.preventDefault();
- const start=el.getBoundingClientRect().height;
- const opening=el._qa?!el._qo:!el.open;
- if(el._qa){el._qa.onfinish=el._qa.oncancel=null;el._qa.cancel()}
- el._qo=opening;el.style.overflow="hidden";
- let end;
- if(opening){el.open=true;end=el.getBoundingClientRect().height}
- else{el.open=false;end=el.getBoundingClientRect().height;el.open=true}
- const a=el.animate({height:[start+"px",end+"px"]},{duration:260,easing:"cubic-bezier(.2,.8,.2,1)"});
- el._qa=a;
- a.onfinish=()=>{el._qa=null;el.style.overflow="";if(!opening)el.open=false};
+ const b=e.target.closest&&e.target.closest("#ql-onb [data-k]");if(!b||!S)return;
+ const k=b.dataset.k,v=b.dataset.v,steps=stepsOf();
+ if(k==="country"){S.country=v;S.grade=null;S.subs=new Set();const c=cOf(v);S.lang=c.langs.length===1?c.langs[0]:null;draw();setTimeout(()=>{if(S&&S.country===v){S.idx=1;draw()}},140)}
+ else if(k==="grade"){S.grade=Number(v);S.subs=new Set();draw();setTimeout(()=>{if(S&&S.grade===Number(v)){S.idx=Math.min(S.idx+1,stepsOf().length-1);draw()}},140)}
+ else if(k==="lang"){S.lang=v;S.subs=new Set();draw();setTimeout(()=>{if(S&&S.lang===v){S.idx=Math.min(S.idx+1,stepsOf().length-1);draw()}},140)}
+ else if(k==="sub"){S.subs.has(v)?S.subs.delete(v):S.subs.add(v);draw()}
+ else if(k==="all"){const list=subjectsFor(S.country,S.grade,S.lang);S.subs=S.subs.size===list.length?new Set():new Set(list.map(x=>x.id));draw()}
+ else if(k==="back"){S.idx=Math.max(0,S.idx-1);draw()}
+ else if(k==="next"){if(S.idx<steps.length-1){S.idx++;draw()}else prepare()}
+ else if(k==="skip"){if(!S.edit){data.profile={skipped:true};save()}S=null;close();try{route()}catch(_){}}
 });
 
-/* 4. Voice recorder sheet closes with the same exit animation as other sheets. */
-window.closeLessonRecorder=function(){
- try{if(qlRecording)stopLessonRecording()}catch(e){}
- const root=document.getElementById("modal-root"),bg=root&&root.querySelector(".modal-backdrop");
- if(!bg)return;
- if(reduced()){root.innerHTML="";return}
- bg.classList.add("closing");setTimeout(()=>{if(bg.parentNode)_rm.call(bg)},260);
+/* ---------- paper catalogue (built-in list + optional papers.json) ---------- */
+async function loadRemote(){
+ const url=window.QL_PAPERS_URL;if(!url||!window.fetch)return;
+ const ctl=new AbortController(),t=setTimeout(()=>ctl.abort(),4000);
+ try{
+  const r=await fetch(url,{cache:"no-cache",signal:ctl.signal});
+  if(!r.ok)return;
+  const j=await r.json();
+  if(Array.isArray(j))j.forEach(p=>window.QL_PAPERS.push(p));
+ }catch(_){}finally{clearTimeout(t)}
+}
+function papersFor(pr,sid){
+ return (window.QL_PAPERS||[]).filter(p=>p&&p.country===pr.country&&Number(p.grade)===pr.grade&&p.subject===sid&&[1,2,3,4].includes(Number(p.term))&&okUrl(p.url)&&(!p.lang||p.lang==="any"||p.lang===pr.lang));
+}
+
+/* ---------- account preparation ---------- */
+async function prepare(){
+ const o=overlay(),c=cOf(S.country),subs=subjectsFor(S.country,S.grade,S.lang).filter(x=>S.subs.has(x.id));
+ const pr={country:S.country,grade:S.grade,lang:S.lang,subjects:subs.map(x=>x.id),at:Date.now()};
+ const t0=Date.now();
+ const face=(typeof mascot==="function"&&typeof animOn==="function"&&animOn())?mascot("think",{size:112,cls:"idle"}):"";
+ o.innerHTML=`<div class="ob-prep">${face}<h1>Setting up your account</h1><p class="ob-sub" id="obMsg">Saving your details…</p><div class="ob-bar"><i id="obBar"></i></div><ul class="ob-steps" id="obSteps"></ul></div>`;
+ const msg=t=>{const m=$("obMsg");if(m)m.textContent=t};
+ const bar=p=>{const b=$("obBar");if(b)b.style.width=Math.round(p*100)+"%"};
+ const li=t=>{const u=$("obSteps");if(!u)return;const x=document.createElement("li");x.textContent=t;u.appendChild(x);u.scrollTop=u.scrollHeight};
+ const sleepMs=ms=>new Promise(r=>setTimeout(r,ms));
+ bar(.05);await sleepMs(250);
+ li(`${gLabel(c,pr.grade)} · ${c.name} · ${LANGS[pr.lang]||""}`);
+ msg("Checking for new papers…");bar(.12);
+ await loadRemote();
+ const old=new Map();(data.paperCourses||[]).forEach(pc=>pc.papers.forEach(p=>old.set(pc.id+"|"+p.key,p)));
+ let total=0;const courses=[];
+ for(let i=0;i<subs.length;i++){
+  const s=subs[i],id="pc_"+s.id;
+  msg("Building "+s.name+"…");
+  const seen=new Set(),papers=[];
+  papersFor(pr,s.id).forEach(p=>{
+   const key=p.term+"|"+p.title+"|"+p.url;if(seen.has(key))return;seen.add(key);
+   const prev=old.get(id+"|"+key);
+   papers.push({id:prev?prev.id:"p"+Math.random().toString(36).slice(2,9),key,term:Number(p.term),title:String(p.title||"Paper"),url:p.url.trim(),memo:okUrl(p.memo)?p.memo.trim():"",done:prev?!!prev.done:false});
+  });
+  papers.sort((a,b)=>a.term-b.term||a.title.localeCompare(b.title));
+  total+=papers.length;
+  courses.push({id,subject:s.id,name:s.name,emoji:s.emoji,papers});
+  li(s.name+(papers.length?" · "+papers.length+" paper"+(papers.length===1?"":"s"):" · ready"));
+  bar(.15+.8*((i+1)/subs.length));
+  await sleepMs(220);
+ }
+ data.paperCourses=courses;data.profile=pr;save();
+ msg("Finishing up…");bar(1);
+ const wait=PREP_MIN_MS-(Date.now()-t0);if(wait>0)await sleepMs(wait);
+ S=null;close();
+ try{exTab="papers"}catch(_){}
+ try{toast(total?"Your papers are ready":"Your courses are ready. Papers appear as they're added.")}catch(_){}
+ try{if(location.hash==="#/study")route();else go("#/study")}catch(_){}
+}
+
+/* ---------- Exams > My papers ---------- */
+window.papersBody=function(){
+ const p=data.profile;
+ if(!p||p.skipped||!p.country)return `<div class="empty2" style="padding:2.5rem 1.4rem"><p style="font-size:1.05rem">Set up your grade to get past papers for every subject.</p><button class="btn btn-primary" style="margin-top:1rem" onclick="qlStartOnboarding()">Set up my papers</button></div>`;
+ const c=cOf(p.country)||{name:p.country,flag:"",label:"Grade"};
+ const rows=(data.paperCourses||[]).map(pc=>{
+  const tot=pc.papers.length,done=pc.papers.filter(x=>x.done).length;
+  return listRow("#3b290f",pc.emoji,E(pc.name),tot?`${done} of ${tot} papers done · Terms 1–4`:"No papers added yet · Terms 1–4",`openPaperCourse('${pc.id}')`);
+ }).join("");
+ return `<div class="lbl">${E(c.flag||"")} ${E(gLabel(c,p.grade))} · ${E(c.name)} · ${E(LANGS[p.lang]||"")}</div><div class="rows" style="padding-top:0">${rows}</div><div style="padding:.4rem 1.1rem 1rem"><button class="btn btn-secondary" style="width:100%" onclick="qlStartOnboarding()">Change grade, country or subjects</button></div>`;
+};
+window.openPaperCourse=function(id){
+ const pc=(data.paperCourses||[]).find(x=>x.id===id);if(!pc)return;
+ const terms=[1,2,3,4].map(t=>{
+  const ps=pc.papers.filter(p=>p.term===t);
+  const rows=ps.length?ps.map(p=>`<div class="pp-row ${p.done?"done":""}"><button class="pp-chk" onclick="togglePaper('${pc.id}','${p.id}')" aria-label="Mark done">${p.done?"✓":""}</button><div class="pp-t">${E(p.title)}</div><a class="pp-a" href="${E(p.url)}" target="_blank" rel="noopener">Paper</a>${p.memo?`<a class="pp-a alt" href="${E(p.memo)}" target="_blank" rel="noopener">Memo</a>`:""}</div>`).join(""):`<p class="muted" style="margin:.1rem 0 .5rem">No Term ${t} papers added yet.</p>`;
+  return `<div class="lbl" style="padding:0;margin:1rem 0 .5rem">Term ${t}</div>${rows}`;
+ }).join("");
+ modal(`<div class="sh"><h2>${pc.emoji} ${E(pc.name)}</h2>${terms}<button class="btn btn-secondary" style="width:100%;margin-top:1rem" onclick="closeModal()">Close</button></div>`);
+};
+window.togglePaper=function(cid,pid){
+ const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!p)return;
+ p.done=!p.done;save();openPaperCourse(cid);
+ try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}
 };
 
-/* 5. Flashcard, quiz and lesson screens slide in when they open
-      (they already slide out through the normal page transition). */
-const slideIn=()=>{if(reduced())return;view.classList.remove("goR","goL");void view.offsetWidth;view.classList.add("goR");setTimeout(()=>view.classList.remove("goR"),340)};
-let _s=null,_q=null,_l=null;
-try{const f=renderSession;renderSession=function(){const n=session&&session!==_s;_s=session;f.apply(this,arguments);if(n)slideIn()}}catch(e){}
-try{const f=renderQuiz;renderQuiz=function(){const n=quizState&&quizState!==_q;_q=quizState;f.apply(this,arguments);if(n)slideIn()}}catch(e){}
-try{const f=renderLesson;renderLesson=function(){const n=LS&&LS!==_l;_l=LS;f.apply(this,arguments);if(n)slideIn()}}catch(e){}
-
-/* 6. Switching tabs inside the Study screen fades the new content in. */
-let lastTab=null;
-try{const f=renderStudy;renderStudy=function(){
- f.apply(this,arguments);
- const ch=view.querySelector(".chips");
- if(ch&&lastTab!==null&&lastTab!==exTab&&!reduced()){for(let n=ch.nextElementSibling;n;n=n.nextElementSibling){n.classList.remove("ql-in");void n.offsetWidth;n.classList.add("ql-in")}}
- lastTab=exTab;
-}}catch(e){}
+/* ---------- first-run hook: new accounts without a profile get the setup flow ---------- */
+const _route=window.route;
+if(typeof _route==="function")window.route=function(){
+ try{
+  if(typeof quickLearnUser!=="undefined"&&quickLearnUser&&typeof qlAccepted!=="undefined"&&qlAccepted&&!data.profile&&!$("ql-onb")){qlStartOnboarding();return}
+ }catch(_){}
+ return _route.apply(this,arguments);
+};
 })();
 </script>
-
 </body>
 </html>
