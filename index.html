@@ -4945,5 +4945,96 @@ window.renderHome=function(){
 })();
 </script>
 
+
+<!-- ===== QuickLearn two-screen layouts: My exams + Progress (same idea as the home page) ===== -->
+<style>
+body:has(.ex-pages),main#view:has(.ex-pages),body:has(.pg-pages),main#view:has(.pg-pages){overflow-x:clip!important}
+html:has(.ex-pages),html:has(.pg-pages){scroll-snap-type:y proximity}
+.shell:has(.ex-pages),.shell:has(.pg-pages),main#view:has(.ex-pages),main#view:has(.pg-pages){padding-bottom:0}
+.ex1,.pg1,.ex2,.pg2{scroll-snap-align:start}
+.ex1,.pg1{display:flex;flex-direction:column;min-height:calc(100dvh - 4.4rem);padding-bottom:.4rem}
+.ex2,.pg2{min-height:100dvh;padding-bottom:6rem;padding-top:calc(.9rem + env(safe-area-inset-top))}
+
+/* ---- My exams: blue block fills screen 1 ---- */
+.ex1>.chips{flex:none}
+.ex1>.qc{flex:1;display:flex;flex-direction:column;min-height:0}
+.ex1 .qc-g{flex:1;min-height:0}
+.ex1 .qc-g .qc-c{height:auto;min-height:2.4rem}
+.ex1 .qc-ac{margin-top:auto;margin-bottom:.2rem}
+.ex1>.qc>details.qc-rt{max-height:20vh;overflow:auto}
+.ex2>.lbl:first-child{margin-top:0}
+
+/* ---- Progress: blue block fills screen 1 ---- */
+.pg1>.pg-body{flex:1;display:flex;flex-direction:column;gap:.8rem;padding:0 1.1rem;min-height:0}
+.pg1 .panel{margin:0}
+.pg1 .panel.rad{flex:1.35;display:flex;align-items:center;justify-content:center;min-height:0}
+.pg1 .panel.rad svg{width:100%;height:100%;max-height:100%}
+.pg1 .panel.rad .empty{text-align:center}
+.pg1 .panel:not(.rad){flex:1;display:flex;flex-direction:column;justify-content:space-between;gap:.6rem}
+.pg1 .spark{height:clamp(64px,13vh,130px)}
+.pg2 .pg-body{padding:0 1.1rem}
+.pg2 .pg-body>.sp2:first-child{margin-top:0}
+.pg-hint{align-self:center}
+html[data-focus] .ex1,html[data-focus] .pg1{min-height:0}
+</style>
+<script>
+(function(){
+const CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+function hint(label,sel){
+  const b=document.createElement("button");b.className="hp-hint pg-hint";
+  b.innerHTML="<span>"+label+"</span>"+CHEV;
+  b.addEventListener("click",()=>document.querySelector(sel)?.scrollIntoView({behavior:"smooth",block:"start"}));
+  return b;
+}
+function buildExams(v){
+  const qc=v.querySelector(":scope > .qc");
+  if(!qc||v.querySelector(".ex-pages"))return;
+  const kids=[...v.children],i=kids.indexOf(qc);
+  if(i<0)return;
+  const first=kids.slice(0,i+1),rest=kids.slice(i+1);
+  if(!rest.length)return;
+  const wrap=document.createElement("div");wrap.className="ex-pages";
+  const p1=document.createElement("section");p1.className="ex1";
+  const p2=document.createElement("section");p2.className="ex2";
+  const grid=qc.querySelector(".qc-g");
+  if(grid){const weeks=Math.max(1,Math.round((grid.children.length-7)/7));
+    grid.style.gridTemplateRows="auto repeat("+weeks+",minmax(2.4rem,1fr))"}
+  first.forEach(e=>p1.appendChild(e));
+  p1.appendChild(hint("Study","#view .ex2"));
+  rest.forEach(e=>p2.appendChild(e));
+  wrap.append(p1,p2);v.prepend(wrap);
+}
+function buildProgress(v){
+  const rad=v.querySelector(".panel.rad");
+  if(!rad||v.querySelector(".pg-pages"))return;
+  const body=rad.parentElement,head=v.querySelector(":scope > .kh");
+  if(!body||body.parentElement!==v)return;
+  const panels=[...body.children].filter(e=>e.classList.contains("panel")&&!e.classList.contains("sp2"));
+  const subjects=[...body.children].filter(e=>e.classList.contains("sp2"));
+  const wrap=document.createElement("div");wrap.className="pg-pages";
+  const p1=document.createElement("section");p1.className="pg1";
+  const p2=document.createElement("section");p2.className="pg2";
+  const b1=document.createElement("div");b1.className="pg-body";
+  panels.forEach(e=>b1.appendChild(e));
+  if(head)p1.appendChild(head);
+  p1.appendChild(b1);
+  if(subjects.length){
+    p1.appendChild(hint("Subjects","#view .pg2"));
+    const b2=document.createElement("div");b2.className="pg-body";
+    subjects.forEach(e=>b2.appendChild(e));
+    p2.appendChild(b2);wrap.append(p1,p2);
+  }else{p1.style.minHeight="0";wrap.append(p1)}
+  body.remove();
+  v.prepend(wrap);
+}
+function run(){
+  const v=document.getElementById("view");if(!v)return;
+  try{buildExams(v);buildProgress(v)}catch(e){console.error("two-screen layout",e)}
+}
+const v=document.getElementById("view");
+if(v)new MutationObserver(run).observe(v,{childList:true});
+run();
+})();
+</script>
 </body>
 </html>
