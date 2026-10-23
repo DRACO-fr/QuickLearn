@@ -5081,10 +5081,10 @@ function hub(cc,g,s,t){
  if(cc==="ZA"){
   if(+g===12){
    const n=["Look under the Feb/March section — supplementary and control papers.","Look under the May/June section.","Trial exams are set by each province. Try your provincial site.","Look under the November NSC section."][t-1];
-   const l=[["Open DBE past papers",DBE]]; if(t===3)l.push(["Search provincial trials",gs(q+" trial preparatory site:gov.za OR site:wcedeportal.co.za")]);
-   return {src:"Dept. of Basic Education",note:n,links:l};
+   const l=[["allpastpapers.com",gs("site:allpastpapers.com "+q)],["DBE official page",DBE]]; if(t===3)l.push(["Search provincial trials",gs(q+" trial preparatory site:gov.za OR site:wcedeportal.co.za")]);
+   return {src:"allpastpapers.com",note:n,links:l};
   }
-  return {src:"Provincial education departments",note:"Papers below Grade 12 are set by provinces and schools.",links:[["Search official sites",gs(q+" site:gov.za OR site:wcedeportal.co.za")]]};
+  return {src:"allpastpapers.com",note:"Papers below Grade 12 are set by provinces and schools.",links:[["allpastpapers.com",gs("site:allpastpapers.com "+q)]]};
  }
  if(cc==="GB")return {src:"Exam boards",note:"Boards publish by exam series, not school term.",links:[["AQA papers","https://www.aqa.org.uk/find-past-papers-and-mark-schemes"],["Edexcel papers","https://qualifications.pearson.com/en/support/support-topics/exams/past-papers.html"],["OCR papers","https://www.ocr.org.uk/qualifications/past-paper-finder/"]]};
  if(cc==="US")return {src:"College Board / NY Regents",note:"There is no national paper set. AP and Regents are the official ones.",links:[["NY Regents exams","https://www.nysedregents.org/"],["AP practice","https://apstudents.collegeboard.org/exam-practice"],["Search",gs(q)]]};
@@ -5233,13 +5233,19 @@ Find the best match for each of these 4 school terms, preferring the most recent
 ${c.terms.map((x,i)=>(i+1)+". "+x).join("\n")}
 Rules: official sources only (government education departments or official exam boards). The url must be a DIRECT link to a PDF file that you actually saw in the search results. Never guess, construct or edit a URL. If you did not see a real PDF link for a term, use null.
 Return ONLY a JSON array with no markdown and no commentary: [{"term":1,"url":"https://...pdf" or null,"year":2024,"source":"site name"}, ...one item per term]`;
- const raw=await askWeb(prompt);
+ const zaPrompt=`Use Google Search with the operator site:allpastpapers.com to find South African past exam papers for ${c.gl} ${p.grade}, subject "${sub}". Language: ${p.lang} (use the ${p.lang} version if one exists, otherwise English).
+Find the best match for each of these 4 school terms, preferring the most recent year available:
+${c.terms.map((x,i)=>(i+1)+". "+x).join("\n")}
+Rules: only links on allpastpapers.com that you actually saw in the search results. A direct PDF link is best, otherwise the paper's page on that site. Never guess, construct or edit a URL. If you did not see one for a term, use null.
+Return ONLY a JSON array with no markdown and no commentary: [{"term":1,"url":"https://allpastpapers.com/..." or null,"year":2024,"source":"allpastpapers.com"}, ...one item per term]`;
+ const raw=await askWeb(p.country==="ZA"?zaPrompt:prompt);
  const a=raw.indexOf("["),b=raw.lastIndexOf("]");if(a<0||b<a)return 0;
  let arr;try{arr=JSON.parse(raw.slice(a,b+1))}catch(e){return 0}
  let got=0;
  for(const x of arr){
   const it=items.find(i=>i.term===+x.term);
   if(!it||!x.url||!/^https:\/\//i.test(x.url))continue;
+  if(p.country==="ZA"&&!/^https:\/\/([\w-]+\.)*allpastpapers\.com\//i.test(x.url))continue;
   const st=await grab(it,x.url);if(st==="bad")continue;
   patch(s=>{s.found=s.found||{};s.found[it.key]={url:x.url,year:x.year||"",source:x.source||"",state:st}});got++;
  }
