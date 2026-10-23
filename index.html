@@ -4821,5 +4821,129 @@ if(typeof oldRenderHome==="function")window.renderHome=function(){
 })();
 </script>
 
+<!-- ===== QuickLearn home redesign: two-page minimal home ===== -->
+<style>
+/* snapping works on the real viewport only when nothing in between is a scroll container */
+body:has(.home-pages),main#view:has(.home-pages){overflow-x:clip!important}
+html:has(.home-pages){scroll-snap-type:y proximity}
+.shell:has(.home-pages){padding-bottom:0}
+main#view:has(.home-pages){padding-bottom:0}
+
+.home-pages{display:block}
+.hp1,.hp2{scroll-snap-align:start}
+.hp1{display:flex;flex-direction:column;gap:.9rem;min-height:calc(100dvh - 4.4rem);padding-bottom:.6rem}
+.hp1>:not(.kh){margin-left:1.1rem;margin-right:1.1rem}
+.hp1 .kh.home{background:none!important;flex-wrap:nowrap;padding-bottom:.2rem}
+.hp1 .sp{margin-top:.2rem;margin-bottom:0;width:auto}
+
+/* red: circular quick actions */
+.hp-qa{display:grid!important;grid-template-columns:repeat(4,1fr);gap:.4rem;padding:.6rem 0 .2rem!important;overflow:visible!important;width:auto}
+.hp-qa button{flex-direction:column!important;align-items:center;justify-content:flex-start;gap:.55rem;padding:0!important;min-width:0;font-size:.74rem!important;font-weight:500;color:#cdb8a9!important;white-space:nowrap}
+.hp-qa button::after{display:none!important}
+.hp-qa i.dv{display:none!important}
+.hp-qa .c{display:grid!important;place-items:center;width:3.7rem;height:3.7rem;border-radius:50%;background:#261a12!important;border:1px solid #4d3627;transition:transform .15s,border-color .2s}
+.hp-qa .c svg{width:1.55rem;height:1.55rem}
+.hp-qa button:active .c{transform:scale(.9);border-color:#e29a2d}
+
+/* yellow: fills the rest of the first screen */
+.hp-mid{flex:1;display:flex;flex-direction:column;gap:.8rem;min-height:0}
+.hp-mid>*{margin:0!important}
+.hp-mid #qlRecordLessonBtn{margin:0!important;width:100%}
+.hp-mid .qs-card{flex:1 1 auto;justify-content:space-between;gap:1rem;padding:1.15rem 1.1rem}
+.hp-mid .qs-n{font-size:2.6rem}
+.hp-mid .qs-fl{font-size:3rem}
+.hp-mid .qs-wk i{min-height:3.1rem}
+.qs-bar{height:.4rem;border-radius:99px;background:#ffffff1c;overflow:hidden}
+.qs-bar i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,#ff8a3d,#ffb15f)}
+.qs-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem}
+.qs-stats>*{border:0;background:#ffffff12;border-radius:.9rem;padding:.65rem .3rem;display:flex;flex-direction:column;align-items:center;gap:.1rem;color:#fff;font:inherit;cursor:pointer}
+.qs-stats b{font-family:var(--font-display);font-size:1.25rem;font-weight:800;color:#ffb15f}
+.qs-stats span{font-size:.68rem;color:#e8c9b0}
+.hp-mid .qt-link{align-self:center;background:none;border:1px solid #4d3627;border-radius:999px;padding:.55rem 1.1rem;color:#cdb8a9;font-size:.85rem}
+.hp-mid .qt-card{margin:0}
+.hp-hint{align-self:center;display:flex;flex-direction:column;align-items:center;gap:.1rem;background:none;border:0;color:#a68f80;font:inherit;font-size:.74rem;cursor:pointer;padding:.2rem .8rem}
+.hp-hint svg{width:1.3rem;height:1.3rem;animation:hpBob 1.8s ease-in-out infinite}
+@keyframes hpBob{50%{transform:translateY(4px)}}
+@media (prefers-reduced-motion:reduce){.hp-hint svg{animation:none}}
+
+/* blue: second page */
+.hp2{min-height:100dvh;padding-bottom:6rem}
+.hp2 .chips{padding-top:calc(1.4rem + env(safe-area-inset-top));padding-bottom:.9rem}
+.hp2 .viewall{position:static;margin:.6rem auto 0}
+
+/* light theme */
+html[data-theme="light"] .hp-qa .c{background:#fff!important;border-color:#ebe0d8}
+html[data-theme="light"] .hp-qa button{color:#22100b!important}
+html[data-theme="light"] .hp-mid .qt-link{border-color:#ebe0d8;color:#826d5f}
+html[data-theme="light"] .hp-hint{color:#826d5f}
+
+/* focus mode: no streak card, so no forced full-height page */
+html[data-focus] .hp1{min-height:0}
+html[data-focus] .hp-hint{display:none}
+</style>
+<script>
+(function(){
+const CHEV='<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>';
+window.HP={
+  down(){document.querySelector(".hp2")?.scrollIntoView({behavior:"smooth",block:"start"})},
+  go(tab){homeTab=tab==="due"?"due":"files";renderHome();requestAnimationFrame(()=>document.querySelector(".hp2")?.scrollIntoView({block:"start"}))}
+};
+function build(){
+  const v=document.getElementById("view");
+  const head=v&&v.querySelector(".kh.home");
+  if(!head||v.querySelector(".home-pages"))return;
+  const kids=[...v.children];
+  const sp=head.querySelector(".sp"), qa=head.querySelector(".qa");
+  const rec=v.querySelector("#qlRecordLessonBtn");
+  const card=kids.find(e=>e.classList.contains("qs-card"));
+  const plan=kids.find(e=>e.classList.contains("qt-card")||e.classList.contains("qt-link"));
+  const chips=kids.find(e=>e.classList.contains("chips"));
+  const rows=kids.find(e=>e.classList.contains("rows"));
+  const more=kids.find(e=>e.classList.contains("viewall"));
+
+  if(card){
+    let n=0,pct=0,due=0,decks=0,xp=0;
+    try{n=+((card.querySelector(".qs-n")?.textContent.match(/\d+/)||[0])[0]);}catch(e){}
+    const last=[...card.querySelectorAll(".qs-s")].pop();
+    const m=last&&last.textContent.match(/(\d+) to the (\d+)-day/);
+    if(m)pct=Math.max(4,Math.round((+m[2]-+m[1])/+m[2]*100));
+    try{due=dueCards().length;decks=data.decks.length;xp=data.game.xp||0;}catch(e){}
+    const bar=document.createElement("div");bar.className="qs-bar";bar.innerHTML='<i style="width:'+pct+'%"></i>';
+    const stats=document.createElement("div");stats.className="qs-stats";
+    stats.innerHTML='<button onclick="event.stopPropagation();HP.go(\'due\')"><b>'+due+'</b><span>Due today</span></button>'
+      +'<button onclick="event.stopPropagation();HP.go(\'files\')"><b>'+decks+'</b><span>Decks</span></button>'
+      +'<div style="cursor:default"><b>⚡ '+xp+'</b><span>XP</span></div>';
+    const wk=card.querySelector(".qs-wk");
+    if(wk){wk.after(bar);bar.after(stats);}else{card.append(bar,stats);}
+    if(last)card.append(last);
+  }
+
+  const wrap=document.createElement("div");wrap.className="home-pages";
+  const p1=document.createElement("section");p1.className="hp1";
+  const p2=document.createElement("section");p2.className="hp2";
+  const mid=document.createElement("div");mid.className="hp-mid";
+  const hint=document.createElement("button");hint.className="hp-hint";hint.setAttribute("onclick","HP.down()");
+  hint.innerHTML='<span>Your files</span>'+CHEV;
+
+  if(qa)qa.classList.add("hp-qa");
+  [rec,card,plan].forEach(e=>e&&mid.appendChild(e));
+  p1.appendChild(head);
+  if(sp)p1.appendChild(sp);
+  if(qa)p1.appendChild(qa);
+  p1.append(mid,hint);
+  [chips,rows,more].forEach(e=>e&&p2.appendChild(e));
+  wrap.append(p1,p2);
+  v.prepend(wrap);
+}
+const prev=window.renderHome;
+window.renderHome=function(){
+  const keep=document.querySelector(".home-pages")?window.scrollY:null;
+  prev.apply(this,arguments);
+  try{build();}catch(e){console.error("home layout",e)}
+  if(keep!=null)window.scrollTo(0,keep);
+};
+})();
+</script>
+
 </body>
 </html>
