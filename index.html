@@ -1126,7 +1126,8 @@ function load(){
       examSchedule:sched, subjectScores:d.subjectScores||{}, studyFreq:d.studyFreq||{},
       game:Object.assign({ level:1, xp:0, day:"", base:0, conquered:0, coins:0 }, d.game||{}),
       reviewLog:d.reviewLog||{}, courses:d.courses||{}, profile:d.profile||null, paperCourses:d.paperCourses||[],
-      mascot:Object.assign({ name:"", asked:0, worn:{} }, d.mascot||{})
+      mascot:Object.assign({ name:"", asked:0, worn:{} }, d.mascot||{}),
+      maps:d.maps||{}, perf:d.perf||{events:[],attempts:[]}
     };
   }catch{ return structuredClone(EMPTY); }
 }
@@ -2984,7 +2985,7 @@ function newFolderSheet(){
   setTimeout(() => document.getElementById("nf")?.focus(), 320);
 }
 let _prevH = "#/", _sk;
-const depthOf = h => /^#\/(deck|folder)\/|^#\/(level|course)/.test(h) ? 2 : 1;
+const depthOf = h => /^#\/(deck|folder|map)\/|^#\/(level|course)/.test(h) ? 2 : 1;
 const _tabIdx = x => x==="#/"||x.startsWith("#/create") ? 0 : x.startsWith("#/search") ? 1 : x.startsWith("#/library") ? 2 : x.startsWith("#/study") ? 3 : -1;
 let _en;
 function route(){
@@ -3001,6 +3002,7 @@ function route(){
     else if(h.startsWith("#/study")) renderStudy();
     else if(h.startsWith("#/level")) renderLevel();
     else if(h.startsWith("#/course/")) renderCourse(h.split("/")[2]);
+    else if(h.startsWith("#/map/")) LI.renderMap(h.slice(6));
     else if(h.startsWith("#/progress")) view.innerHTML = hdr("Progress") + `<div style="padding:0 1.1rem">${renderAnalytics()}</div>`;
     else renderHome();
     window.scrollTo(0, 0);
@@ -3014,7 +3016,7 @@ function route(){
   const stag = changed || wasSub;
   const prevH0 = _prevH;
   _prevH = h; clearTimeout(_sk);
-  view.className = cls; document.querySelector("nav.bottom").style.display = /^#\/(deck|level|course)/.test(h) ? "none" : "";
+  view.className = cls; document.querySelector("nav.bottom").style.display = /^#\/(deck|level|course|map)/.test(h) ? "none" : "";
   if(/^#\/(library|folder\/)/.test(h)){
     view.innerHTML = '<div class="kh"><h1>&nbsp;</h1></div>' + '<div class="sk"></div>'.repeat(6);
     _sk = setTimeout(draw, 650);
@@ -3079,15 +3081,18 @@ function renderStudy(){
   let body;
   if(exTab==="prep") body=examPrepBody();
   else if(exTab==="papers") body=window.papersBody();
+  else if(exTab==="insights") body=LI.renderInsights();
+  else if(exTab==="forgotten") body=LI.renderForgotten();
   else body=`${examTimeline(withExam,has)}
     <div class="lbl">Study</div><div class="rows" style="padding-top:0">
     ${dueNow.length?listRow("#3b290f",IC.card,`${dueNow.length} card${dueNow.length===1?"":"s"} due`,has?"for your closest exam":"today","startSession(window.__dueNowCards,'Study all due cards','#/study')"):`<div class="empty2" style="padding:1.5rem 1rem"><p>All caught up 🎉</p></div>`}
     ${deferred.length?listRow("#37261b","⏭️",`${deferred.length} deferred`,"Study them anyway","startSession(window.__deferredCards,'Deferred subjects','#/study')"):""}
+    ${(dueNow.length||deferred.length||LI.forgotten().length)?listRow("#3b290f","🔀","Smart mixed review","Due, forgotten & repeat-mistake cards from different chapters","LI.smartReview()"):""}
     ${has?listRow("#40330f",IC.map,"Predict exam & study plan","Ask Gemini how to prioritize","getStudyAdvice()"):""}
     ${hardCards().length?listRow("#3a1d28","🔥",`${hardCards().length} hard card${hardCards().length===1?"":"s"}`,"Cards you miss or flagged · practice them","startHardSession('#/study')"):""}
     <div id="studyAdvice"></div>
     ${byDeck.map(x=>listRow("#4a1d12",IC.doc,esc(x.deck.title),x.due+" due",`studyDue('${x.deck.id}')`)).join("")}</div>`;
-  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("prep","🏫 Exam courses")}${chip("papers","📄 My papers")}</div>`+body;
+  view.innerHTML=topRow()+`<div class="chips" style="padding-top:.3rem">${chip("mine","⭐ My exams")}${chip("insights","📊 Insights")}${chip("forgotten","♻️ Forgotten"+(LI.forgotten().length?" · "+LI.forgotten().length:""))}${chip("prep","🏫 Exam courses")}${chip("papers","📄 My papers")}</div>`+body;
 }
 
 /* ---- Deck = note page ---- */
@@ -3109,7 +3114,7 @@ function quizDeck(id){if(deckCards(id).length<4){toast("Add at least 4 flashcard
 function aiDeck(id,kind){if(!deckNotes(id).length){toast("Add a note first");return;}aiAct(id,kind);}
 let blurtingInterval=null, blurtingRemaining=0, blurtingSection="";
 function studyMethodsSheet(id){
-  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob method-card" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card course-method" onclick="closeModal();go('#/course/${id}')"><span style="font-size:1.5rem">🎓</span><span><b>Course learning</b><small style="display:block;color:#aaa;margin-top:.2rem">Learn the entire note in bite-size lessons</small></span><span style="margin-left:auto">→</span></button><div class="study-tip"><span class="tip-spark">✦</span><b>Study tip</b><p>Try recalling an idea before rereading it. The effort to retrieve it helps strengthen memory.</p></div></div>`);
+  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob method-card" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();go('#/map/${id}')"><span style="font-size:1.5rem">🗺️</span><span><b>Mind map</b><small style="display:block;color:#aaa;margin-top:.2rem">See how every idea connects, spot weak concepts, tap one for a mini-lesson</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card course-method" onclick="closeModal();go('#/course/${id}')"><span style="font-size:1.5rem">🎓</span><span><b>Course learning</b><small style="display:block;color:#aaa;margin-top:.2rem">Learn the entire note in bite-size lessons</small></span><span style="margin-left:auto">→</span></button><div class="study-tip"><span class="tip-spark">✦</span><b>Study tip</b><p>Try recalling an idea before rereading it. The effort to retrieve it helps strengthen memory.</p></div></div>`);
 }
 function startBlurtingSetup(id){
   const notes=deckNotes(id); if(!notes.length){toast("Add a note first");return;}
@@ -3327,7 +3332,7 @@ const heat=sid=>{const L=data.reviewLog||{};return `<div class="heat">${lastDays
 const metrics=sid=>{const cs=data.decks.filter(d=>d.subjectId===sid).flatMap(d=>deckCards(d.id)),L=data.reviewLog||{};let n=0,r=0;lastDays(30).forEach(d=>{const q=L[d]&&L[d].s[sid];if(q){n+=q.n;r+=q.r}});const ai=cs.length?Math.round(cs.reduce((a,c)=>a+(c.interval||0),0)/cs.length*10)/10:0;return `<div class="mx">${[["Cards",cs.length],["Due",cs.filter(c=>c.nextReview<=todayISO()).length],["Hard",cs.filter(isHard).length],["Reviews 30d",n],["Accuracy",n?Math.round(r/n*100)+"%":"–"],["Avg interval",ai+"d"]].map(a=>`<div><b>${a[1]}</b><small>${a[0]}</small></div>`).join("")}</div>`};
 function renderAnalytics(){const S=data.subjects;
   return `<div class="panel glowp rad">${S.length>=3?renderRadarSVG(S):`<div class="empty">Create at least 3 folders in Library to unlock your mastery radar.</div>`}</div>
-  <div class="panel glowp"><div class="lbl" style="margin:0 0 .3rem">30-day recall · all subjects</div>${spark()}${heat()}</div>`+
+  <div class="panel glowp"><div class="lbl" style="margin:0 0 .3rem">30-day recall · all subjects</div>${spark()}${heat()}</div>${LI.progressCard()}`+
   S.map((s,i)=>`<details class="panel sp2" style="animation-delay:${i*70}ms"><summary><b>${esc(s.name)}</b><span class="pbar"><u style="width:${masteryOf(s)}%"></u></span><em>${masteryOf(s)}%</em></summary><div class="lbl" style="margin:.8rem 0 .2rem">Recall trend</div>${spark(s.id)}<div class="lbl" style="margin:.6rem 0 .4rem">Daily activity</div>${heat(s.id)}${metrics(s.id)}<button class="btn btn-secondary" style="margin-top:.8rem;width:100%" onclick="startEvaluation('${s.id}')">Evaluate this subject</button></details>`).join("");}
 
 /* ---------- AI courses (Duolingo-style) ---------- */
@@ -5694,6 +5699,636 @@ if(typeof _route==="function")window.route=function(){
  }catch(_){}
  return _route.apply(this,arguments);
 };
+})();
+</script>
+<style id="li-css">
+/* ===== Learning intelligence: mind map, analytics, adaptive review ===== */
+:root{--li-green:#3ecf8e;--li-orange:#ff8a1f;--li-grey:#6f6258}
+.li-wrap{padding:0 1.1rem 7rem}
+.li-h{font-family:var(--font-display);font-size:1rem;margin:1.4rem 0 .6rem;display:flex;align-items:center;gap:.5rem}
+.li-h small{font-family:var(--font-sans);font-weight:400;color:var(--muted-fg);font-size:.78rem}
+.li-card{background:var(--surface);border:1px solid var(--border);border-radius:1.1rem;padding:.9rem 1rem;margin-bottom:.6rem}
+.li-tiles{display:grid;grid-template-columns:repeat(4,1fr);gap:.5rem;margin-top:.3rem}
+.li-tiles div{background:var(--surface);border:1px solid var(--border);border-radius:.9rem;padding:.6rem .3rem;text-align:center}
+.li-tiles b{display:block;font-family:var(--font-display);font-size:1.15rem}
+.li-tiles small{color:var(--muted-fg);font-size:.68rem}
+.li-next{display:flex;gap:.8rem;align-items:flex-start;width:100%;text-align:left;color:var(--foreground);font:inherit;background:linear-gradient(135deg,color-mix(in oklab,var(--primary) 26%,var(--surface)),var(--surface));border:1px solid color-mix(in oklab,var(--primary) 45%,var(--border));border-radius:1.1rem;padding:.9rem 1rem;margin:0 0 .6rem;cursor:pointer}
+.li-next.alt{background:var(--surface);border-color:var(--border)}
+.li-next .ic{font-size:1.5rem;line-height:1}
+.li-next b{display:block;font-size:.95rem}
+.li-next small{display:block;color:var(--muted-fg);margin-top:.2rem;line-height:1.4;font-size:.8rem}
+.li-next .go{margin-left:auto;align-self:center;font-weight:700;color:var(--primary)}
+.li-homebox{padding:0 1.1rem;margin-top:.4rem}
+.li-bar{height:.5rem;border-radius:99px;background:var(--surface-2);overflow:hidden;margin:.45rem 0 .3rem}
+.li-bar i{display:block;height:100%;border-radius:99px;background:var(--li-green)}
+.li-bar i.mid{background:var(--warning)}.li-bar i.low{background:var(--li-orange)}
+.li-top{display:flex;justify-content:space-between;gap:.6rem;align-items:baseline}
+.li-top b{font-size:.92rem;overflow-wrap:anywhere}
+.li-top em{font-style:normal;font-weight:700;font-family:var(--font-display)}
+.li-top em.g{color:var(--li-green)}.li-top em.m{color:var(--warning)}.li-top em.l{color:var(--li-orange)}
+.li-sub{color:var(--muted-fg);font-size:.76rem;line-height:1.45}
+.li-acts{display:flex;gap:.45rem;margin-top:.55rem;flex-wrap:wrap}
+.li-acts button,.li-mini{border:1px solid var(--border);background:var(--surface-2);color:var(--foreground);border-radius:999px;padding:.38rem .8rem;font:inherit;font-size:.78rem;cursor:pointer}
+.li-acts button.p,.li-mini.p{background:var(--primary);color:var(--primary-fg);border-color:transparent}
+.li-acts button.o,.li-mini.o{background:var(--li-orange);color:#241100;border-color:transparent;font-weight:700}
+.li-series{display:flex;gap:3px;align-items:flex-end;height:26px;margin-top:.4rem}
+.li-series i{flex:1;max-width:22px;border-radius:3px 3px 0 0;background:var(--li-green);min-height:3px;opacity:.9}
+.li-series i.mid{background:var(--warning)}.li-series i.low{background:var(--li-orange)}
+.li-cal{display:grid;grid-template-columns:4.2rem 1fr 3rem;gap:.5rem;align-items:center;font-size:.8rem;margin:.35rem 0}
+.li-cal .tr{position:relative;height:.7rem;border-radius:99px;background:var(--surface-2)}
+.li-cal .tr i{position:absolute;left:0;top:0;bottom:0;border-radius:99px;background:var(--primary)}
+.li-cal .tr u{position:absolute;top:-3px;bottom:-3px;width:2px;background:var(--foreground);opacity:.6}
+.li-note{border-left:3px solid var(--primary);padding:.45rem .7rem;margin:.6rem 0 0;background:var(--surface-2);border-radius:0 .7rem .7rem 0;font-size:.82rem;line-height:1.45}
+.li-note.warn{border-color:var(--li-orange)}
+.li-chip{display:inline-block;border:1px solid var(--border);background:var(--surface-2);color:var(--foreground);border-radius:999px;padding:.3rem .7rem;margin:.15rem .25rem .15rem 0;font:inherit;font-size:.78rem;cursor:pointer}
+.li-conf{display:flex;gap:.4rem;align-items:center;justify-content:center;margin:.8rem 0 0;flex-wrap:wrap}
+.li-conf span{font-size:.75rem;color:var(--muted-fg);width:100%;text-align:center}
+.li-conf button{border:1px solid var(--border);background:var(--surface-2);color:var(--foreground);border-radius:999px;padding:.45rem .9rem;font:inherit;font-size:.82rem;cursor:pointer}
+.li-conf button.on{background:var(--primary);color:var(--primary-fg);border-color:transparent}
+/* map */
+.li-mapbox{position:relative;margin:0 1.1rem;border:1px solid var(--border);border-radius:1.2rem;background:radial-gradient(circle at 50% 40%,color-mix(in oklab,var(--primary) 8%,var(--surface)),var(--surface));overflow:hidden}
+.li-mapbox svg{display:block;width:100%;height:60vh;height:60dvh;touch-action:none;user-select:none;-webkit-user-select:none;cursor:grab}
+.li-mapbox .zoom{position:absolute;right:.6rem;bottom:.6rem;display:flex;flex-direction:column;gap:.35rem}
+.li-mapbox .zoom button{width:2.2rem;height:2.2rem;border-radius:50%;border:1px solid var(--border);background:var(--surface);color:var(--foreground);font-size:1.1rem;cursor:pointer}
+.li-node{cursor:pointer}
+.li-node circle{stroke-width:3;transition:r .2s}
+.li-node.mastered circle{fill:color-mix(in oklab,var(--li-green) 82%,#000);stroke:var(--li-green)}
+.li-node.weak circle{fill:color-mix(in oklab,var(--li-orange) 82%,#000);stroke:var(--li-orange)}
+.li-node.new circle{fill:var(--surface-2);stroke:var(--li-grey);stroke-dasharray:4 3}
+.li-node.root circle{fill:var(--primary);stroke:color-mix(in oklab,var(--primary) 60%,#fff)}
+.li-node text{fill:var(--foreground);font-size:13px;font-family:var(--font-sans);text-anchor:middle;paint-order:stroke;stroke:var(--background);stroke-width:3.5px;stroke-linejoin:round;pointer-events:none}
+.li-node text.i{font-size:14px;stroke:none;fill:#fff;font-weight:700}
+html[data-motion="full"] .li-node.weak .pulse{animation:lipulse 2s ease-out infinite}
+@keyframes lipulse{0%{r:24;opacity:.7}100%{r:40;opacity:0}}
+.li-node .pulse{fill:none;stroke:var(--li-orange);stroke-width:2;opacity:0}
+.li-edge{stroke:var(--border);stroke-width:2;fill:none}
+.li-edge.x{stroke-dasharray:5 5;opacity:.7;stroke-width:1.5}
+.li-legend{display:flex;gap:.9rem;flex-wrap:wrap;margin:.7rem 1.1rem 0;font-size:.76rem;color:var(--muted-fg)}
+.li-legend i{display:inline-block;width:.7rem;height:.7rem;border-radius:50%;margin-right:.3rem;vertical-align:-1px}
+.li-pill{display:inline-block;border-radius:999px;padding:.2rem .65rem;font-size:.72rem;font-weight:700}
+.li-pill.mastered{background:color-mix(in oklab,var(--li-green) 25%,transparent);color:var(--li-green)}
+.li-pill.weak{background:color-mix(in oklab,var(--li-orange) 25%,transparent);color:var(--li-orange)}
+.li-pill.new{background:var(--surface-2);color:var(--muted-fg)}
+.li-sec{margin:.9rem 0 .25rem;font-size:.72rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--muted-fg)}
+.li-txt{font-size:.9rem;line-height:1.55}
+.li-ex{background:var(--surface-2);border-radius:.8rem;padding:.55rem .75rem;margin:.3rem 0;font-size:.86rem;line-height:1.5}
+.li-sheet{max-height:80vh;overflow:auto}
+.li-mq .quiz-opt{margin-bottom:.45rem}
+</style>
+<script>
+/* =====================================================================
+   LEARNING INTELLIGENCE  (mind map · performance analytics · adaptive
+   scheduling · forgotten knowledge).  Everything is stored on-device in
+   data.maps and data.perf and works offline; AI only enriches the map and
+   the mini-lessons when a Gemini key is available.
+   ===================================================================== */
+(function(){
+"use strict";
+const LI = window.LI = {};
+const P = () => { const p = data.perf = data.perf || {}; p.events = p.events || []; p.attempts = p.attempts || []; return p; };
+const MAPS = () => (data.maps = data.maps || {});
+const clamp = (x,a,b) => Math.max(a, Math.min(b, x));
+const deckOf = id => data.decks.find(d => d.id === id);
+const dtitle = id => (deckOf(id) || {}).title || "Deleted note";
+const subjOfDeck = id => { const d = deckOf(id); return d && d.subjectId; };
+const shuffle = a => { a = a.slice(); for(let i=a.length-1;i>0;i--){ const j=Math.floor(Math.random()*(i+1)); [a[i],a[j]]=[a[j],a[i]]; } return a; };
+const plural = (n,w) => n + " " + w + (n === 1 ? "" : "s");
+const isoLocal = t => new Date(t - new Date(t).getTimezoneOffset()*6e4).toISOString().slice(0,10);
+const slug = s => String(s).toLowerCase().replace(/[^a-z0-9\u00c0-\u024f]+/g,"-").replace(/^-|-$/g,"");
+const STOP = new Set("the and for that with this from have are was were will can not but has its which when what into than then them they their there these those also such more most some any each other about over under between through during before after your you our how why who".split(" "));
+const toks = s => (String(s||"").toLowerCase().match(/[a-z0-9\u00c0-\u024f]{3,}/g) || []).filter(w => !STOP.has(w));
+
+/* ---------------------------------------------------------------- memory model */
+// Retrievability: chance of recalling a card `t` days after its last review, given stability S
+// (S = days until recall falls to 90%).  Power-law forgetting curve.
+const retr = (t,S) => 1 / (1 + Math.max(0,t) / (9 * Math.max(.5,S)));
+const stabOf = c => c.stab || Math.max(1, c.interval || 1);
+const lastOf = c => c.lastReview || (c.nextReview ? addDays(c.nextReview, -Math.max(1, c.interval || 1)) : null);
+const recallNow = c => { const l = lastOf(c); return l ? retr(Math.max(0, dayDiff(l, todayISO())), stabOf(c)) : 1; };
+const wasKnown = c => {
+  const h = c.hist, goods = h ? h.reduce((a,b)=>a+b,0) : (c.repetitions || 0);
+  return goods >= 2 && (c.maxStab || c.interval || 1) >= 2 && !(h && h.length && h[h.length-1] === 0);
+};
+
+/* ---------------------------------------------------------------- event log */
+LI.log = e => { LI.__idx = null; const p = P(); e.t = Date.now(); p.events.push(e); if(p.events.length > 6000) p.events.splice(0, p.events.length - 6000); };
+LI.idx = () => {
+  const byCard = {}, byDeck = {};
+  P().events.forEach(e => { if(e.c) (byCard[e.c] = byCard[e.c] || []).push(e); if(e.d) (byDeck[e.d] = byDeck[e.d] || []).push(e); });
+  return { byCard, byDeck };
+};
+
+/* ---------------------------------------------------------------- scheduler */
+// Runs after the app's own rateCard(): replaces its fixed multipliers with a model that uses
+// real performance — how likely you were to remember (retrievability), the card's difficulty,
+// your confidence, and any exam date.
+LI.schedule = (before, c, r, conf) => {
+  const today = todayISO(), last = lastOf(before) || today;
+  const elapsed = Math.max(0, dayDiff(last, today));
+  const S0 = stabOf(before); let S = S0, D = before.diff || (before.struggle >= 3 ? 7 : 5);
+  const R = retr(elapsed, S0), gain = 1 + (1 - R) * 1.5;      // harder-to-recall successes teach more
+  const ok = r === "good" || r === "easy";
+  if(r === "again"){ S = Math.max(.6, S0 * .25); D = Math.min(10, D + 1); }
+  else if(r === "hard"){ S = S0 * 1.15; D = Math.min(10, D + .4); }
+  else if(r === "good"){ S = S0 * (1.6 + (10 - D) * .13) * gain; D = Math.max(1, D - .15); }
+  else { S = S0 * (2.4 + (10 - D) * .17) * gain; D = Math.max(1, D - .4); }
+  if(conf === "sure" && !ok){ S *= .6; D = Math.min(10, D + .5); }          // confident but wrong: back sooner
+  if(conf === "guess" && ok){ S = S0 + (S - S0) * .4; }                      // lucky guess: don't trust it
+  if(conf === "sure" && r === "easy"){ S *= 1.1; }
+  S = clamp(S, .6, 365);
+  let interval = r === "again" ? 0 : Math.max(1, Math.round(S));
+  if(interval && isHard(c)) interval = Math.min(interval, c.manualHard ? 3 : 2);
+  const sid = subjOfDeck(c.deckId), ed = sid ? nextExamDays(sid) : null;
+  if(interval && ed != null && ed > 0) interval = Math.max(1, Math.min(interval, Math.floor(ed / 2)));
+  if(interval >= 8) interval = Math.max(1, Math.round(interval * (1 + (Math.random() - .5) * .1)));
+  c.stab = S; c.diff = D; c.lastReview = today; c.reviews = (before.reviews || 0) + 1;
+  c.maxStab = Math.max(before.maxStab || 0, S); c.hist = (before.hist || []).slice(-9).concat(ok ? 1 : 0);
+  c.interval = Math.max(1, interval); c.nextReview = addDays(today, interval);
+  return interval;
+};
+// A miss pulls the card — and the other cards on the same concept — back sooner.
+LI.bounce = c => {
+  const mp = MAPS()[c.deckId]; if(!mp) return;
+  const sib = LI.mapCards(c.deckId); const node = Object.keys(sib).find(k => sib[k].some(x => x.id === c.id)); if(!node) return;
+  const tm = addDays(todayISO(), 1);
+  sib[node].filter(x => x.id !== c.id && x.nextReview > tm).sort((a,b) => recallNow(a) - recallNow(b)).slice(0,3).forEach(x => { x.nextReview = tm; });
+};
+LI.onMiss = (c, conf) => {
+  c.nextReview = todayISO(); c.struggle = (c.struggle || 0) + 1; c.lapses = (c.lapses || 0) + 1;
+  c.stab = Math.max(.6, stabOf(c) * .5); c.diff = Math.min(10, (c.diff || 5) + (conf === "sure" ? 1 : .6));
+  c.lastReview = todayISO(); c.hist = (c.hist || []).slice(-9).concat(0);
+  if(c.struggle >= 3) c.autoHard = true;
+  LI.bounce(c);
+};
+const _rateCard = window.rateCard;
+window.rateCard = function(id, r){
+  const b = data.cards.find(c => c.id === id), snap = b ? { ...b } : null;
+  const out = _rateCard.apply(this, arguments);
+  const c = snap && data.cards.find(x => x.id === id); if(!c) return out;
+  const conf = LI.pending && LI.pending.cid === id ? LI.pending.conf : null; LI.pending = null;
+  LI.schedule(snap, c, r, conf);
+  LI.log({ c:id, d:c.deckId, ok:(r === "good" || r === "easy") ? 1 : 0, r:r[0], cf:conf || null, s:"card" });
+  if(r === "again" || (conf === "sure" && r === "hard")) LI.bounce(c);
+  save(); return out;
+};
+const _rate = window.rate;
+window.rate = function(r){
+  const s = session;
+  if(s && s.cards[s.idx]){
+    const card = s.cards[s.idx]; LI.pending = { cid:card.id, conf:s.conf || null };
+    s.rep = s.rep || {};
+    if(r === "hard" && !s.rep[card.id]){ s.rep[card.id] = 1; s.cards.splice(Math.min(s.cards.length, s.idx + 7), 0, card); }   // difficult cards come round again this session
+    s.conf = null;
+  }
+  return _rate.apply(this, arguments);
+};
+
+/* ---------------------------------------------------------------- confidence taps */
+const confHtml = (fn, cur) => `<div class="li-conf" data-nohap><span>How sure are you? (optional)</span>${[["sure","😎 Sure"],["unsure","🤔 Unsure"],["guess","🎲 Guess"]].map(o => `<button class="${cur === o[0] ? "on" : ""}" onclick="${fn}('${o[0]}',this)">${o[1]}</button>`).join("")}</div>`;
+LI.setConf = (v, el) => { if(!session) return; session.conf = session.conf === v ? null : v; el.parentNode.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === el && session.conf === v)); };
+LI.setQConf = (v, el) => { const q = quizState && quizState.questions[quizState.idx]; if(!q) return; q.conf = q.conf === v ? null : v; el.parentNode.querySelectorAll("button").forEach(b => b.classList.toggle("on", b === el && q.conf === v)); };
+const _renderSession = window.renderSession;
+window.renderSession = function(){
+  _renderSession.apply(this, arguments);
+  const s = session; if(!s || s.idx >= s.cards.length || s.flipped) return;
+  const fc = view.querySelector(".flashcard"); if(fc) fc.insertAdjacentHTML("afterend", confHtml("LI.setConf", s.conf));
+};
+
+/* ---------------------------------------------------------------- session builder: urgency + interleaving */
+LI.urgency = (c, mset) => {
+  const t = todayISO(), S = stabOf(c), R = recallNow(c);
+  const over = c.nextReview ? Math.max(0, dayDiff(c.nextReview, t)) : 0;
+  let u = (1 - R) * 50 + Math.min(20, over / Math.max(1, S) * 8) + hardScore(c) / 4 + ((c.diff || 5) - 5) * 2;
+  if(mset && mset.has(c.id)) u += 25;
+  const sid = subjOfDeck(c.deckId), ed = sid ? nextExamDays(sid) : null; if(ed != null && ed <= 7) u += 15 - ed;
+  if(!c.nextReview || c.nextReview <= t) u += 10;
+  return u;
+};
+// Most urgent first, but never two cards from the same chapter back-to-back when avoidable.
+LI.interleave = cards => {
+  const mset = new Set(LI.mistakes().map(m => m.c.id)), sc = new Map(cards.map(c => [c.id, LI.urgency(c, mset)]));
+  const q = {}; [...cards].sort((a,b) => sc.get(b.id) - sc.get(a.id)).forEach(c => (q[c.deckId] = q[c.deckId] || []).push(c));
+  const out = []; let last = null;
+  while(out.length < cards.length){
+    const ks = Object.keys(q).filter(k => q[k].length); let pick = ks.filter(k => k !== last); if(!pick.length) pick = ks;
+    pick.sort((a,b) => sc.get(q[b][0].id) - sc.get(q[a][0].id)); out.push(q[pick[0]].shift()); last = pick[0];
+  }
+  return out;
+};
+window.startSession = function(cards, title, back){
+  if(!cards || !cards.length) return;
+  session = { cards:LI.interleave(cards), idx:0, flipped:false, back, title, dueAtStart:dueCards().length, xp:0, reviewed:0, right:0, conq:0, conf:null };
+  renderSession();
+};
+LI.smartReview = (opts = {}) => {
+  const t = todayISO(); let pool;
+  if(opts.cards) pool = opts.cards;
+  else if(opts.forgottenOnly) pool = LI.forgotten().map(x => x.c);
+  else { const m = new Map(); dueCards().forEach(c => m.set(c.id, c)); LI.forgotten().forEach(x => m.set(x.c.id, x.c)); LI.mistakes().forEach(x => m.set(x.c.id, x.c)); pool = [...m.values()]; }
+  if(!pool.length){ toast("Nothing needs review right now 🎉"); return; }
+  const mset = new Set(LI.mistakes().map(m => m.c.id));
+  pool = pool.sort((a,b) => LI.urgency(b, mset) - LI.urgency(a, mset)).slice(0, opts.n || 25);
+  const decks = new Set(pool.map(c => c.deckId)).size;
+  startSession(pool, opts.title || (decks > 1 ? `Mixed review · ${decks} chapters` : "Smart review"), "#/study");
+};
+LI.practiceDeck = did => {
+  const cs = deckCards(did).sort((a,b) => LI.cardStrength(a) - LI.cardStrength(b)).slice(0, 15);
+  if(!cs.length){ toast("This note has no flashcards yet"); return; }
+  startSession(cs, dtitle(did), "#/study");
+};
+
+/* ---------------------------------------------------------------- forgotten knowledge */
+LI.forgotten = () => {
+  const t = todayISO();
+  return data.cards.filter(wasKnown).map(c => { const l = lastOf(c); if(!l) return null; const el = dayDiff(l, t), S = stabOf(c); return { c, el, S, R:retr(el, S) }; })
+    .filter(x => x && x.R < .7 && x.el >= 5).sort((a,b) => a.R - b.R);
+};
+LI.rescue = () => LI.smartReview({ forgottenOnly:true, title:"Forgotten knowledge", n:25 });
+
+/* ---------------------------------------------------------------- performance analytics */
+LI.cardStrength = c => {
+  const es = (LI.__idx || (LI.__idx = LI.idx())).byCard[c.id] || [], rec = es.slice(-6);
+  const R = recallNow(c); if(!rec.length) return (c.repetitions ? .55 : .35) * R + .1;
+  return .65 * ((rec.filter(e => e.ok).length + .5) / (rec.length + 1)) + .35 * R;
+};
+LI.topicStats = () => {
+  const { byDeck } = LI.idx(), out = [];
+  Object.keys(byDeck).forEach(did => {
+    if(!deckOf(did)) return; const es = byDeck[did], days = {};
+    es.forEach(e => { const k = isoLocal(e.t), x = days[k] = days[k] || { n:0, ok:0 }; x.n++; x.ok += e.ok ? 1 : 0; });
+    const series = Object.keys(days).sort().map(k => ({ day:k, acc:days[k].ok / days[k].n, n:days[k].n }));
+    const cf = es.filter(e => e.cf), sure = cf.filter(e => e.cf === "sure");
+    out.push({ did, title:dtitle(did), subj:subjectName(deckOf(did)), n:es.length, acc:es.filter(e => e.ok).length / es.length, series,
+      delta:series.length > 1 ? series[series.length-1].acc - series[series.length-2].acc : null,
+      sure:sure.length, sureWrong:sure.filter(e => !e.ok).length });
+  });
+  return out.sort((a,b) => a.acc - b.acc);
+};
+LI.calib = () => { const g = { sure:{n:0,ok:0}, unsure:{n:0,ok:0}, guess:{n:0,ok:0} }; P().events.forEach(e => { const x = e.cf && g[e.cf]; if(x){ x.n++; x.ok += e.ok ? 1 : 0; } }); return g; };
+LI.mistakes = () => {
+  const { byCard } = LI.idx(), out = [];
+  Object.keys(byCard).forEach(cid => {
+    const c = data.cards.find(x => x.id === cid); if(!c) return;
+    const es = byCard[cid], miss = es.filter(e => !e.ok); if(miss.length < 2) return;
+    const recMiss = es.slice(-4).filter(e => !e.ok).length;
+    if(!(recMiss >= 2 || (miss.length >= 3 && miss.length / es.length >= .5 && !es.slice(-3).every(e => e.ok)))) return;
+    const wc = {}; miss.forEach(e => { if(e.w){ const k = e.w.trim().toLowerCase(); (wc[k] = wc[k] || { n:0, txt:e.w }).n++; } });
+    const top = Object.values(wc).sort((a,b) => b.n - a.n)[0], same = top && top.n >= 2 ? top : null;
+    const twin = top ? data.cards.find(x => x.id !== cid && x.answer.trim().toLowerCase() === top.txt.trim().toLowerCase()) : null;
+    out.push({ c, miss:miss.length, total:es.length, same, twin });
+  });
+  return out.sort((a,b) => b.miss - a.miss);
+};
+const accCls = a => a >= .75 ? "g" : a >= .55 ? "m" : "l";
+const barCls = a => a >= .75 ? "" : a >= .55 ? "mid" : "low";
+
+/* ---------------------------------------------------------------- recommendations */
+LI.recommend = () => {
+  const out = [], ts = LI.topicStats(), mist = LI.mistakes(), fg = LI.forgotten(), due = dueCards(), cal = LI.calib();
+  if(mist.length){ const m = mist[0]; out.push({ score:76 + Math.min(14, mist.length * 3), ic:"🎯", title:"Fix a mistake you keep repeating",
+    why:`You've missed “${m.c.question.slice(0,60)}” ${m.miss} of ${m.total} times${m.same ? `, picking “${m.same.txt.slice(0,40)}” again and again` : ""}. A short targeted lesson beats more repetition.`, fn:`LI.fixMistake('${m.c.id}')` }); }
+  if(fg.length){ const avg = Math.round(fg.reduce((a,x) => a + x.R, 0) / fg.length * 100); out.push({ score:68 + Math.min(24, fg.length * 2), ic:"♻️", title:`Rescue ${plural(fg.length, "forgotten card")}`,
+    why:`You once knew these but haven't seen them for a while — estimated recall is now about ${avg}%.`, fn:"LI.rescue()" }); }
+  if(due.length){ const k = new Set(due.map(c => c.deckId)).size; let sc = 55 + Math.min(30, due.length);
+    const near = data.subjects.map(s => nextExamDays(s.id)).filter(d => d != null && d <= 7).sort((a,b) => a - b)[0]; if(near != null) sc += 15;
+    out.push({ score:sc, ic:"🔀", title:`Mixed review: ${plural(due.length, "card")} due`, why:`Combines ${plural(k, "chapter")}, hardest and most-forgotten first${near != null ? ` — an exam is ${near} day${near === 1 ? "" : "s"} away` : ""}.`, fn:"LI.smartReview()" }); }
+  const weak = ts.find(t => t.n >= 5 && t.acc < .65);
+  if(weak) out.push({ score:60 + (1 - weak.acc) * 40, ic:"📉", title:`Strengthen “${weak.title}”`, why:`Only ${Math.round(weak.acc * 100)}% correct over ${weak.n} answers — your weakest topic.`, fn:`LI.practiceDeck('${weak.did}')` });
+  if(cal.sure.n >= 4 && cal.sure.ok / cal.sure.n < .75){ const t = ts.slice().sort((a,b) => b.sureWrong - a.sureWrong)[0];
+    out.push({ score:66, ic:"🧭", title:"Calibrate your confidence", why:`When you felt “sure” you were right only ${Math.round(cal.sure.ok / cal.sure.n * 100)}% of the time${t && t.sureWrong ? ` (most often in “${t.title}”)` : ""}. Test yourself before rereading.`, fn:t && deckCards(t.did).length >= 4 ? `quizDeck('${t.did}')` : "LI.smartReview()" }); }
+  data.decks.forEach(d => { if(!deckNotes(d.id).length) return; const mp = MAPS()[d.id];
+    if(!mp) out.push({ score:34, ic:"🗺️", title:`Map “${d.title}”`, why:"See how its ideas connect and which ones are still weak.", fn:`go('#/map/${d.id}')` });
+    else { const w = LI.mapStats(d.id).nodes.filter(n => n.status === "weak").sort((a,b) => a.S - b.S)[0];
+      if(w) out.push({ score:58 + (1 - w.S) * 20, ic:"🟠", title:`Mini-lesson: ${w.label}`, why:`This concept in “${d.title}” is only ${Math.round(w.S * 100)}% secure.`, fn:`LI.lessonStart('${d.id}','${w.id}')` }); } });
+  if(!out.length){ out.push(data.cards.length ? { score:10, ic:"✅", title:"You're on track", why:"Nothing is overdue. Take a practice test to keep your edge.", fn:"go('#/library')" } : { score:10, ic:"📝", title:"Add your first note", why:"Notes become flashcards, mind maps and lessons.", fn:"notebookSheet()" }); }
+  return out.sort((a,b) => b.score - a.score);
+};
+const recCard = (r, alt) => `<button class="li-next${alt ? " alt" : ""}" onclick="${r.fn}"><span class="ic">${r.ic}</span><span><b>${esc(r.title)}</b><small>${esc(r.why)}</small></span><span class="go">›</span></button>`;
+
+/* ---------------------------------------------------------------- insights view */
+LI.renderInsights = () => {
+  LI.__idx = null;
+  const ev = P().events, ts = LI.topicStats(), cal = LI.calib(), mist = LI.mistakes(), fg = LI.forgotten(), rec = LI.recommend();
+  const wk = Date.now() - 30 * 864e5, e30 = ev.filter(e => e.t >= wk), acc30 = e30.length ? Math.round(e30.filter(e => e.ok).length / e30.length * 100) : null;
+  let h = `<div class="li-wrap"><div class="li-tiles"><div><b>${ev.length}</b><small>answers tracked</small></div><div><b>${acc30 == null ? "–" : acc30 + "%"}</b><small>accuracy 30d</small></div><div><b>${ts.filter(t => t.n >= 5 && t.acc < .65).length}</b><small>weak topics</small></div><div><b>${fg.length}</b><small>forgotten</small></div></div>`;
+  h += `<div class="li-h">Next best activity <small>based on your evidence</small></div>${rec.slice(0, 3).map((r,i) => recCard(r, i)).join("")}`;
+  if(ev.length < 5) return h + `<div class="li-note" style="margin-top:1rem">Your analytics fill in as you review flashcards and take practice tests. Tap “Sure / Unsure / Guess” before flipping a card so QuickLearn can compare your confidence with what you actually know.</div></div>`;
+  h += `<div class="li-h">Accuracy by topic <small>worst first</small></div>`;
+  h += ts.map(t => {
+    const last = t.series.slice(-6), dl = t.delta == null ? "first attempt so far" : `${t.delta >= 0 ? "▲ +" : "▼ "}${Math.round(t.delta * 100)} pts vs previous attempt`;
+    return `<div class="li-card"><div class="li-top"><b>${esc(t.title)}</b><em class="${accCls(t.acc)}">${Math.round(t.acc * 100)}%</em></div><div class="li-bar"><i class="${barCls(t.acc)}" style="width:${Math.round(t.acc * 100)}%"></i></div>
+      <div class="li-sub">${esc(t.subj || "")} · ${plural(t.n, "answer")} · ${dl}${t.sureWrong ? ` · ⚠️ ${t.sureWrong}× sure but wrong` : ""}</div>
+      ${last.length > 1 ? `<div class="li-series" title="Accuracy per practice day">${last.map(s => `<i class="${barCls(s.acc)}" style="height:${Math.max(8, s.acc * 100)}%" title="${s.day}: ${Math.round(s.acc * 100)}%"></i>`).join("")}</div>` : ""}
+      <div class="li-acts"><button class="${t.acc < .65 ? "o" : ""}" onclick="LI.practiceDeck('${t.did}')">Practice</button><button onclick="go('#/map/${t.did}')">🗺️ Mind map</button></div></div>`;
+  }).join("");
+  const tot = cal.sure.n + cal.unsure.n + cal.guess.n;
+  h += `<div class="li-h">Confidence vs. correctness <small>bar = actual · line = ideal</small></div><div class="li-card">`;
+  if(tot < 4) h += `<div class="li-sub">Tap Sure / Unsure / Guess on flashcards and practice questions. After a few answers you'll see how well your confidence matches reality.</div>`;
+  else {
+    [["sure","😎 Sure",.9],["unsure","🤔 Unsure",.65],["guess","🎲 Guess",.35]].forEach(([k,l,ideal]) => { const g = cal[k], a = g.n ? g.ok / g.n : 0;
+      h += `<div class="li-cal"><span>${l}</span><div class="tr"><i style="width:${Math.round(a * 100)}%;${g.n ? "" : "opacity:.2"}"></i><u style="left:${ideal * 100}%"></u></div><b>${g.n ? Math.round(a * 100) + "%" : "–"}</b></div>`; });
+    const s = cal.sure, g = cal.guess;
+    if(s.n >= 4 && s.ok / s.n < .75) h += `<div class="li-note warn"><b>Overconfident.</b> You were right only ${Math.round(s.ok / s.n * 100)}% of the time when sure (${s.n} answers). Those “illusions of knowing” are scheduled to come back sooner.</div>`;
+    else if(g.n >= 4 && g.ok / g.n >= .65) h += `<div class="li-note"><b>Underconfident.</b> You got ${Math.round(g.ok / g.n * 100)}% of your guesses right — you know more than you think.</div>`;
+    else h += `<div class="li-note"><b>Well calibrated.</b> Your confidence matches your results — a great sign for efficient studying.</div>`;
+  }
+  h += `</div><div class="li-h">Repeated mistakes <small>same card, same error</small></div>`;
+  h += mist.length ? mist.slice(0, 6).map(m => `<div class="li-card"><div class="li-top"><b>${esc(m.c.question)}</b><em class="l">${m.miss}×</em></div>
+      <div class="li-sub">Missed ${m.miss} of ${m.total} tries · ${esc(dtitle(m.c.deckId))}</div>
+      ${m.same ? `<div class="li-note warn">You answered “${esc(m.same.txt.slice(0,90))}” ${m.same.n} times.${m.twin ? ` That's the answer to “${esc(m.twin.question.slice(0,70))}” — you may be mixing the two up.` : ""}</div>` : ""}
+      <div class="li-acts"><button class="o" onclick="LI.fixMistake('${m.c.id}')">⚡ Targeted mini-lesson</button></div></div>`).join("")
+    : `<div class="li-card li-sub">No repeated mistakes right now. 👏</div>`;
+  const att = P().attempts.filter(a => a.d).reduce((m,a) => ((m[a.d] = m[a.d] || []).push(a), m), {}), ks = Object.keys(att).filter(k => att[k].length > 1 && deckOf(k));
+  h += `<div class="li-h">Improvement between attempts</div>`;
+  const imp = ts.filter(t => t.series.length > 1);
+  h += imp.length || ks.length ? imp.map(t => { const f = t.series[0].acc, l = t.series[t.series.length-1].acc, d = Math.round((l - f) * 100);
+      return `<div class="li-card"><div class="li-top"><b>${esc(t.title)}</b><em class="${d >= 0 ? "g" : "l"}">${d >= 0 ? "+" : ""}${d} pts</em></div><div class="li-sub">${t.series.slice(-5).map(s => Math.round(s.acc * 100) + "%").join(" → ")} over ${plural(t.series.length, "practice day")}</div></div>`; }).join("")
+      + ks.map(k => `<div class="li-card"><div class="li-top"><b>${esc(dtitle(k))} · practice tests</b></div><div class="li-sub">${att[k].slice(-5).map(a => Math.round(a.score / a.total * 100) + "%").join(" → ")}</div></div>`).join("")
+    : `<div class="li-card li-sub">Practise a topic on two different days and your progress curve appears here.</div>`;
+  return h + `</div>`;
+};
+LI.renderForgotten = () => {
+  const fg = LI.forgotten(), t = todayISO(), byDeck = {}; fg.forEach(x => (byDeck[x.c.deckId] = byDeck[x.c.deckId] || []).push(x));
+  const days = Array.from({ length:7 }, (_, i) => addDays(t, i)), cnt = days.map(d => data.cards.filter(c => c.nextReview && (d === t ? c.nextReview <= t : c.nextReview === d)).length), mx = Math.max(1, ...cnt);
+  let h = `<div class="li-wrap"><div class="li-note" style="margin-top:.4rem">Cards you had learned but haven't revisited long enough that your estimated recall dropped below 70%. QuickLearn estimates this per card from how often you got it right, how hard it is and how long ago you saw it.</div>`;
+  if(!fg.length) h += `<div class="empty2" style="padding:2rem 1rem"><p>Nothing has slipped away. 🎉<br><span class="li-sub">Resurfaced material will appear here.</span></p></div>`;
+  else {
+    h += `<button class="btn btn-primary" style="width:100%;margin:.9rem 0" onclick="LI.rescue()">♻️ Rescue ${Math.min(25, fg.length)} now (mixed chapters)</button>`;
+    Object.keys(byDeck).forEach(did => { const a = byDeck[did];
+      h += `<div class="li-h">${esc(dtitle(did))} <small>${plural(a.length, "card")} · avg recall ${Math.round(a.reduce((s,x) => s + x.R, 0) / a.length * 100)}%</small></div>` + a.slice(0, 5).map(x => `<div class="li-card"><div class="li-top"><b>${esc(x.c.question)}</b><em class="${accCls(x.R)}">${Math.round(x.R * 100)}%</em></div><div class="li-sub">Last seen ${x.el} days ago · was stable for ~${Math.round(x.S)} days</div></div>`).join("")
+        + (a.length > 5 ? `<div class="li-sub" style="margin:-.2rem 0 .4rem">+ ${a.length - 5} more</div>` : "") + `<div class="li-acts" style="margin-bottom:.4rem"><button class="p" onclick="LI.smartReview({cards:LI.forgotten().filter(x=>x.c.deckId==='${did}').map(x=>x.c),title:'Forgotten · ${esc(dtitle(did).replace(/['"\\]/g,""))}'})">Rescue this note</button></div>`; });
+  }
+  h += `<div class="li-h">Review schedule <small>next 7 days · set by your performance</small></div><div class="li-card"><div style="display:flex;gap:6px;align-items:flex-end;height:70px">${cnt.map((n,i) => `<div style="flex:1;text-align:center"><div style="height:${Math.max(3, n / mx * 52)}px;background:var(--primary);border-radius:4px 4px 0 0;opacity:${n ? 1 : .25}"></div><small class="li-sub">${i === 0 ? "Today" : fmtDate(days[i]).split(",")[0]}<br><b>${n}</b></small></div>`).join("")}</div></div></div>`;
+  return h;
+};
+LI.progressCard = () => { const n = P().events.length, f = LI.forgotten().length, r = LI.recommend()[0];
+  return `<div class="panel glowp" style="margin-top:.7rem"><div class="lbl" style="margin:0 0 .5rem;padding:0">Learning insights</div><div class="li-sub" style="margin-bottom:.5rem">${plural(n, "answer")} tracked · ${plural(f, "forgotten card")}</div>${r ? recCard(r) : ""}<button class="btn btn-secondary" style="width:100%" onclick="exTab='insights';go('#/study')">Open full analytics</button></div>`; };
+
+/* ---------------------------------------------------------------- quiz / lesson logging */
+const qCard = q => data.cards.find(c => c.question === q.q && c.answer === q.correct);
+const qLog = (q, ok, w) => { const c = qCard(q); if(!c) return; LI.log({ c:c.id, d:c.deckId, ok:ok ? 1 : 0, cf:q.conf || null, w:ok ? undefined : w, s:"quiz" }); if(!ok) LI.onMiss(c, q.conf); save(); };
+const _am = window.answerMcq;
+window.answerMcq = function(btn, idx){ const s = quizState, q = s && s.questions[s.idx]; if(!q || q.logged) return _am.apply(this, arguments); q.logged = 1; const pk = q.options[idx]; _am.apply(this, arguments); qLog(q, pk === q.correct, pk); };
+const _ab = window.answerBlank;
+window.answerBlank = function(){ const s = quizState, q = s && s.questions[s.idx], i = document.getElementById("blankInput"), t = i ? i.value.trim() : ""; _ab.apply(this, arguments); if(q && !q.logged){ q.logged = 1; qLog(q, t.length > 0 && t.toLowerCase() === q.blank.trim().toLowerCase(), t || "(blank)"); } };
+const _gt = window.gradeTyped;
+window.gradeTyped = function(ok){ const s = quizState, q = s && s.questions[s.idx], i = document.getElementById("typedInput"); if(q && !q.logged){ q.logged = 1; qLog(q, !!ok, (i && i.value.trim()) || "(blank)"); } return _gt.apply(this, arguments); };
+const _rq = window.renderQuiz;
+window.renderQuiz = function(){
+  const s = quizState; _rq.apply(this, arguments); if(!s) return;
+  if(s.idx >= s.questions.length){ if(!s.liDone){ s.liDone = 1; P().attempts.push({ t:Date.now(), d:s.deckId || null, sid:s.subjectId || null, mode:s.mode, score:s.score, total:s.questions.length }); save(); } return; }
+  const pn = view.querySelector(".panel"); if(pn) pn.insertAdjacentHTML("afterend", confHtml("LI.setQConf", s.questions[s.idx].conf));
+};
+const _ca = window.checkAns;
+if(typeof _ca === "function") window.checkAns = function(){ const s = LS, was = s && s.chk; _ca.apply(this, arguments); if(s && was == null && s.chk != null){ LI.log({ d:s.id, ok:s.chk ? 1 : 0, s:"lesson" }); save(); } };
+
+/* ---------------------------------------------------------------- MIND MAP: building */
+const hash = s => { let h = 5381; for(let i = 0; i < s.length; i++) h = ((h << 5) + h + s.charCodeAt(i)) | 0; return String(h); };
+const noteText = id => deckNotes(id).map(n => n.content).join("\n\n");
+const sents = t => String(t).replace(/\s+/g, " ").split(/(?<=[.!?])\s+/).filter(x => x.length > 12);
+LI.localMap = deckId => {
+  const text = noteText(deckId), nodes = [], stack = []; let cur = null, term = null;
+  const mk = (label, parent) => {
+    label = stripMd(String(label)).replace(/[*_`#]/g, "").replace(/\s+/g, " ").trim().replace(/[:：.\-–—,;]+$/, ""); if(label.length < 2) return null;
+    if(label.length > 44) label = label.slice(0, 42) + "…";
+    const ex = nodes.find(n => n.label.toLowerCase() === label.toLowerCase()); if(ex) return ex;
+    const n = { id:"n" + nodes.length, label, parent:parent ? parent.id : null, body:[] }; nodes.push(n); return n;
+  };
+  text.split("\n").forEach(raw => {
+    const line = raw.trim(); if(!line) return;
+    const hd = line.match(/^(#{1,4})\s+(.*)$/);
+    if(hd){ const lvl = hd[1].length; while(stack.length && stack[stack.length-1].lvl >= lvl) stack.pop(); const n = mk(hd[2], stack.length ? stack[stack.length-1].n : null); if(n){ stack.push({ lvl, n }); cur = n; term = null; } return; }
+    const m = line.match(/^[-*•\d.)\s]*\*\*([^*]{2,60})\*\*\s*[:\-–—]?\s*(.*)$/) || line.match(/^[-*•\s]*([A-Z][\w\s'’\/-]{2,38}):\s+(.{8,})$/);
+    if(m){ const n = mk(m[1], cur); if(n){ term = n; n.body.push(m[2] || ""); return; } }
+    const tgt = term || cur; if(tgt) tgt.body.push(line);
+    (line.match(/\*\*([^*]{3,40})\*\*/g) || []).slice(0, 3).forEach(b => { const n = mk(b, cur); if(n && n !== cur) n.body.push(line); });
+  });
+  if(nodes.length < 3){                                             // plain prose: one node per paragraph / sentence group
+    nodes.length = 0; const paras = text.split(/\n\s*\n/).map(p => p.trim()).filter(p => p.length > 20);
+    const chunks = paras.length > 2 ? paras : sents(text).reduce((a, s, i) => { (i % 2 ? a[a.length-1] += " " + s : a.push(s)); return a; }, []);
+    chunks.slice(0, 24).forEach(p => { const f = {}; toks(p).filter(w => w.length > 4).forEach(w => f[w] = (f[w] || 0) + 1); const top = Object.keys(f).sort((a,b) => f[b] - f[a]).slice(0, 2).join(" ");
+      const n = mk((top || p.split(/\s+/).slice(0, 4).join(" ")).replace(/^./, c => c.toUpperCase()), null); if(n) n.body.push(p); });
+  }
+  const kids = {}; nodes.forEach(n => n.parent && (kids[n.parent] = (kids[n.parent] || 0) + 1));
+  nodes.slice(0, 40).forEach(n => {
+    let body = stripMd(n.body.join(" ")).replace(/\s+/g, " ").trim(); if(/^[a-z]/.test(body) && body.length < 200) body = n.label + " " + body; const ss = sents(body);
+    n.expl = (body.length > 340 ? body.slice(0, 337) + "…" : body) || (kids[n.id] ? "Groups the ideas branching from here." : "");
+    n.examples = ss.filter(s => /e\.g\.|for example|for instance|such as|example/i.test(s)).slice(0, 2);
+    n.note = body.slice(0, 700); n.kw = [...new Set(toks(n.label).concat(Object.entries(toks(body).filter(w => w.length > 5).reduce((f,w) => (f[w] = (f[w] || 0) + 1, f), {})).sort((a,b) => b[1] - a[1]).slice(0, 3).map(x => x[0])))];
+  });
+  const list = nodes.slice(0, 40);
+  list.forEach(n => { n.related = list.filter(o => o !== n && o.label.length > 3 && o.id !== n.parent && o.parent !== n.id && (n.note || "").toLowerCase().includes(o.label.toLowerCase())).map(o => o.id).slice(0, 4); delete n.body; });
+  return list;
+};
+LI.aiMap = async deckId => {
+  const text = deckNotes(deckId).map(n => stripMd(n.content)).join("\n\n").slice(0, 14000);
+  const j = jparse(await gemini(`You are building a knowledge map from a student's study notes. Every distinct subject, concept, term or process in the notes becomes one node. Return ONLY JSON: {"nodes":[{"id":"n1","label":"2-4 word name","parent":null,"explanation":"2-3 clear sentences","examples":["one short concrete example"],"note":"the key facts from the notes, 1-2 sentences","related":["ids of related nodes"],"keywords":["3-5 words that would appear on a flashcard about it"]}]}. Use at most 28 nodes. "parent" is the id of the broader node (null for top level) so nodes form a tree. Write in the same language as the notes. Do not invent facts beyond the notes except illustrative examples.\n\nNOTES:\n${text}`));
+  const sid = x => String(x == null ? "" : x).replace(/[^\w-]/g, ""), raw = (j.nodes || j || []).filter(n => n && n.label && sid(n.id)), ids = new Set(raw.map(n => sid(n.id)));
+  if(raw.length < 2) throw new Error("The AI returned too few topics.");
+  return raw.slice(0, 32).map(n => ({ id:sid(n.id), label:String(n.label).slice(0, 44), parent:ids.has(sid(n.parent)) && sid(n.parent) !== sid(n.id) ? sid(n.parent) : null,
+    expl:String(n.explanation || n.expl || ""), examples:(n.examples || []).map(String).slice(0, 3), note:String(n.note || ""), kw:[...new Set(toks(n.label).concat((n.keywords || []).flatMap(k => toks(k))))],
+    related:(n.related || []).map(sid).filter(r => ids.has(r) && r !== sid(n.id)).slice(0, 5) }));
+};
+LI.fixTree = nodes => { const by = Object.fromEntries(nodes.map(n => [n.id, n])); nodes.forEach(n => { const seen = new Set([n.id]); let p = n.parent; while(p){ if(!by[p] || seen.has(p)){ n.parent = null; break; } seen.add(p); p = by[p].parent; } }); return nodes; };
+LI.saveMap = (deckId, nodes, ai) => { LI.fixTree(nodes); const old = MAPS()[deckId] || {}; MAPS()[deckId] = { nodes, ai:!!ai, sig:hash(noteText(deckId)), built:Date.now(), ev:old.ev || {}, mine:old.mine || {} }; save(); };
+LI.build = async (deckId, useAI) => {
+  if(!deckNotes(deckId).length){ toast("Add a note first"); return; }
+  if(!useAI){ LI.saveMap(deckId, LI.localMap(deckId), false); LI.renderMap(deckId); return; }
+  const v = document.getElementById("view"); v.insertAdjacentHTML("beforeend", `<div id="liBusy" class="li-card" style="position:fixed;left:1.1rem;right:1.1rem;bottom:6rem;z-index:50;text-align:center"><span class="spin"></span> Building your knowledge map…</div>`);
+  try{ LI.saveMap(deckId, await LI.aiMap(deckId), true); toast("Mind map ready ✨"); }
+  catch(e){ toast(e.message || "AI unavailable — built a quick map instead"); if(!MAPS()[deckId] || !MAPS()[deckId].nodes.length) LI.saveMap(deckId, LI.localMap(deckId), false); }
+  LI.renderMap(deckId);
+};
+
+/* ---------------------------------------------------------------- MIND MAP: mastery per node */
+LI.mapCards = deckId => {        // node id -> cards whose text best matches that node
+  const mp = MAPS()[deckId], out = {}; if(!mp) return out; mp.nodes.forEach(n => out[n.id] = []);
+  const parents = new Set(mp.nodes.map(n => n.parent).filter(Boolean));          // specific (leaf) concepts win over broad headings
+  deckCards(deckId).forEach(c => {
+    const txt = (c.question + " " + c.answer).toLowerCase(), tk = new Set(toks(txt)); let best = null, bs = 0;
+    mp.nodes.forEach(n => { const lab = n.label.toLowerCase().replace(/…$/, ""); let s = 0;
+      if(lab.length >= 3 && (lab.length > 5 ? txt.includes(lab) : new RegExp("(^|[^a-z0-9])" + lab.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + "([^a-z0-9]|$)").test(txt))) s = 1 + lab.length / 100 + (parents.has(n.id) ? 0 : .3);
+      else { const k = (n.kw || []).filter(w => w.length > 2); if(k.length) s = k.filter(w => tk.has(w)).length / k.length * .9; }
+      if(s > bs){ bs = s; best = n; } });
+    if(best && bs >= .3) out[best.id].push(c);
+  });
+  return out;
+};
+LI.mapStats = deckId => {
+  LI.__idx = null; const mp = MAPS()[deckId]; if(!mp) return { nodes:[], counts:{} };
+  const mc = LI.mapCards(deckId), byId = {}, kids = {}; mp.nodes.forEach(n => { byId[n.id] = n; if(n.parent) (kids[n.parent] = kids[n.parent] || []).push(n.id); });
+  const { byCard } = LI.idx(), res = {};
+  mp.nodes.forEach(n => {
+    const items = []; let strongMiss = false;
+    (mc[n.id] || []).forEach(c => { const es = byCard[c.id] || []; if(!es.length && !(c.repetitions > 0)) return; items.push({ w:1, s:LI.cardStrength(c) }); if(es.slice(-2).length === 2 && es.slice(-2).every(e => !e.ok)) strongMiss = true; });
+    const key = slug(n.label), lev = (mp.ev[key] || []).slice(-4); lev.forEach(l => items.push({ w:1.5, s:l.ok }));
+    const W = items.reduce((a,x) => a + x.w, 0);
+    res[n.id] = { n:items.length, S:W ? items.reduce((a,x) => a + x.w * x.s, 0) / W : 0, strongMiss, cards:mc[n.id] || [] };
+  });
+  const fin = id => { const r = res[id]; if(r.agg) return; r.agg = true;
+    const ch = (kids[id] || []).map(k => (fin(k), res[k])).filter(x => x.n > 0);
+    if(r.n === 0 && ch.length){ r.S = ch.reduce((a,x) => a + x.S, 0) / ch.length; r.n = ch.reduce((a,x) => a + x.n, 0); r.strongMiss = ch.some(x => x.strongMiss); } };
+  mp.nodes.forEach(n => fin(n.id));
+  const nodes = mp.nodes.map(n => { const r = res[n.id]; return { ...n, S:r.S, n:r.n, cards:r.cards, status:r.n === 0 ? "new" : (r.S >= .72 && !r.strongMiss ? "mastered" : "weak") }; });
+  const counts = { mastered:0, weak:0, new:0 }; nodes.forEach(n => counts[n.status]++);
+  return { nodes, counts };
+};
+
+/* ---------------------------------------------------------------- MIND MAP: layout + rendering */
+LI.layout = nodes => {
+  const have = new Set(nodes.map(n => n.id)), kids = { root:[] }; nodes.forEach(n => { const k = n.parent && have.has(n.parent) ? n.parent : "root"; (kids[k] = kids[k] || []).push(n); });
+  const leaves = id => { const k = kids[id] || []; return k.length ? k.reduce((a, x) => a + leaves(x.id), 0) : 1; };
+  const pos = {}, r1 = Math.max(150, (kids.root.length * 76) / (2 * Math.PI));
+  const place = (pid, a0, a1, d) => { const ks = kids[pid] || []; if(!ks.length) return; const w = ks.map(k => leaves(k.id)), tot = w.reduce((a,b) => a + b, 0); let a = a0;
+    ks.forEach((k, i) => { const sp = (a1 - a0) * w[i] / tot, mid = a + sp / 2, r = r1 + (d - 1) * 130; pos[k.id] = { x:Math.cos(mid) * r, y:Math.sin(mid) * r }; place(k.id, a, a + sp, d + 1); a += sp; }); };
+  place("root", -Math.PI / 2, 1.5 * Math.PI, 1);
+  const ids = Object.keys(pos), home = {}; ids.forEach(i => home[i] = { ...pos[i] });
+  for(let it = 0; it < 90; it++){
+    for(let i = 0; i < ids.length; i++){ for(let j = i + 1; j < ids.length; j++){ const a = pos[ids[i]], b = pos[ids[j]]; let dx = b.x - a.x, dy = b.y - a.y, d = Math.hypot(dx, dy) || .01;
+      if(d < 70){ const f = (70 - d) / 2 / d; a.x -= dx * f; a.y -= dy * f; b.x += dx * f; b.y += dy * f; } } }
+    ids.forEach(i => { pos[i].x += (home[i].x - pos[i].x) * .04; pos[i].y += (home[i].y - pos[i].y) * .04; });
+  }
+  pos.root = { x:0, y:0 }; return pos;
+};
+const wrap2 = l => { if(l.length <= 13) return [l]; const w = l.split(" "); let a = "", b = ""; w.forEach(x => { if((a + " " + x).trim().length <= 13 || !a) a = (a + " " + x).trim(); else b = (b + " " + x).trim(); }); return [a, b.length > 14 ? b.slice(0, 13) + "…" : b].filter(Boolean); };
+LI.renderMap = id => {
+  const d = deckOf(id); if(!d){ go("#/"); return; }
+  const back = hdr("🗺️ " + d.title, "#/deck/" + id), mp = MAPS()[id];
+  if(!deckNotes(id).length){ view.innerHTML = back + empty2(EMPTYI, "No notes yet", "Add a note and every subject in it becomes a node."); return; }
+  if(!mp){ LI.saveMap(id, LI.localMap(id), false); return LI.renderMap(id); }
+  const st = LI.mapStats(id), pos = LI.layout(st.nodes), E = [];
+  st.nodes.forEach(n => { const a = n.parent && pos[n.parent] ? pos[n.parent] : pos.root, b = pos[n.id]; if(a && b) E.push(`<line class="li-edge" x1="${a.x}" y1="${a.y}" x2="${b.x}" y2="${b.y}"/>`);
+    (n.related || []).forEach(r => { if(r > n.id && pos[r]) E.push(`<line class="li-edge x" x1="${b.x}" y1="${b.y}" x2="${pos[r].x}" y2="${pos[r].y}"/>`); }); });
+  const kidsN = {}; st.nodes.forEach(n => n.parent && (kidsN[n.parent] = (kidsN[n.parent] || 0) + 1));
+  const N = st.nodes.map(n => { const p = pos[n.id] || { x:0, y:0 }, r = 22 + Math.min(8, (kidsN[n.id] || 0) * 2), L = wrap2(n.label);
+    return `<g class="li-node ${n.status}" data-id="${esc(n.id)}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})"><circle class="pulse" r="${r}"/><circle r="${r}"/><text class="i" y="5">${n.status === "mastered" ? "✓" : n.status === "weak" ? "!" : "?"}</text>${L.map((t, i) => `<text y="${r + 15 + i * 14}">${esc(t)}</text>`).join("")}</g>`; }).join("");
+  const root = `<g class="li-node root" data-id="__root" transform="translate(0,0)"><circle r="34"/><text class="i" y="5" style="font-size:20px">🧠</text>${wrap2(d.title).map((t, i) => `<text y="${52 + i * 14}">${esc(t)}</text>`).join("")}</g>`;
+  const c = st.counts, weak = st.nodes.filter(n => n.status === "weak").sort((a,b) => a.S - b.S), stale = mp.sig !== hash(noteText(id));
+  view.innerHTML = back + `<div class="li-legend"><span><i style="background:var(--li-green)"></i>${c.mastered} mastered</span><span><i style="background:var(--li-orange)"></i>${c.weak} need work</span><span><i style="background:var(--li-grey)"></i>${c.new} not tested</span></div>
+    <div class="li-mapbox" style="margin-top:.7rem"><svg id="liSvg" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Mind map of ${esc(d.title)}">${E.join("")}${N}${root}</svg><div class="zoom"><button onclick="LI.zoom(.75)" aria-label="Zoom in">＋</button><button onclick="LI.zoom(1.33)" aria-label="Zoom out">－</button><button onclick="LI.fit()" aria-label="Fit">⤢</button></div></div>
+    <div class="li-wrap" style="padding-top:.2rem">${stale ? `<div class="li-note warn" style="margin-top:.8rem">Your note changed since this map was built. <button class="li-mini p" onclick="LI.build('${id}',${mp.ai ? "true" : "false"})">Rebuild</button></div>` : ""}
+    <div class="li-acts" style="margin-top:.8rem">${weak.length ? `<button class="o" onclick="LI.lessonStart('${id}','${weak[0].id}')">⚡ Mini-lesson on weakest</button>` : ""}<button onclick="LI.build('${id}',true)">${mp.ai ? "↻ Re-build with AI" : "✨ Enrich with AI"}</button></div>
+    ${weak.length ? `<div class="li-h">Needs work <small>tap to open</small></div>${weak.slice(0, 8).map(n => `<button class="li-next alt" onclick="LI.nodeSheet('${id}','${n.id}')"><span class="ic">🟠</span><span><b>${esc(n.label)}</b><small>${Math.round(n.S * 100)}% secure · ${plural(n.n, "piece")} of evidence</small></span><span class="go">›</span></button>`).join("")}` : `<div class="li-note" style="margin-top:.8rem">${c.mastered ? "No weak nodes — everything you've practised is solid. 🌿" : "Review this note's flashcards or take a mini-lesson to colour the map in."} Grey nodes haven't been tested yet.</div>`}</div>`;
+  LI.map = id; LI.fit(); LI.wire();
+};
+LI.fit = () => {
+  const svg = document.getElementById("liSvg"); if(!svg) return; const r = svg.getBoundingClientRect(); if(!r.width) return;
+  const b = svg.getBBox(), pad = 30; let w = b.width + pad * 2, h = b.height + pad * 2; const ar = r.width / r.height;
+  if(w / h < ar) w = h * ar; else h = w / ar;
+  LI.vb = { x:b.x + b.width / 2 - w / 2, y:b.y + b.height / 2 - h / 2, w, h }; LI.fullW = w; LI.applyVB();
+};
+LI.applyVB = () => { const s = document.getElementById("liSvg"), v = LI.vb; if(s && v) s.setAttribute("viewBox", `${v.x} ${v.y} ${v.w} ${v.h}`); };
+LI.zoom = (f, cx, cy) => {
+  const s = document.getElementById("liSvg"), v = LI.vb; if(!s || !v) return; const r = s.getBoundingClientRect(); cx = cx == null ? r.left + r.width / 2 : cx; cy = cy == null ? r.top + r.height / 2 : cy;
+  const nw = clamp(v.w * f, LI.fullW * .12, LI.fullW * 1.6), k = nw / v.w, px = v.x + (cx - r.left) / r.width * v.w, py = v.y + (cy - r.top) / r.height * v.h;
+  v.x = px - (cx - r.left) / r.width * nw; v.y = py - (cy - r.top) / r.height * (v.h * k); v.w = nw; v.h *= k; LI.applyVB();
+};
+LI.wire = () => {
+  const svg = document.getElementById("liSvg"); if(!svg) return; const pts = new Map(); let moved = false, lastD = 0, down = null;
+  svg.addEventListener("pointerdown", e => { pts.set(e.pointerId, { x:e.clientX, y:e.clientY, sx:e.clientX, sy:e.clientY }); if(pts.size > 1) moved = true; down = e.target.closest(".li-node"); lastD = 0; });
+  svg.addEventListener("pointermove", e => {
+    const p = pts.get(e.pointerId); if(!p) return; const r = svg.getBoundingClientRect(), v = LI.vb;
+    if(pts.size === 1){ if(!moved && Math.hypot(e.clientX - p.sx, e.clientY - p.sy) > 6) moved = true;
+      if(moved){ v.x -= (e.clientX - p.x) * v.w / r.width; v.y -= (e.clientY - p.y) * v.h / r.height; LI.applyVB(); } p.x = e.clientX; p.y = e.clientY; }
+    else { p.x = e.clientX; p.y = e.clientY; const [a, b] = [...pts.values()], d = Math.hypot(a.x - b.x, a.y - b.y); if(lastD) LI.zoom(lastD / d, (a.x + b.x) / 2, (a.y + b.y) / 2); lastD = d; }
+  });
+  const up = e => { if(pts.has(e.pointerId)){ const wasTap = !moved && pts.size === 1 && e.type === "pointerup"; pts.delete(e.pointerId); if(wasTap && down && down.contains(e.target)){ const id = down.getAttribute("data-id"); if(id !== "__root") LI.nodeSheet(LI.map, id); } if(!pts.size){ down = null; moved = false; } } };
+  svg.addEventListener("pointerup", up); svg.addEventListener("pointercancel", up);
+  svg.addEventListener("wheel", e => { e.preventDefault(); LI.zoom(e.deltaY > 0 ? 1.12 : .89, e.clientX, e.clientY); }, { passive:false });
+};
+
+/* ---------------------------------------------------------------- MIND MAP: node sheet */
+LI.nodeSheet = (deckId, nid) => {
+  const mp = MAPS()[deckId]; if(!mp) return; const st = LI.mapStats(deckId), n = st.nodes.find(x => x.id === nid); if(!n) return;
+  const byId = Object.fromEntries(st.nodes.map(x => [x.id, x])), rel = new Set(); if(n.parent) rel.add(n.parent); st.nodes.forEach(x => { if(x.parent === n.id) rel.add(x.id); }); (n.related || []).forEach(r => rel.add(r)); st.nodes.forEach(x => { if((x.related || []).includes(n.id)) rel.add(x.id); });
+  const label = { mastered:"✓ Mastered", weak:"! Needs work", new:"? Not tested yet" }[n.status], mine = mp.mine[slug(n.label)] || "";
+  modal(`<div class="sh li-sheet"><h2>${esc(n.label)}</h2><div style="text-align:center"><span class="li-pill ${n.status}">${label}${n.n ? ` · ${Math.round(n.S * 100)}%` : ""}</span></div>
+    <div class="li-acts" style="justify-content:center;margin:.8rem 0 0"><button class="${n.status === "weak" ? "o" : "p"}" style="padding:.6rem 1.1rem;font-size:.9rem" onclick="LI.lessonStart('${deckId}','${n.id}')">${n.status === "weak" ? "⚡ Start targeted mini-lesson" : n.status === "new" ? "Test me on this" : "Quick refresher"}</button></div>
+    <div class="li-sec">Explanation</div><div class="li-txt">${n.expl ? md(n.expl) : "<span class='li-sub'>No explanation yet — tap “Enrich with AI” on the map.</span>"}</div>
+    <div class="li-sec">Examples</div>${(n.examples || []).length ? n.examples.map(e => `<div class="li-ex">${esc(e)}</div>`).join("") : "<div class='li-sub'>No example found in your note.</div>"}
+    <div class="li-sec">From your notes</div><div class="li-txt" style="color:var(--muted-fg)">${esc(n.note || "—")}</div>
+    <div class="li-sec">My notes</div><textarea class="input" style="min-height:4.5rem" placeholder="Add your own memory trick or reminder…" onchange="LI.saveMine('${deckId}','${slug(n.label)}',this.value)">${esc(mine)}</textarea>
+    <div class="li-sec">Related topics</div>${rel.size ? [...rel].filter(r => byId[r]).map(r => `<button class="li-chip" onclick="LI.nodeSheet('${deckId}','${r}')"><span style="color:${byId[r].status === "mastered" ? "var(--li-green)" : byId[r].status === "weak" ? "var(--li-orange)" : "var(--muted-fg)"}">●</span> ${esc(byId[r].label)}</button>`).join("") : "<div class='li-sub'>None linked.</div>"}
+    <div class="li-sub" style="margin-top:.8rem">${plural(n.cards.length, "flashcard")} linked to this topic.</div>
+    <button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Close</button></div>`);
+};
+LI.saveMine = (deckId, key, v) => { MAPS()[deckId].mine[key] = v; save(); };
+
+/* ---------------------------------------------------------------- MINI-LESSONS */
+const otherAnswers = (deckId, not) => [...new Set(deckCards(deckId).concat(data.cards).map(c => c.answer))].filter(a => a !== not);
+LI.localLesson = (deckId, node, cards) => {
+  cards = (cards && cards.length ? cards : node.cards || []).slice().sort((a,b) => LI.cardStrength(a) - LI.cardStrength(b)).slice(0, 4);
+  const qs = cards.map(c => { const wrong = shuffle(otherAnswers(deckId, c.answer)).slice(0, 3);
+    if(wrong.length < 1) return { type:"recall", q:c.question, why:c.answer, cid:c.id };
+    const o = shuffle([c.answer, ...wrong]); return { q:c.question, options:o, answer:o.indexOf(c.answer), why:c.answer, cid:c.id }; });
+  if(qs.length < 2){                                                   // no flashcards on this concept: cloze from the note itself
+    const pool = [...new Set(toks(noteText(deckId)).filter(w => w.length > 5))];
+    sents((node.note || "") + " " + (node.expl || "")).slice(0, 3).forEach(s => { const w = toks(s).filter(x => x.length > 5).sort((a,b) => b.length - a.length)[0]; if(!w) return;
+      const o = shuffle([w, ...shuffle(pool.filter(x => x !== w)).slice(0, 3)]); if(o.length < 2) return;
+      qs.push({ q:"Fill the gap: " + s.replace(new RegExp(w, "i"), "_____"), options:o, answer:o.indexOf(w), why:s }); });
+  }
+  return { teach:node.expl || node.note || "", example:(node.examples || [])[0] || "", qs };
+};
+LI.aiLesson = async (deckId, node, cards) => {
+  const wrongs = (cards || []).flatMap(c => ((LI.idx().byCard[c.id] || []).filter(e => !e.ok && e.w).slice(-2).map(e => `Q: ${c.question} — they answered: ${e.w}`)));
+  const j = jparse(await gemini(`Create a targeted 4-question mini-lesson for a student who is struggling with "${node.label}".\nWhat their notes say: ${node.note || node.expl}\n${wrongs.length ? "Their recent wrong answers (address these misconceptions directly):\n" + wrongs.join("\n") + "\n" : ""}Return ONLY JSON: {"teach":"3-4 short sentences that explain the idea simply and clear up the misconception","example":"one concrete worked example","questions":[{"q":"...","options":["A","B","C","D"],"answer":0,"why":"one sentence explaining the correct answer"}]}. Exactly 4 questions with 4 options each; "answer" is the 0-based index of the correct option. Same language as the notes.`));
+  const qs = (j.questions || []).filter(q => q && q.q && Array.isArray(q.options) && q.options.length >= 2 && Number.isInteger(q.answer) && q.options[q.answer] != null).slice(0, 5)
+    .map((q, i) => ({ q:String(q.q), options:q.options.map(String), answer:q.answer, why:String(q.why || q.options[q.answer]), cid:(cards || [])[i] ? cards[i].id : undefined }));
+  if(!qs.length) throw new Error("bad lesson"); return { teach:String(j.teach || ""), example:String(j.example || ""), qs };
+};
+LI.family = (nodes, id) => { const out = []; const walk = i => nodes.filter(n => n.parent === i).forEach(n => { out.push(n); walk(n.id); }); walk(id); return out; };
+LI.lessonStart = async (deckId, nid, cardsOverride) => {
+  const st = LI.mapStats(deckId), node = st.nodes.find(n => n.id === nid); if(!node) return;
+  const fam = LI.family(st.nodes, nid); let cards = (cardsOverride || node.cards || []).slice();
+  if(!cardsOverride && fam.length){ const seen = new Set(cards.map(c => c.id)); fam.forEach(f => f.cards.forEach(c => { if(!seen.has(c.id)){ seen.add(c.id); cards.push(c); } })); }
+  if(fam.length){ node.note = ((node.note || "") + " " + fam.map(f => f.note || f.expl).join(" ")).trim(); node.expl = node.expl && !/^Groups the ideas/.test(node.expl) ? node.expl : "This topic covers: " + fam.slice(0, 6).map(f => f.label).join(", ") + "."; }
+  LI.L = { deckId, node, i:0, right:0, res:[] };
+  modal(`<div class="sh"><h2>Mini-lesson · ${esc(node.label)}</h2><div style="text-align:center;padding:1.5rem 0"><span class="spin"></span><div class="li-sub" style="margin-top:.8rem">Preparing a lesson aimed at your weak spots…</div></div></div>`);
+  let lesson = null;
+  if(getKey() && navigator.onLine !== false){ try{ lesson = await LI.aiLesson(deckId, node, cards); }catch(e){ lesson = null; } }
+  if(!lesson || !lesson.qs.length) lesson = LI.localLesson(deckId, node, cards);
+  if(!lesson.qs.length){ modal(`<div class="sh"><h2>${esc(node.label)}</h2><div class="li-txt">${md(lesson.teach || node.expl || "No material for this concept yet.")}</div><div class="li-note warn">Add flashcards for this topic (Learn → Make Cards) and the lesson will quiz you on them.</div><button class="btn btn-secondary" style="width:100%;margin-top:1rem" onclick="closeModal()">Close</button></div>`); return; }
+  LI.L.lesson = lesson; markPractice(); LI.lessonTeach();
+};
+LI.lessonTeach = () => { const { node, lesson } = LI.L;
+  modal(`<div class="sh li-sheet"><h2>Mini-lesson · ${esc(node.label)}</h2><div class="li-sec" style="margin-top:0">Key idea</div><div class="li-txt">${md(lesson.teach || node.expl || "")}</div>${lesson.example ? `<div class="li-sec">Example</div><div class="li-ex">${esc(lesson.example)}</div>` : ""}
+    <button class="btn btn-primary" style="width:100%;margin-top:1.1rem" onclick="LI.lessonQ()">Check my understanding (${lesson.qs.length})</button></div>`); };
+LI.lessonQ = () => { const L = LI.L, q = L.lesson.qs[L.i]; if(!q){ LI.lessonDone(); return; }
+  const head = `<div class="progress" style="margin:0 0 .8rem"><div style="width:${Math.round(L.i / L.lesson.qs.length * 100)}%"></div></div><div class="muted" style="font-size:.78rem">Question ${L.i + 1} of ${L.lesson.qs.length}</div><div class="panel" style="margin:.5rem 0 .8rem;line-height:1.5">${esc(q.q)}</div>`;
+  modal(`<div class="sh li-mq li-sheet"><h2>${esc(L.node.label)}</h2>${head}${q.options ? q.options.map((o, i) => `<button class="quiz-opt" onclick="LI.lessonAns(${i},this)">${esc(o)}</button>`).join("") : `<button class="btn btn-primary" style="width:100%" onclick="LI.lessonReveal()">Reveal answer</button>`}<div id="liFb"></div></div>`); };
+LI.lessonReveal = () => { const q = LI.L.lesson.qs[LI.L.i]; document.getElementById("liFb").innerHTML = `<div class="li-note">${esc(q.why)}</div><div class="row" style="margin-top:.7rem"><button class="btn btn-danger" style="flex:1" onclick="LI.lessonGrade(false)">Missed it</button><button class="btn btn-success" style="flex:1" onclick="LI.lessonGrade(true)">Got it</button></div>`; };
+LI.lessonAns = (i, btn) => { const L = LI.L, q = L.lesson.qs[L.i], ok = i === q.answer, opts = document.querySelectorAll(".li-mq .quiz-opt");
+  opts.forEach(b => b.disabled = true); btn.classList.add(ok ? "correct" : "wrong"); if(!ok) opts.forEach((b, k) => { if(k === q.answer) b.classList.add("correct"); });
+  haptic(ok ? "good" : "again"); document.getElementById("liFb").innerHTML = `<div class="li-note ${ok ? "" : "warn"}"><b>${ok ? "Correct!" : "Not quite."}</b> ${esc(q.why)}</div><button class="btn btn-primary" style="width:100%;margin-top:.7rem" onclick="LI.lessonNext()">${L.i + 1 >= L.lesson.qs.length ? "See result" : "Next"}</button>`;
+  LI.lessonRecord(q, ok, q.options[i]); };
+LI.lessonGrade = ok => { LI.lessonRecord(LI.L.lesson.qs[LI.L.i], ok, "(recall)"); LI.lessonNext(); };
+LI.lessonRecord = (q, ok, w) => { const L = LI.L; L.res.push(ok ? 1 : 0); if(ok) L.right++;
+  const c = q.cid && data.cards.find(x => x.id === q.cid); LI.log({ c:c ? c.id : undefined, d:L.deckId, k:slug(L.node.label), ok:ok ? 1 : 0, w:ok ? undefined : w, s:"lesson" }); if(c && !ok) LI.onMiss(c); save(); };
+LI.lessonNext = () => { LI.L.i++; LI.lessonQ(); };
+LI.lessonDone = () => { const L = LI.L, tot = L.lesson.qs.length, acc = L.right / tot, mp = MAPS()[L.deckId], key = slug(L.node.label);
+  if(mp){ mp.ev[key] = (mp.ev[key] || []).concat([{ t:Date.now(), ok:acc }]).slice(-8); }
+  data.game.xp += L.right * 4; save(); haptic(acc >= .75 ? "complete" : "select");
+  const nw = LI.mapStats(L.deckId).nodes.find(n => n.id === L.node.id), good = nw && nw.status === "mastered";
+  modal(`<div class="sh"><h2>${acc >= .75 ? "Nice work 🎉" : "Getting there 🌱"}</h2><div style="text-align:center;font-size:2.2rem;font-family:var(--font-display);margin:.4rem 0">${L.right} / ${tot}</div>
+    <div style="text-align:center"><span class="li-pill ${nw ? nw.status : "new"}">${esc(L.node.label)}: ${good ? "mastered ✓" : "still needs work"}</span></div>
+    <div class="li-note ${good ? "" : "warn"}">${good ? "This node turned green. It'll resurface on a spaced schedule so it stays that way." : "Missed ideas were added back into your review queue for the next day or two — try the lesson again after a break for the best retention."}</div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal();${/^#\/map\//.test(location.hash) ? `LI.renderMap('${L.deckId}')` : "route()"}">Back</button>
+    ${acc < 1 ? `<button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="LI.lessonStart('${L.deckId}','${L.node.id}')">Another round</button>` : ""}</div>`); };
+// A repeated mistake opens a lesson on the mind-map concept that card belongs to (building the map first if needed).
+LI.fixMistake = cid => {
+  const c = data.cards.find(x => x.id === cid); if(!c) return; if(!MAPS()[c.deckId]){ if(!deckNotes(c.deckId).length){ startSession([c], dtitle(c.deckId), "#/study"); return; } LI.saveMap(c.deckId, LI.localMap(c.deckId), false); }
+  const mc = LI.mapCards(c.deckId), nid = Object.keys(mc).find(k => mc[k].some(x => x.id === cid)) || (MAPS()[c.deckId].nodes[0] || {}).id;
+  if(!nid){ startSession([c], dtitle(c.deckId), "#/study"); return; }
+  const sibs = mc[nid] || []; LI.lessonStart(c.deckId, nid, [c, ...sibs.filter(x => x.id !== cid)]);
+};
+
+/* ---------------------------------------------------------------- hooks into existing screens */
+const _renderHome = window.renderHome;
+window.renderHome = function(){
+  _renderHome.apply(this, arguments);
+  try{ if(!data.decks.length) return; const r = LI.recommend()[0], rows = view.querySelector(".rows"); if(r && rows && r.score > 12) rows.insertAdjacentHTML("beforebegin", `<div class="li-homebox"><div class="li-sub" style="margin-bottom:.35rem;font-weight:700;letter-spacing:.06em">NEXT BEST ACTIVITY</div>${recCard(r)}</div>`); }catch(e){}
+};
+window.addEventListener("pagehide", () => { try{ save(); }catch(e){} });
 })();
 </script>
 </body>
