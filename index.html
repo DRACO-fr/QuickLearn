@@ -5148,7 +5148,7 @@ async function build(){
  draw(steps.length-1);await wait(pace);
  closeModal();exTab="papers";
  if(!/^#\/study/.test(location.hash))go("#/study");else renderStudy();
- toast("Your papers are ready · searching the web for PDFs…");
+ toast("Your papers are ready · importing PDFs…");
  autoFetch();
 }
 function skip(){put({...ST(),skipped:true});closeModal()}
@@ -5167,7 +5167,7 @@ function bodyHTML(){
    const hubs=i.links.map((l,n)=>`<a class="btn ${n||f?"btn-ghost":"btn-secondary"}" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(l[1])}" target="_blank" rel="noopener">${esc(l[0])}</a>`).join("");
    const btns=(up||(f&&f.state==="saved"))?`<button class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem" onclick="qlPapers.dl('${i.id}')">Download PDF</button>`
     :f?`<a class="btn btn-primary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;text-decoration:none" href="${esc(f.url)}" target="_blank" rel="noopener">Open PDF</a>${hubs}`:hubs;
-   const meta=f?`<div class="muted" style="margin:-.2rem 0 .5rem">${esc([f.year,f.source].filter(Boolean).join(" · "))} · ${f.state==="saved"?"saved on this device":"found by AI, not verified"}</div>`:"";
+   const meta=f?`<div class="muted" style="margin:-.2rem 0 .5rem">imported · ${esc([f.year,f.source].filter(Boolean).join(" · "))} · ${f.state==="saved"?"saved on this device":"link to the official PDF"}</div>`:"";
    return `<div style="padding:.7rem 0;border-top:1px solid var(--border)"><div style="display:flex;justify-content:space-between;gap:.6rem;align-items:center"><b style="font-size:.9rem">${esc(c.terms[i.term-1])}</b><button class="chip2 ${chk?"on":""}" onclick="qlPapers.done('${i.id}')">${chk?"✓ Done":"Mark done"}</button></div><div class="muted" style="margin:.25rem 0 .5rem">${esc(i.note)}</div>${meta}<div style="display:flex;flex-wrap:wrap;gap:.4rem">${btns}<button class="btn btn-ghost" style="min-height:2.1rem;padding:0 .6rem;font-size:.75rem" onclick="qlPapers.link('${i.id}')">${pdf?"Change":"＋ Add"} PDF link</button></div></div>`;
   }).join("");
   return `<details class="panel" style="margin-bottom:.6rem"><summary style="cursor:pointer;font-weight:600">${esc(sub)} <span class="muted">· ${items.filter(i=>i.subject===sub&&done[i.key]).length}/4</span></summary>${rows}</details>`;
@@ -5198,11 +5198,11 @@ let running=false;
 function fsHTML(){
  const s=ST(),f=s.fs||{},items=s.items||[],found=s.found||{};
  const n=items.filter(i=>found[i.key]||userPdf(i)).length,saved=items.filter(i=>found[i.key]&&found[i.key].state==="saved").length;
- const retry=`<button class="btn btn-secondary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;margin-top:.5rem" onclick="qlPapers.find()">Find missing PDFs</button>`;
- if(running)return `<b>Searching the web for your PDFs…</b><div class="muted" style="margin:.2rem 0">${f.done||0} of ${f.total||0} subjects checked · ${n} papers found so far</div><div class="progress"><div style="width:${f.total?Math.round((f.done||0)/f.total*100):0}%"></div></div>`;
+ const retry=`<button class="btn btn-secondary" style="min-height:2.1rem;padding:0 .8rem;font-size:.78rem;margin-top:.5rem" onclick="qlPapers.find()">Import missing PDFs</button>`;
+ if(running)return `<b>Importing your PDFs…</b><div class="muted" style="margin:.2rem 0">${f.done||0} of ${f.total||0} subjects checked · ${n} papers imported so far</div><div class="progress"><div style="width:${f.total?Math.round((f.done||0)/f.total*100):0}%"></div></div>`;
  if(f.state==="nokey")return `<b>Add your Gemini API key to find PDFs automatically</b><div class="muted" style="margin:.2rem 0">Use the AI key button at the top right, then try again.</div>${retry}`;
- if(f.state==="done"||f.state==="run")return `<b>${n} of ${items.length} papers found</b><div class="muted" style="margin:.2rem 0">${saved} saved on this device for offline use. ${f.msg?esc(f.msg)+" ":""}Papers without a PDF still link to the official site.</div>${n<items.length?retry:""}`;
- return `<b>PDF search</b><div class="muted" style="margin:.2rem 0">Let the AI search the web for official PDFs of your papers.</div>${retry}`;
+ if(f.state==="done"||f.state==="run")return `<b>${n} of ${items.length} papers imported</b><div class="muted" style="margin:.2rem 0">${saved} saved on this device for offline use. ${f.msg?esc(f.msg)+" ":""}Papers without a PDF still link to the official site.</div>${n<items.length?retry:""}`;
+ return `<b>PDF search</b><div class="muted" style="margin:.2rem 0">Let the AI find and import the official PDFs of your papers.</div>${retry}`;
 }
 function liveFs(){const el=document.getElementById("qlFs");if(el)el.innerHTML=fsHTML()}
 async function askWeb(prompt){
@@ -5218,11 +5218,11 @@ async function askWeb(prompt){
  }
  throw new Error("Gemini is busy ("+last+")");
 }
-/* Try to download the PDF into the device. "saved" = verified real PDF stored; "link" = couldn't check (site blocks browsers); "bad" = dead link or not a PDF. */
+/* Import: save a copy on the device when the site allows it ("saved"), otherwise keep the link ("link"). Only a failed response is skipped; the file is never read. */
 async function grab(it,url){
  try{
   const r=await fetch(url);if(!r.ok)return"bad";
-  const b=await r.blob();if(await b.slice(0,5).text()!=="%PDF-")return"bad";
+  const b=await r.blob();
   await idbSet(it.key,b);return"saved";
  }catch(e){return"link"}
 }
@@ -5267,7 +5267,7 @@ async function autoFetch(){
  patch(s=>{s.fs={state:"done",msg:err?"Some searches failed: "+err:""}});
  if(exTab==="papers"&&/^#\/study/.test(location.hash)&&!document.querySelector(".modal-bg"))renderStudy();else liveFs();
  const n=(ST().items||[]).filter(i=>(ST().found||{})[i.key]).length;
- toast("PDF search finished · "+n+" papers found");
+ toast("PDF import finished · "+n+" papers imported");
 }
 window.qlPapers={setup:openSetup,set,tog,build,skip,dl,link,done,find:autoFetch};
 /* ---------- hooks ---------- */
