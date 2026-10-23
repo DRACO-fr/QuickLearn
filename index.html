@@ -5097,6 +5097,16 @@ window.QL_PAPERS_URL="papers.json";
 .pp-t{flex:1;min-width:0;font-size:.95rem;overflow-wrap:anywhere}
 .pp-a{flex:none;text-decoration:none;font-size:.85rem;font-weight:600;border-radius:999px;padding:.4rem .8rem;background:var(--primary);color:var(--primary-fg)}
 .pp-a.alt{background:var(--surface-2);color:var(--foreground)}
+button.pp-a{border:0;font-family:inherit;cursor:pointer}
+.pp-del{flex:none;background:none;border:0;color:var(--muted-fg,#aaa);font-size:1.25rem;line-height:1;cursor:pointer;padding:.2rem .3rem}
+.ap-l{display:block;margin:.95rem 0 .35rem;font-size:.9rem;color:var(--muted-fg,#aaa)}
+.ap-chips{display:flex;gap:.4rem;flex-wrap:wrap}
+.ap-chip{background:var(--surface);border:1.5px solid transparent;color:inherit;font:inherit;font-size:.92rem;border-radius:999px;padding:.55rem .95rem;cursor:pointer}
+.ap-chip.on{background:var(--primary);color:var(--primary-fg);border-color:var(--primary)}
+.ap-or{text-align:center;color:var(--muted-fg,#aaa);font-size:.8rem;margin:.45rem 0}
+.ap-file{width:100%}
+.ap-actions{display:flex;gap:.6rem;margin-top:1.2rem}
+.ap-actions .btn{flex:1}
 </style>
 <script>
 (function(){
@@ -5211,7 +5221,8 @@ async function prepare(){
  li(`${gLabel(c,pr.grade)} · ${c.name} · ${LANGS[pr.lang]||""}`);
  msg("Checking for new papers…");bar(.12);
  await loadRemote();
- const old=new Map();(data.paperCourses||[]).forEach(pc=>pc.papers.forEach(p=>old.set(pc.id+"|"+p.key,p)));
+ const old=new Map(),oldCustom={};
+ (data.paperCourses||[]).forEach(pc=>{pc.papers.forEach(p=>old.set(pc.id+"|"+p.key,p));oldCustom[pc.subject]=pc.papers.filter(p=>p.custom)});
  let total=0;const courses=[];
  for(let i=0;i<subs.length;i++){
   const s=subs[i],id="pc_"+s.id;
@@ -5222,6 +5233,7 @@ async function prepare(){
    const prev=old.get(id+"|"+key);
    papers.push({id:prev?prev.id:"p"+Math.random().toString(36).slice(2,9),key,term:Number(p.term),title:String(p.title||"Paper"),url:p.url.trim(),memo:okUrl(p.memo)?p.memo.trim():"",done:prev?!!prev.done:false});
   });
+  (oldCustom[s.id]||[]).forEach(p=>{papers.push(p);delete oldCustom[s.id]});
   papers.sort((a,b)=>a.term-b.term||a.title.localeCompare(b.title));
   total+=papers.length;
   courses.push({id,subject:s.id,name:s.name,emoji:s.emoji,papers});
@@ -5229,6 +5241,7 @@ async function prepare(){
   bar(.15+.8*((i+1)/subs.length));
   await sleepMs(220);
  }
+ Object.values(oldCustom).forEach(l=>(l||[]).forEach(p=>fileIds(p).forEach(f=>idbDel(f).catch(()=>{}))));
  data.paperCourses=courses;data.profile=pr;save();
  msg("Finishing up…");bar(1);
  const wait=PREP_MIN_MS-(Date.now()-t0);if(wait>0)await sleepMs(wait);
@@ -5247,21 +5260,176 @@ window.papersBody=function(){
   const tot=pc.papers.length,done=pc.papers.filter(x=>x.done).length;
   return listRow("#3b290f",pc.emoji,E(pc.name),tot?`${done} of ${tot} papers done · Terms 1–4`:"No papers added yet · Terms 1–4",`openPaperCourse('${pc.id}')`);
  }).join("");
- return `<div class="lbl">${E(c.flag||"")} ${E(gLabel(c,p.grade))} · ${E(c.name)} · ${E(LANGS[p.lang]||"")}</div><div class="rows" style="padding-top:0">${rows}</div><div style="padding:.4rem 1.1rem 1rem"><button class="btn btn-secondary" style="width:100%" onclick="qlStartOnboarding()">Change grade, country or subjects</button></div>`;
+ return `<div class="lbl">${E(c.flag||"")} ${E(gLabel(c,p.grade))} · ${E(c.name)} · ${E(LANGS[p.lang]||"")}</div><div style="padding:0 1.1rem .7rem"><button class="btn btn-primary" style="width:100%" onclick="openAddPaper()">＋ Add papers</button></div><div class="rows" style="padding-top:0">${rows}</div><div style="padding:.4rem 1.1rem 1rem"><button class="btn btn-secondary" style="width:100%" onclick="qlStartOnboarding()">Change grade, country or subjects</button></div>`;
 };
+const fileIds=p=>[p.fileId,p.memoFileId].filter(Boolean);
+function lnk(label,url,fid,alt){
+ const c="pp-a"+(alt?" alt":"");
+ return fid?`<button class="${c}" onclick="openPaperFile('${fid}')">${label}</button>`:`<a class="${c}" href="${E(url)}" target="_blank" rel="noopener">${label}</a>`;
+}
 window.openPaperCourse=function(id){
  const pc=(data.paperCourses||[]).find(x=>x.id===id);if(!pc)return;
  const terms=[1,2,3,4].map(t=>{
   const ps=pc.papers.filter(p=>p.term===t);
-  const rows=ps.length?ps.map(p=>`<div class="pp-row ${p.done?"done":""}"><button class="pp-chk" onclick="togglePaper('${pc.id}','${p.id}')" aria-label="Mark done">${p.done?"✓":""}</button><div class="pp-t">${E(p.title)}</div><a class="pp-a" href="${E(p.url)}" target="_blank" rel="noopener">Paper</a>${p.memo?`<a class="pp-a alt" href="${E(p.memo)}" target="_blank" rel="noopener">Memo</a>`:""}</div>`).join(""):`<p class="muted" style="margin:.1rem 0 .5rem">No Term ${t} papers added yet.</p>`;
+  const rows=ps.length?ps.map(p=>`<div class="pp-row ${p.done?"done":""}"><button class="pp-chk" onclick="togglePaper('${pc.id}','${p.id}')" aria-label="Mark done">${p.done?"✓":""}</button><div class="pp-t">${E(p.title)}</div>${lnk("Paper",p.url,p.fileId,false)}${(p.memo||p.memoFileId)?lnk("Memo",p.memo,p.memoFileId,true):""}${p.custom?`<button class="pp-del" onclick="removePaper('${pc.id}','${p.id}')" aria-label="Remove paper">×</button>`:""}</div>`).join(""):`<p class="muted" style="margin:.1rem 0 .5rem">No Term ${t} papers added yet.</p>`;
   return `<div class="lbl" style="padding:0;margin:1rem 0 .5rem">Term ${t}</div>${rows}`;
  }).join("");
- modal(`<div class="sh"><h2>${pc.emoji} ${E(pc.name)}</h2>${terms}<button class="btn btn-secondary" style="width:100%;margin-top:1rem" onclick="closeModal()">Close</button></div>`);
+ modal(`<div class="sh"><h2>${pc.emoji} ${E(pc.name)}</h2><button class="btn btn-primary" style="width:100%;margin-top:.4rem" onclick="openAddPaper('${pc.subject}')">＋ Add a paper</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="openPaperPrep('${pc.subject}')">🎓 ${E(prepLabel(pc))}</button>${terms}<button class="btn btn-secondary" style="width:100%;margin-top:1rem" onclick="closeModal()">Close</button></div>`);
+};
+/* ---------- add your own papers (link or uploaded file) ---------- */
+let AP=null;
+function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("ql-paper-files",1);r.onupgradeneeded=()=>r.result.createObjectStore("f");r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbPut(k,v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("f","readwrite");t.objectStore("f").put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
+async function idbGet(k){const d=await idb();return new Promise((res,rej)=>{const r=d.transaction("f").objectStore("f").get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
+async function idbDel(k){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("f","readwrite");t.objectStore("f").delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
+window.openAddPaper=function(sid){
+ const cs=data.paperCourses||[];
+ if(!cs.length){try{toast("Set up your subjects first")}catch(_){}return}
+ AP={subject:cs.some(c=>c.subject===sid)?sid:cs[0].subject,term:1,file:null,memoFile:null};
+ modal(`<div class="sh"><h2>Add a paper</h2>
+ <label class="ap-l" for="apSub">Subject</label><select class="input" id="apSub" onchange="AP_subject(this.value)">${cs.map(c=>`<option value="${E(c.subject)}" ${c.subject===AP.subject?"selected":""}>${c.emoji} ${E(c.name)}</option>`).join("")}</select>
+ <label class="ap-l">Term</label><div class="ap-chips" id="apTerm">${[1,2,3,4].map(t=>`<button class="ap-chip ${t===1?"on":""}" data-t="${t}" onclick="apTerm(${t})">Term ${t}</button>`).join("")}</div>
+ <label class="ap-l" for="apTitle">Name</label><input class="input" id="apTitle" placeholder="e.g. Term 1 Test 2024" maxlength="80">
+ <label class="ap-l" for="apUrl">Paper</label><input class="input" id="apUrl" type="url" inputmode="url" placeholder="Paste a link (https://…)"><div class="ap-or">or</div><button class="btn btn-secondary ap-file" id="apFileBtn" onclick="apPick('file')">📎 Upload a PDF or photo</button>
+ <label class="ap-l" for="apMemo">Memo / answers (optional)</label><input class="input" id="apMemo" type="url" inputmode="url" placeholder="Paste a link (https://…)"><div class="ap-or">or</div><button class="btn btn-secondary ap-file" id="apMemoBtn" onclick="apPick('memoFile')">📎 Upload the memo</button>
+ <div class="ap-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveAddedPaper()">Add paper</button></div></div>`);
+};
+window.AP_subject=function(v){if(AP)AP.subject=v};
+window.apTerm=function(t){if(!AP)return;AP.term=t;document.querySelectorAll("#apTerm .ap-chip").forEach(b=>b.classList.toggle("on",Number(b.dataset.t)===t))};
+window.apPick=function(kind){
+ if(!AP)return;
+ const inp=document.createElement("input");inp.type="file";inp.accept=".pdf,application/pdf,image/*";
+ inp.onchange=()=>{
+  const f=inp.files&&inp.files[0];if(!f)return;
+  if(f.size>30*1024*1024){try{toast("That file is over 30 MB. Use a link instead.")}catch(_){}return}
+  AP[kind]=f;
+  const btn=$(kind==="file"?"apFileBtn":"apMemoBtn");if(btn)btn.textContent="📎 "+f.name;
+ };
+ inp.click();
+};
+window.saveAddedPaper=async function(){
+ if(!AP)return;
+ const val=id=>(($(id)||{}).value||"").trim();
+ const sid=val("apSub")||AP.subject,title=val("apTitle")||"Paper",url=val("apUrl"),memo=val("apMemo");
+ if(!url&&!AP.file){toast("Add a link or upload a file");return}
+ if(!AP.file&&!okUrl(url)){toast("The link must start with http:// or https://");return}
+ if(memo&&!AP.memoFile&&!okUrl(memo)){toast("The memo link must start with http:// or https://");return}
+ const pc=(data.paperCourses||[]).find(c=>c.subject===sid);if(!pc)return;
+ const id="p"+Math.random().toString(36).slice(2,9);
+ const p={id,key:"custom|"+id,term:AP.term,title,url:AP.file?"":url,memo:AP.memoFile?"":(okUrl(memo)?memo:""),done:false,custom:true};
+ try{
+  if(AP.file){p.fileId="f"+id;p.fileName=AP.file.name;await idbPut(p.fileId,{blob:AP.file,name:AP.file.name,type:AP.file.type})}
+  if(AP.memoFile){p.memoFileId="m"+id;p.memoFileName=AP.memoFile.name;await idbPut(p.memoFileId,{blob:AP.memoFile,name:AP.memoFile.name,type:AP.memoFile.type})}
+ }catch(_){toast("Couldn't save that file on this device. Try a link instead.");return}
+ pc.papers.push(p);pc.papers.sort((a,b)=>a.term-b.term||a.title.localeCompare(b.title));
+ save();AP=null;toast("Paper added");openPaperCourse(pc.id);
+ try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}
+};
+window.openPaperFile=async function(fid){
+ const w=window.open("","_blank");
+ try{
+  const rec=await idbGet(fid);
+  if(!rec||!rec.blob)throw new Error("missing");
+  const url=URL.createObjectURL(rec.blob);
+  if(w)w.location.href=url;
+  else{const a=document.createElement("a");a.href=url;a.download=rec.name||"paper";a.click()}
+  setTimeout(()=>URL.revokeObjectURL(url),120000);
+ }catch(_){if(w)w.close();try{toast("That file isn't on this device. Add it again.")}catch(__){}}
+};
+window.removePaper=function(cid,pid){
+ const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!p)return;
+ const go2=()=>{fileIds(p).forEach(f=>idbDel(f).catch(()=>{}));pc.papers=pc.papers.filter(x=>x.id!==pid);save();openPaperCourse(cid);try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}};
+ if(typeof askConfirm==="function")askConfirm("Remove this paper?","It will be removed from this course.","Remove",true).then(ok=>{if(ok)go2()});else go2();
 };
 window.togglePaper=function(cid,pid){
  const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!p)return;
  p.done=!p.done;save();openPaperCourse(cid);
  try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}
+};
+
+/* ---------- past-paper courses: teach the student how to do well in their papers ---------- */
+const PREP_UNITS=[
+ ["Know your paper",["Layout & mark allocation","Planning your time","Command words decoded"]],
+ ["Score more marks",["Showing your working","Using the memo to mark yourself","Mistakes that cost marks"]],
+ ["Past-paper strategy",["Working through a full paper","Spotting repeated question types","Fixing your weak topics"]]
+];
+const ppKey=(pc,p)=>"pp_"+[p.country,p.grade,p.lang,pc.subject].join("_");
+const ppTitle=(pc,p)=>gLabel(cOf(p.country),p.grade)+" "+pc.name+": past papers";
+function ppNote(pc,p){
+ const c=cOf(p.country)||{name:p.country};
+ return "Past-paper preparation for "+gLabel(c,p.grade)+" "+pc.name+" ("+c.name+" school curriculum, studied in "+(LANGS[p.lang]||"English")+"). Write questions in the style, difficulty and wording of real school term tests and exams for this subject and grade, in "+(LANGS[p.lang]||"English")+". Lessons about exam technique must teach it through realistic questions from this subject. In each explanation, teach how to approach this kind of question, why the answer earns the marks, and one common mistake that loses marks.";
+}
+function registerPrep(c){ /* make sure lessons can find their question style after a reload */
+ if(typeof EXAMS==="undefined"||!c||!c.paperPrep||!c.exam||EXAMS[c.exam])return;
+ EXAMS[c.exam]={emoji:c.ppEmoji||"📄",name:c.title,sub:"Past-paper course",note:c.ppNote||"",units:[]};
+}
+try{Object.values(data.courses||{}).forEach(registerPrep)}catch(_){}
+function prepDeckOf(pc){const p=data.profile;if(!p||!p.country)return null;const k=ppKey(pc,p);return (data.decks||[]).find(d=>d.examKey===k)||null}
+window.prepLabel=function(pc){
+ const d=prepDeckOf(pc),c=d&&courseOf(d.id);
+ if(c&&c.units&&c.units.length){const tot=c.units.reduce((a,u)=>a+u.lessons.length,0),dn=Object.keys(c.done||{}).length;return "Past-paper course · "+dn+"/"+tot+" lessons"}
+ return "Start the past-paper course";
+};
+window.openPaperPrep=function(sid){
+ const pc=(data.paperCourses||[]).find(c=>c.subject===sid),p=data.profile;if(!pc||!p||!p.country)return;
+ const key=ppKey(pc,p);
+ let d=prepDeckOf(pc);
+ if(!d){d=createDeck(pc.name+": past-paper course");if(!d)return;d.examKey=key;d.subject="Past papers"}
+ data.courses=data.courses||{};
+ let c=data.courses[d.id];
+ if(!c||!c.units||!c.units.length){
+  c=data.courses[d.id]={title:ppTitle(pc,p),exam:key,paperPrep:true,ppNote:ppNote(pc,p),ppEmoji:pc.emoji,done:{},units:PREP_UNITS.map(u=>({title:u[0],lessons:u[1].map(t=>({title:t,qs:[]}))}))};
+ }
+ registerPrep(c);save();closeModal();go("#/course/"+d.id);
+};
+function pcOfCourse(c){const p=data.profile;return p&&p.country?(data.paperCourses||[]).find(x=>ppKey(x,p)===c.exam):null}
+async function paperImages(pc){
+ const files=[];
+ for(const x of pc.papers.filter(q=>q.fileId).slice(0,2)){
+  try{const rec=await idbGet(x.fileId);if(rec&&rec.blob)files.push(new File([rec.blob],rec.name||"paper.pdf",{type:rec.type||rec.blob.type||""}))}catch(_){}
+ }
+ if(!files.length||typeof filesToImages!=="function")return [];
+ try{return await filesToImages(files)}catch(_){return []}
+}
+window.buildPaperTopics=async function(deckId){
+ const c=courseOf(deckId),p=data.profile,pc=c&&pcOfCourse(c);
+ if(!c||!pc||!p)return;
+ const show=m=>{try{modal('<div class="sh gen-progress" style="text-align:center">'+((typeof animOn==="function"&&animOn())?mascot("think",{size:104,cls:"idle"}):'<div class="genorb"></div>')+'<h2>Building your topic lessons</h2><p class="muted">'+E(m)+'</p><div class="progress"><div style="width:55%"></div></div></div>')}catch(_){}};
+ show("Reading your papers…");
+ const imgs=await paperImages(pc);
+ show(imgs.length?"Studying "+imgs.length+" page"+(imgs.length===1?"":"s")+" from your uploaded papers…":"Planning topics for each term…");
+ const lang=LANGS[p.lang]||"English",country=(cOf(p.country)||{}).name||p.country;
+ const titles=pc.papers.slice(0,20).map(x=>"Term "+x.term+": "+x.title).join("; ");
+ const prompt="You are an expert "+pc.name+" teacher in "+country+" for "+gLabel(cOf(p.country),p.grade)+" learners. Plan a past-paper preparation course. For each of the 4 school terms list 2 or 3 key topics that term tests and exams for this subject and grade usually assess."
+  +(imgs.length?" Pages from the student's own past papers are attached: base the topics on what those papers really test, and add the usual topics for the other terms.":"")
+  +(titles?" The student's paper titles: "+titles+".":"")
+  +" Topic names are at most 6 words, written in "+lang+". Reply with ONLY JSON, no markdown: {\"terms\":[{\"term\":1,\"topics\":[\"...\",\"...\"]},{\"term\":2,\"topics\":[\"...\"]},{\"term\":3,\"topics\":[\"...\"]},{\"term\":4,\"topics\":[\"...\"]}]}";
+ try{
+  const raw=await gemini(prompt,imgs);
+  const obj=jparse(raw),units=[];
+  (obj.terms||[]).slice(0,4).forEach((t,i)=>{
+   const n=Number(t.term)||i+1;
+   (t.topics||[]).slice(0,3).forEach(tp=>{const nm=String(tp||"").trim().slice(0,60);if(nm)units.push({title:"Term "+n+": "+nm,lessons:["Key ideas","Exam-style questions","Past-paper practice"].map(x=>({title:x,qs:[]}))})});
+  });
+  if(!units.length)throw new Error("The AI reply had no usable topics.");
+  c.units=c.units.concat(units);c.topicsBuilt=true;save();closeModal();
+  try{toast("Topic lessons added")}catch(_){}
+  renderCourse(deckId);
+ }catch(err){
+  closeModal();
+  try{toast(err&&err.message?err.message:"Couldn't build the topic lessons. Try again.")}catch(_){}
+ }
+};
+const _rcPrep=window.renderCourse;
+if(typeof _rcPrep==="function")window.renderCourse=function(id){
+ _rcPrep.apply(this,arguments);
+ try{
+  const c=courseOf(id);if(!c||!c.paperPrep||c.topicsBuilt)return;
+  const pc=pcOfCourse(c),has=pc&&pc.papers.some(x=>x.fileId);
+  const html=`<div style="padding:.2rem 1.1rem .8rem"><button class="btn btn-primary" style="width:100%" onclick="buildPaperTopics('${id}')">✨ Add topic lessons from my papers</button><p class="muted" style="margin:.45rem 0 0;text-align:center">Adds Term 1–4 topic lessons${has?", based on the papers you uploaded":""}. Links can't be read, only uploaded files.</p></div>`;
+  const prog=view.querySelector(".cprog");
+  if(prog)prog.insertAdjacentHTML("afterend",html);
+ }catch(_){}
 };
 
 /* ---------- first-run hook: new accounts without a profile get the setup flow ---------- */
