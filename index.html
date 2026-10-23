@@ -5098,6 +5098,8 @@ window.QL_PAPERS_URL="papers.json";
 .pp-a{flex:none;text-decoration:none;font-size:.85rem;font-weight:600;border-radius:999px;padding:.4rem .8rem;background:var(--primary);color:var(--primary-fg)}
 .pp-a.alt{background:var(--surface-2);color:var(--foreground)}
 button.pp-a{border:0;font-family:inherit;cursor:pointer}
+.pp-crs{flex:none;width:2rem;height:2rem;border-radius:999px;border:0;background:var(--surface-2);font-size:1rem;line-height:1;cursor:pointer;padding:0}
+.pp-crs.has{background:var(--primary)}
 .pp-del{flex:none;background:none;border:0;color:var(--muted-fg,#aaa);font-size:1.25rem;line-height:1;cursor:pointer;padding:.2rem .3rem}
 .ap-l{display:block;margin:.95rem 0 .35rem;font-size:.9rem;color:var(--muted-fg,#aaa)}
 .ap-chips{display:flex;gap:.4rem;flex-wrap:wrap}
@@ -5107,6 +5109,47 @@ button.pp-a{border:0;font-family:inherit;cursor:pointer}
 .ap-file{width:100%}
 .ap-actions{display:flex;gap:.6rem;margin-top:1.2rem}
 .ap-actions .btn{flex:1}
+.pp-sum{display:flex;align-items:center;justify-content:space-between;gap:.8rem;margin:.2rem 1.1rem .8rem;padding:.8rem 1rem;border-radius:1.1rem;background:var(--surface)}
+.pp-sum b{display:block;font-size:1.02rem}
+.pp-sum small{color:var(--muted-fg,#aaa)}
+.pp-edit{background:var(--surface-2);color:inherit;border:0;border-radius:999px;padding:.45rem .9rem;font:inherit;font-size:.9rem;cursor:pointer}
+.pp-tip{position:relative;margin:0 1.1rem .8rem;padding:.9rem 2.3rem .9rem 1rem;border-radius:1.1rem;background:var(--surface-2);font-size:.92rem}
+.pp-tip ol{margin:.4rem 0 0 1.1rem;padding:0}
+.pp-tip li{margin:.2rem 0}
+.pp-x{position:absolute;top:.3rem;right:.4rem;background:none;border:0;color:inherit;font-size:1.3rem;cursor:pointer;padding:.3rem}
+.pp-subj .pp-bar{display:block;height:.3rem;border-radius:9px;background:var(--surface-2);margin-top:.45rem;overflow:hidden}
+.pp-subj .pp-bar i{display:block;height:100%;background:var(--primary)}
+.pp-chev{margin-left:auto;font-size:1.5rem;color:var(--muted-fg,#aaa);padding-left:.4rem}
+.pp-tabs{display:flex;gap:.3rem;background:var(--surface);border-radius:999px;padding:.25rem;margin-bottom:.8rem}
+.pp-tab{flex:1;border:0;background:none;color:inherit;font:inherit;font-size:.9rem;padding:.5rem .2rem;border-radius:999px;cursor:pointer;white-space:nowrap}
+.pp-tab i{font-style:normal;font-size:.72rem;margin-left:.3rem;opacity:.75}
+.pp-tab.on{background:var(--primary);color:var(--primary-fg)}
+.pp-card{background:var(--surface);border-radius:1.1rem;padding:.85rem;margin-bottom:.6rem}
+.pp-card.done .pp-ct b{opacity:.6}
+.pp-ct{display:flex;align-items:flex-start;justify-content:space-between;gap:.6rem}
+.pp-ct b{font-size:1rem;overflow-wrap:anywhere}
+.pp-done{flex:none;border:1.5px solid var(--primary);background:none;color:inherit;border-radius:999px;padding:.35rem .75rem;font:inherit;font-size:.82rem;cursor:pointer}
+.pp-done.on{background:var(--primary);color:var(--primary-fg)}
+.pp-btns{display:flex;gap:.5rem;margin:.7rem 0 .5rem}
+.pp-btns .pp-a{flex:1;text-align:center;padding:.6rem .5rem;font-size:.9rem}
+.pp-mk{display:flex;align-items:center;gap:.7rem;width:100%;background:var(--surface-2);border:0;color:inherit;font:inherit;text-align:left;border-radius:.9rem;padding:.65rem .8rem;cursor:pointer}
+.pp-mk>span:first-child{font-size:1.4rem}
+.pp-mk small{display:block;color:var(--muted-fg,#aaa);font-size:.8rem}
+.pp-mk.has{outline:1.5px solid var(--primary)}
+.pp-rm{background:none;border:0;color:var(--muted-fg,#aaa);font:inherit;font-size:.8rem;margin-top:.5rem;padding:.2rem 0;cursor:pointer;text-decoration:underline}
+.pp-empty{text-align:center;padding:1.2rem .6rem;background:var(--surface);border-radius:1.1rem}
+.pp-empty p{margin:.2rem 0}
+.pp-skill{margin-top:1rem;padding:.9rem;border-radius:1.1rem;background:var(--surface)}
+.pp-skill p{margin:.2rem 0 .7rem}
+.ap-seg{display:flex;background:var(--surface);border-radius:999px;padding:.25rem}
+.ap-seg button{flex:1;border:0;background:none;color:inherit;font:inherit;font-size:.9rem;padding:.55rem;border-radius:999px;cursor:pointer}
+.ap-seg button.on{background:var(--primary);color:var(--primary-fg)}
+.ap-drop{display:block;width:100%;margin-top:.6rem;border:2px dashed var(--surface-2);background:none;color:inherit;font:inherit;border-radius:1rem;padding:1rem;cursor:pointer;text-align:center}
+.ap-drop small{display:block;color:var(--muted-fg,#aaa);font-size:.8rem;margin-top:.2rem}
+.ap-drop.ok{border-style:solid;border-color:var(--primary)}
+.ap-more{background:none;border:0;color:var(--primary);font:inherit;font-size:.95rem;margin-top:1rem;padding:.3rem 0;cursor:pointer}
+#apLinkBox,#apmLinkBox{margin-top:.6rem}
+.sh [hidden]{display:none!important}
 </style>
 <script>
 (function(){
@@ -5231,7 +5274,7 @@ async function prepare(){
   papersFor(pr,s.id).forEach(p=>{
    const key=p.term+"|"+p.title+"|"+p.url;if(seen.has(key))return;seen.add(key);
    const prev=old.get(id+"|"+key);
-   papers.push({id:prev?prev.id:"p"+Math.random().toString(36).slice(2,9),key,term:Number(p.term),title:String(p.title||"Paper"),url:p.url.trim(),memo:okUrl(p.memo)?p.memo.trim():"",done:prev?!!prev.done:false});
+   papers.push({id:prev?prev.id:"p"+Math.random().toString(36).slice(2,9),key,term:Number(p.term),title:String(p.title||"Paper"),url:p.url.trim(),memo:okUrl(p.memo)?p.memo.trim():"",done:prev?!!prev.done:false,fileId:prev?prev.fileId:undefined,fileName:prev?prev.fileName:undefined,courseDeck:prev?prev.courseDeck:undefined});
   });
   (oldCustom[s.id]||[]).forEach(p=>{papers.push(p);delete oldCustom[s.id]});
   papers.sort((a,b)=>a.term-b.term||a.title.localeCompare(b.title));
@@ -5252,29 +5295,44 @@ async function prepare(){
 }
 
 /* ---------- Exams > My papers ---------- */
+const curTerm=()=>[1,1,1,2,2,2,3,3,3,4,4,4][new Date().getMonth()];
+const PT={}; /* term shown in each subject sheet */
+const plural=(n,w)=>n+" "+w+(n===1?"":"s");
+window.ppHideTip=function(){try{localStorage.setItem("ql-papers-tip","1")}catch(_){}try{renderStudy()}catch(_){}};
 window.papersBody=function(){
  const p=data.profile;
  if(!p||p.skipped||!p.country)return `<div class="empty2" style="padding:2.5rem 1.4rem"><p style="font-size:1.05rem">Set up your grade to get past papers for every subject.</p><button class="btn btn-primary" style="margin-top:1rem" onclick="qlStartOnboarding()">Set up my papers</button></div>`;
- const c=cOf(p.country)||{name:p.country,flag:"",label:"Grade"};
- const rows=(data.paperCourses||[]).map(pc=>{
-  const tot=pc.papers.length,done=pc.papers.filter(x=>x.done).length;
-  return listRow("#3b290f",pc.emoji,E(pc.name),tot?`${done} of ${tot} papers done · Terms 1–4`:"No papers added yet · Terms 1–4",`openPaperCourse('${pc.id}')`);
+ const c=cOf(p.country)||{name:p.country,flag:"",label:"Grade"},cs=data.paperCourses||[];
+ let t=0,d=0;cs.forEach(x=>x.papers.forEach(q=>{t++;if(q.done)d++}));
+ let tip="";try{if(!localStorage.getItem("ql-papers-tip"))tip=`<div class="pp-tip"><button class="pp-x" onclick="ppHideTip()" aria-label="Dismiss">×</button><b>How this works</b><ol><li>Tap a subject below.</li><li>Add your papers: upload a file or paste a link.</li><li>Tap <b>Make a course</b> on a paper to turn it into lessons.</li></ol></div>`}catch(_){}
+ const rows=cs.map(pc=>{
+  const tot=pc.papers.length,dn=pc.papers.filter(x=>x.done).length,pct=tot?Math.round(dn/tot*100):0;
+  return `<button class="row2 pp-subj" onclick="openPaperCourse('${pc.id}')"><span class="tile" style="background:#3b290f">${pc.emoji}</span><span class="t"><b>${E(pc.name)}</b><small>${tot?plural(tot,"paper")+" · "+dn+" done":"No papers yet · tap to add"}</small>${tot?`<span class="pp-bar"><i style="width:${pct}%"></i></span>`:""}</span><span class="pp-chev">›</span></button>`;
  }).join("");
- return `<div class="lbl">${E(c.flag||"")} ${E(gLabel(c,p.grade))} · ${E(c.name)} · ${E(LANGS[p.lang]||"")}</div><div style="padding:0 1.1rem .7rem"><button class="btn btn-primary" style="width:100%" onclick="openAddPaper()">＋ Add papers</button></div><div class="rows" style="padding-top:0">${rows}</div><div style="padding:.4rem 1.1rem 1rem"><button class="btn btn-secondary" style="width:100%" onclick="qlStartOnboarding()">Change grade, country or subjects</button></div>`;
+ return `<div class="pp-sum"><div><b>${E(c.flag||"")} ${E(gLabel(c,p.grade))}</b><small>${E(c.name)} · ${E(LANGS[p.lang]||"")}</small></div><button class="pp-edit" onclick="qlStartOnboarding()">Edit</button></div>${tip}<div style="padding:0 1.1rem .8rem"><button class="btn btn-primary" style="width:100%" onclick="openAddPaper()">＋ Add a paper</button><p class="muted" style="text-align:center;margin:.45rem 0 0">${t?plural(t,"paper")+" · "+d+" done":"Nothing added yet"}</p></div><div class="lbl">Your subjects</div><div class="rows" style="padding-top:0">${rows}</div>`;
 };
 const fileIds=p=>[p.fileId,p.memoFileId].filter(Boolean);
 function lnk(label,url,fid,alt){
  const c="pp-a"+(alt?" alt":"");
  return fid?`<button class="${c}" onclick="openPaperFile('${fid}')">${label}</button>`:`<a class="${c}" href="${E(url)}" target="_blank" rel="noopener">${label}</a>`;
 }
-window.openPaperCourse=function(id){
+function ppCard(pc,p){
+ const has=!!p.courseDeck;
+ const open=(p.url||p.fileId)?lnk("Open paper",p.url,p.fileId,false):"";
+ const ans=(p.memo||p.memoFileId)?lnk("Answers",p.memo,p.memoFileId,true):"";
+ return `<div class="pp-card ${p.done?"done":""}"><div class="pp-ct"><b>${E(p.title)}</b><button class="pp-done ${p.done?"on":""}" onclick="togglePaper('${pc.id}','${p.id}')">${p.done?"✓ Done":"Mark done"}</button></div><div class="pp-btns">${open}${ans}</div><button class="pp-mk ${has?"has":""}" onclick="createPaperCourse('${pc.id}','${p.id}')"><span>🎓</span><span><b>${has?"Open course":"Make a course"}</b><small>${has?"Keep learning from this paper":"Turns this paper into lessons"}</small></span></button>${p.custom?`<button class="pp-rm" onclick="removePaper('${pc.id}','${p.id}')">Remove this paper</button>`:""}</div>`;
+}
+window.openPaperCourse=function(id,term){
  const pc=(data.paperCourses||[]).find(x=>x.id===id);if(!pc)return;
- const terms=[1,2,3,4].map(t=>{
-  const ps=pc.papers.filter(p=>p.term===t);
-  const rows=ps.length?ps.map(p=>`<div class="pp-row ${p.done?"done":""}"><button class="pp-chk" onclick="togglePaper('${pc.id}','${p.id}')" aria-label="Mark done">${p.done?"✓":""}</button><div class="pp-t">${E(p.title)}</div>${lnk("Paper",p.url,p.fileId,false)}${(p.memo||p.memoFileId)?lnk("Memo",p.memo,p.memoFileId,true):""}${p.custom?`<button class="pp-del" onclick="removePaper('${pc.id}','${p.id}')" aria-label="Remove paper">×</button>`:""}</div>`).join(""):`<p class="muted" style="margin:.1rem 0 .5rem">No Term ${t} papers added yet.</p>`;
-  return `<div class="lbl" style="padding:0;margin:1rem 0 .5rem">Term ${t}</div>${rows}`;
- }).join("");
- modal(`<div class="sh"><h2>${pc.emoji} ${E(pc.name)}</h2><button class="btn btn-primary" style="width:100%;margin-top:.4rem" onclick="openAddPaper('${pc.subject}')">＋ Add a paper</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="openPaperPrep('${pc.subject}')">🎓 ${E(prepLabel(pc))}</button>${terms}<button class="btn btn-secondary" style="width:100%;margin-top:1rem" onclick="closeModal()">Close</button></div>`);
+ if(term)PT[id]=term;
+ let t=PT[id];
+ if(!t){t=pc.papers.some(p=>p.term===curTerm())?curTerm():((pc.papers[0]&&[1,2,3,4].find(x=>pc.papers.some(p=>p.term===x)))||curTerm());PT[id]=t}
+ const tot=pc.papers.length,dn=pc.papers.filter(x=>x.done).length;
+ const tabs=[1,2,3,4].map(x=>{const n=pc.papers.filter(p=>p.term===x).length;return `<button class="pp-tab ${x===t?"on":""}" onclick="openPaperCourse('${id}',${x})">Term ${x}${n?`<i>${n}</i>`:""}</button>`}).join("");
+ const ps=pc.papers.filter(p=>p.term===t);
+ const cards=ps.length?ps.map(p=>ppCard(pc,p)).join(""):`<div class="pp-empty"><p><b>No Term ${t} papers yet</b></p><p class="muted">Add a past paper to practise it and turn it into a course.</p></div>`;
+ const pl=prepLabel(pc),skill=/lessons/.test(pl)?"Continue · "+pl.split("· ")[1]:"Start the course";
+ modal(`<div class="sh"><h2>${pc.emoji} ${E(pc.name)}</h2><p class="muted" style="margin:.1rem 0 .8rem">${tot?plural(tot,"paper")+" · "+dn+" done":"No papers yet"}</p><div class="pp-tabs">${tabs}</div>${cards}<button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="openAddPaper('${pc.subject}',${t})">＋ Add a Term ${t} paper</button><div class="pp-skill"><b>🎯 Exam skills course</b><p class="muted">Learn how to read questions, plan your time and score more marks in ${E(pc.name)}.</p><button class="btn btn-secondary" style="width:100%" onclick="openPaperPrep('${pc.subject}')">${E(skill)}</button></div><button class="btn btn-ghost" style="width:100%;margin-top:.4rem" onclick="closeModal()">Close</button></div>`);
 };
 /* ---------- add your own papers (link or uploaded file) ---------- */
 let AP=null;
@@ -5282,20 +5340,33 @@ function idb(){return new Promise((res,rej)=>{const r=indexedDB.open("ql-paper-f
 async function idbPut(k,v){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("f","readwrite");t.objectStore("f").put(v,k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
 async function idbGet(k){const d=await idb();return new Promise((res,rej)=>{const r=d.transaction("f").objectStore("f").get(k);r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error)})}
 async function idbDel(k){const d=await idb();return new Promise((res,rej)=>{const t=d.transaction("f","readwrite");t.objectStore("f").delete(k);t.oncomplete=()=>res();t.onerror=()=>rej(t.error)})}
-window.openAddPaper=function(sid){
+window.openAddPaper=function(sid,term){
  const cs=data.paperCourses||[];
  if(!cs.length){try{toast("Set up your subjects first")}catch(_){}return}
- AP={subject:cs.some(c=>c.subject===sid)?sid:cs[0].subject,term:1,file:null,memoFile:null};
+ AP={subject:cs.some(c=>c.subject===sid)?sid:cs[0].subject,term:term||curTerm(),file:null,memoFile:null,mode:"file",memoMode:"file"};
+ const seg=(id,w)=>`<div class="ap-seg" id="${id}"><button class="on" data-m="file" onclick="apMode('${w}','file')">📎 Upload a file</button><button data-m="link" onclick="apMode('${w}','link')">🔗 Paste a link</button></div>`;
  modal(`<div class="sh"><h2>Add a paper</h2>
  <label class="ap-l" for="apSub">Subject</label><select class="input" id="apSub" onchange="AP_subject(this.value)">${cs.map(c=>`<option value="${E(c.subject)}" ${c.subject===AP.subject?"selected":""}>${c.emoji} ${E(c.name)}</option>`).join("")}</select>
- <label class="ap-l">Term</label><div class="ap-chips" id="apTerm">${[1,2,3,4].map(t=>`<button class="ap-chip ${t===1?"on":""}" data-t="${t}" onclick="apTerm(${t})">Term ${t}</button>`).join("")}</div>
- <label class="ap-l" for="apTitle">Name</label><input class="input" id="apTitle" placeholder="e.g. Term 1 Test 2024" maxlength="80">
- <label class="ap-l" for="apUrl">Paper</label><input class="input" id="apUrl" type="url" inputmode="url" placeholder="Paste a link (https://…)"><div class="ap-or">or</div><button class="btn btn-secondary ap-file" id="apFileBtn" onclick="apPick('file')">📎 Upload a PDF or photo</button>
- <label class="ap-l" for="apMemo">Memo / answers (optional)</label><input class="input" id="apMemo" type="url" inputmode="url" placeholder="Paste a link (https://…)"><div class="ap-or">or</div><button class="btn btn-secondary ap-file" id="apMemoBtn" onclick="apPick('memoFile')">📎 Upload the memo</button>
+ <label class="ap-l">Which term?</label><div class="ap-chips" id="apTerm">${[1,2,3,4].map(t=>`<button class="ap-chip ${t===AP.term?"on":""}" data-t="${t}" onclick="apTerm(${t})">Term ${t}</button>`).join("")}</div>
+ <label class="ap-l">Where is the paper?</label>${seg("apSeg","paper")}
+ <div id="apFileBox"><button class="ap-drop" id="apFileBtn" onclick="apPick('file')">Choose a PDF or photo<small>from your phone or computer</small></button></div>
+ <div id="apLinkBox" hidden><input class="input" id="apUrl" type="url" inputmode="url" placeholder="https://…"></div>
+ <label class="ap-l" for="apTitle">Name <span class="muted">(optional)</span></label><input class="input" id="apTitle" placeholder="e.g. Term 1 Test 2024" maxlength="80">
+ <button class="ap-more" id="apMoreBtn" onclick="apMore()">＋ Add the answers / memo (optional)</button>
+ <div id="apMemoBox" hidden><label class="ap-l">Answers / memo</label>${seg("apmSeg","memo")}
+  <div id="apmFileBox"><button class="ap-drop" id="apmFileBtn" onclick="apPick('memoFile')">Choose a PDF or photo<small>the marking guideline</small></button></div>
+  <div id="apmLinkBox" hidden><input class="input" id="apmUrl" type="url" inputmode="url" placeholder="https://…"></div></div>
  <div class="ap-actions"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveAddedPaper()">Add paper</button></div></div>`);
 };
 window.AP_subject=function(v){if(AP)AP.subject=v};
 window.apTerm=function(t){if(!AP)return;AP.term=t;document.querySelectorAll("#apTerm .ap-chip").forEach(b=>b.classList.toggle("on",Number(b.dataset.t)===t))};
+window.apMode=function(w,m){
+ if(!AP)return;const pre=w==="paper"?"ap":"apm";
+ AP[w==="paper"?"mode":"memoMode"]=m;
+ const f=$(pre+"FileBox"),l=$(pre+"LinkBox");if(f)f.hidden=m!=="file";if(l)l.hidden=m!=="link";
+ document.querySelectorAll("#"+pre+"Seg button").forEach(b=>b.classList.toggle("on",b.dataset.m===m));
+};
+window.apMore=function(){const b=$("apMemoBox"),btn=$("apMoreBtn");if(!b)return;b.hidden=!b.hidden;if(btn)btn.textContent=b.hidden?"＋ Add the answers / memo (optional)":"− Hide the answers / memo"};
 window.apPick=function(kind){
  if(!AP)return;
  const inp=document.createElement("input");inp.type="file";inp.accept=".pdf,application/pdf,image/*";
@@ -5303,26 +5374,30 @@ window.apPick=function(kind){
   const f=inp.files&&inp.files[0];if(!f)return;
   if(f.size>30*1024*1024){try{toast("That file is over 30 MB. Use a link instead.")}catch(_){}return}
   AP[kind]=f;
-  const btn=$(kind==="file"?"apFileBtn":"apMemoBtn");if(btn)btn.textContent="📎 "+f.name;
+  const btn=$(kind==="file"?"apFileBtn":"apmFileBtn");
+  if(btn){btn.classList.add("ok");btn.innerHTML="📎 "+E(f.name)+"<small>Tap to change</small>"}
  };
  inp.click();
 };
 window.saveAddedPaper=async function(){
  if(!AP)return;
  const val=id=>(($(id)||{}).value||"").trim();
- const sid=val("apSub")||AP.subject,title=val("apTitle")||"Paper",url=val("apUrl"),memo=val("apMemo");
- if(!url&&!AP.file){toast("Add a link or upload a file");return}
- if(!AP.file&&!okUrl(url)){toast("The link must start with http:// or https://");return}
- if(memo&&!AP.memoFile&&!okUrl(memo)){toast("The memo link must start with http:// or https://");return}
+ const sid=val("apSub")||AP.subject,url=val("apUrl"),memo=val("apmUrl"),useFile=AP.mode==="file",memoFile=AP.memoMode==="file";
+ if(useFile&&!AP.file){toast("Choose a file, or switch to “Paste a link”");return}
+ if(!useFile&&!url){toast("Paste the link to the paper");return}
+ if(!useFile&&!okUrl(url)){toast("The link must start with http:// or https://");return}
+ if(!memoFile&&memo&&!okUrl(memo)){toast("The memo link must start with http:// or https://");return}
  const pc=(data.paperCourses||[]).find(c=>c.subject===sid);if(!pc)return;
+ const title=val("apTitle")||(useFile?AP.file.name.replace(/\.[^.]+$/,""):"Term "+AP.term+" paper");
  const id="p"+Math.random().toString(36).slice(2,9);
- const p={id,key:"custom|"+id,term:AP.term,title,url:AP.file?"":url,memo:AP.memoFile?"":(okUrl(memo)?memo:""),done:false,custom:true};
+ const p={id,key:"custom|"+id,term:AP.term,title,url:useFile?"":url,memo:(!memoFile&&okUrl(memo))?memo:"",done:false,custom:true};
  try{
-  if(AP.file){p.fileId="f"+id;p.fileName=AP.file.name;await idbPut(p.fileId,{blob:AP.file,name:AP.file.name,type:AP.file.type})}
-  if(AP.memoFile){p.memoFileId="m"+id;p.memoFileName=AP.memoFile.name;await idbPut(p.memoFileId,{blob:AP.memoFile,name:AP.memoFile.name,type:AP.memoFile.type})}
+  if(useFile){p.fileId="f"+id;p.fileName=AP.file.name;await idbPut(p.fileId,{blob:AP.file,name:AP.file.name,type:AP.file.type})}
+  if(memoFile&&AP.memoFile){p.memoFileId="m"+id;p.memoFileName=AP.memoFile.name;await idbPut(p.memoFileId,{blob:AP.memoFile,name:AP.memoFile.name,type:AP.memoFile.type})}
  }catch(_){toast("Couldn't save that file on this device. Try a link instead.");return}
+ PT[pc.id]=AP.term;
  pc.papers.push(p);pc.papers.sort((a,b)=>a.term-b.term||a.title.localeCompare(b.title));
- save();AP=null;toast("Paper added");openPaperCourse(pc.id);
+ save();AP=null;offerPaperCourse(pc.id,p.id);
  try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}
 };
 window.openPaperFile=async function(fid){
@@ -5430,6 +5505,64 @@ if(typeof _rcPrep==="function")window.renderCourse=function(id){
   const prog=view.querySelector(".cprog");
   if(prog)prog.insertAdjacentHTML("afterend",html);
  }catch(_){}
+};
+
+/* ---------- one course per paper (built the same way notes become courses) ---------- */
+window.offerPaperCourse=function(cid,pid){
+ const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!p){return}
+ const readable=!!p.fileId;
+ modal(`<div class="sh" style="text-align:center"><div style="font-size:2.4rem;line-height:1">✅</div><h2>Paper added</h2><p class="muted">Make a course from “${E(p.title)}”? ${readable?"It reads the paper"+(p.memoFileId?" and its memo":"")+" and turns it into lessons":"Links can't be read, so you'd upload the file first. It then turns the paper into lessons"}, the same way your notes become courses.</p><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="createPaperCourse('${cid}','${pid}')">🎓 Make a course</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="openPaperCourse('${cid}')">Not now</button></div>`);
+};
+async function transcribePaper(fid,label){
+ const rec=await idbGet(fid);
+ if(!rec||!rec.blob)throw new Error("That file isn't on this device. Add it again.");
+ const file=new File([rec.blob],rec.name||"paper.pdf",{type:rec.type||rec.blob.type||""});
+ const imgs=await filesToImages([file]);
+ if(!imgs.length)throw new Error("Couldn't read that file.");
+ const out=await gemini("Transcribe this "+label+" exactly into plain text. Keep every question number, sub-question, mark allocation and answer. Write tables and data as simple text lines and describe any diagram or graph in square brackets. No commentary, no Markdown.",imgs,{autoFallback:true});
+ const t=(typeof cleanAiText==="function"?cleanAiText(out):String(out||"")).trim().slice(0,40000);
+ if(t.length<80)throw new Error("Couldn't read enough text from that "+label+". Try a clearer scan.");
+ return t;
+}
+window.attachPaperFile=function(cid,pid){
+ const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!p)return;
+ const inp=document.createElement("input");inp.type="file";inp.accept=".pdf,application/pdf,image/*";
+ inp.onchange=async()=>{
+  const f=inp.files&&inp.files[0];if(!f)return;
+  if(f.size>30*1024*1024){try{toast("That file is over 30 MB.")}catch(_){}return}
+  try{p.fileId="f"+p.id;p.fileName=f.name;await idbPut(p.fileId,{blob:f,name:f.name,type:f.type});save()}
+  catch(_){delete p.fileId;try{toast("Couldn't save that file on this device.")}catch(__){}return}
+  createPaperCourse(cid,pid);
+ };
+ inp.click();
+};
+window.createPaperCourse=async function(cid,pid){
+ const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!pc||!p)return;
+ /* a course already exists: open it (if it never finished, the course page offers to generate it) */
+ const have=p.courseDeck&&(data.decks||[]).find(d=>d.id===p.courseDeck);
+ if(have){closeModal();go("#/course/"+have.id);return}
+ if(!p.fileId){
+  modal(`<div class="sh" style="text-align:center"><h2>Upload the paper</h2><p class="muted">“${E(p.title)}” is a link, and the app can't open links. Upload the file (a PDF or photos of the pages) and I'll build the course from it.</p><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="attachPaperFile('${cid}','${pid}')">📎 Upload the paper</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="openPaperCourse('${cid}')">Cancel</button></div>`);
+  return;
+ }
+ const show=m=>modal('<div class="sh gen-progress" style="text-align:center">'+((typeof animOn==="function"&&animOn())?mascot("think",{size:104,cls:"idle"}):'<div class="genorb"></div>')+'<h2>Reading your paper</h2><p class="muted">'+E(m)+'</p><div class="progress"><div style="width:35%"></div></div></div>');
+ try{
+  show("Reading the paper pages…");
+  const paperText=await transcribePaper(p.fileId,"exam paper");
+  let memoText="";
+  if(p.memoFileId){show("Reading the memo…");memoText=await transcribePaper(p.memoFileId,"memo / marking guideline")}
+  const d=createDeck(pc.name+": "+p.title);if(!d)throw new Error("Couldn't create the course.");
+  d.subject=pc.name;d.paperId=p.id;
+  const content="PAST PAPER: "+p.title+" ("+pc.name+", Term "+p.term+"). Each question below tests a skill the student needs to master."+(memoText?" The memo gives the correct answers and mark allocation.":"")+"\n\n"+paperText+(memoText?"\n\nMEMO / MARKING GUIDELINE:\n\n"+memoText:"");
+  data.notes.unshift({id:uid(),deckId:d.id,title:p.title,content,createdAt:todayISO()});
+  p.courseDeck=d.id;save();
+  closeModal();
+  await genCourse(d.id);
+  try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}
+ }catch(err){
+  closeModal();
+  try{toast(err&&err.message?err.message:"Couldn't build the course. Try again.")}catch(_){}
+ }
 };
 
 /* ---------- first-run hook: new accounts without a profile get the setup flow ---------- */
