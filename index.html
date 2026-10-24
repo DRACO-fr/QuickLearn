@@ -3230,10 +3230,78 @@ function demarcChip(id){
 function demarcSheet(id){
   const m=demarcOf(id);
   modal(`<div class="sh"><h2>🎯 Demarcation</h2><p class="muted" style="text-align:center;margin:.2rem 0 .8rem">Tell the AI exactly what is in your exam or test. When it summarizes, improves notes, or makes flashcards, courses, study guides and mind maps, it will follow this.</p>
+  <input type="file" id="dmFile" accept="application/pdf,.pdf,image/*" multiple hidden onchange="demarcFromFile('${id}',this.files)">
+  <button class="btn btn-secondary" style="width:100%" onclick="document.getElementById('dmFile').click()">📄 Upload demarcation (PDF or photo)</button>
+  <div id="dmStatus" class="muted" style="text-align:center;margin:.5rem 0 .2rem;font-size:.85rem"></div>
   <label class="label" for="dmInc">Must be in the material</label><textarea class="input" id="dmInc" style="min-height:7rem" placeholder="e.g. Chapters 3 and 4, the causes of the war, all dates and key people">${esc(m.include)}</textarea>
   <label class="label" for="dmExc" style="margin-top:.7rem">Can be left out</label><textarea class="input" id="dmExc" style="min-height:7rem" placeholder="e.g. Chapter 5, the biography section, pages 20-25, extra examples">${esc(m.exclude)}</textarea>
   <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="saveDemarc('${id}')">Save demarcation</button>
   ${(m.include||m.exclude)?`<button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="clearDemarc('${id}')">Remove demarcation</button>`:""}</div>`);
+}
+async function ensurePdfJs(){
+  if(!window.pdfjsLib){
+    await loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js");
+    window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+  }
+}
+async function pdfPlainText(file){
+  await ensurePdfJs();
+  const pdf = await window.pdfjsLib.getDocument({ data: await file.arrayBuffer() }).promise;
+  let out = "";
+  for(let p=1; p<=Math.min(pdf.numPages, 40); p++){
+    const tc = await (await pdf.getPage(p)).getTextContent();
+    out += tc.items.map(i=>i.str).join(" ") + "\n";
+    if(out.length > 24000) break;
+  }
+  return out.replace(/[ \t]+/g," ").trim();
+}
+async function demarcFromFile(id, fileList){
+  const files = Array.from(fileList||[]); const inp = document.getElementById("dmFile");
+  if(!files.length) return;
+  const status = t => { const e=document.getElementById("dmStatus"); if(e) e.innerHTML=t; };
+  const put = (inc, exc) => {
+    const a=document.getElementById("dmInc"), b=document.getElementById("dmExc");
+    const join=(el,v)=>{ if(el&&v){ el.value = el.value.trim() ? el.value.trim()+"\n"+v : v; } };
+    join(a,inc); join(b,exc);
+  };
+  try{
+    status('<span class="spin"></span> Reading your file…');
+    let text = "", needImages = false;
+    for(const f of files){
+      if(f.type==="application/pdf" || /\.pdf$/i.test(f.name)){
+        try{ text += (await pdfPlainText(f)) + "\n"; }catch(_){ needImages = true; }
+      } else needImages = true;
+    }
+    text = text.trim();
+    if(text.length < 80) needImages = true;          // scanned PDF or photo: let the AI read the pictures
+    const canAi = !!getKey() && navigator.onLine !== false;
+    if(!canAi){
+      if(needImages && text.length < 80){ status("Add your Gemini API key (AI key button) so the AI can read scanned PDFs and photos."); return; }
+      put(text.slice(0,4000), "");
+      status("Text added to “Must be in the material”. Add your AI key and the AI can sort it into include and leave out for you. Check it, then save.");
+      return;
+    }
+    const images = needImages && text.length < 80 ? await filesToImages(files) : [];
+    if(needImages && text.length < 80 && !images.length) throw new Error("Couldn't read that file.");
+    status('<span class="spin"></span> The AI is reading your demarcation…');
+    const prompt = `A student uploaded a DEMARCATION: a document or photo that says what is in their exam, test or syllabus scope (in South Africa this is often called an "afbakening" or exam scope). Read it and sort it into two lists.
+
+LANGUAGE: write in the same language as the document. Never translate.
+
+- "include": every topic, chapter, section, page range, skill or content item the student MUST study. Short lines, one item per line, with page numbers or chapter names exactly as given.
+- "exclude": anything the document says is NOT examined, can be skipped, or is excluded. Empty string if the document only lists what is covered.
+- Use ONLY what is in the document. Do not add topics.
+
+Return ONLY valid JSON, no commentary, no markdown fences: {"include":"line one\nline two","exclude":""}${text.length>=80 ? "\n\nDOCUMENT TEXT:\n"+text.slice(0,20000) : ""}`;
+    const j = jparse(await gemini(prompt, images.length?images:undefined, {autoFallback:true}));
+    const inc = String(j&&j.include||"").trim(), exc = String(j&&j.exclude||"").trim();
+    if(!inc && !exc) throw new Error("Nothing readable found in that file.");
+    put(inc, exc);
+    status("Done. Check the lists below, edit anything that's wrong, then tap Save.");
+  }catch(e){
+    status("Couldn’t read that file: "+esc(e.message||"error"));
+  }
+  if(inp) inp.value = "";
 }
 function saveDemarc(id){
   const d=data.decks.find(x=>x.id===id); if(!d) return;
