@@ -903,6 +903,28 @@ body.selmode #view{padding-bottom:6.5rem}
 #selact .dng{color:#ff6b6b}
 @keyframes selDown{from{transform:translateY(-100%)}to{transform:none}}
 @keyframes selUp{from{transform:translateY(100%)}to{transform:none}}
+/* Blurting section picker */
+.blsec-tools{display:flex;gap:.5rem;flex-wrap:wrap;margin:.2rem 0 .7rem}
+.blsec-tools .btn{flex:1;min-width:6rem;padding:.55rem .7rem;font-size:.85rem}
+.blsec-list{max-height:48vh;overflow-y:auto;display:flex;flex-direction:column;gap:.5rem;padding:.1rem}
+.blsec{border:1px solid #3a2a20;border-radius:.9rem;background:rgba(255,255,255,.03);overflow:hidden;transition:border-color .15s,background .15s}
+.blsec.sel{border-color:#e29a2d;background:rgba(226,154,45,.12)}
+.blsec-head{display:flex;align-items:center;gap:.7rem;width:100%;background:none;border:0;color:inherit;font:inherit;text-align:left;padding:.7rem .8rem;cursor:pointer}
+.blsec-ck{flex:none;width:1.4rem;height:1.4rem;border-radius:.45rem;border:2px solid #6b5444;display:grid;place-items:center;font-size:.85rem;font-weight:800;color:#241407}
+.blsec.sel .blsec-ck{background:#e29a2d;border-color:#e29a2d}
+.blsec-tt{flex:1;min-width:0;display:flex;flex-direction:column;gap:.1rem}
+.blsec-tt b{font-weight:600;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.blsec-tt small,.blsec-meta small{color:#aaa;font-size:.74rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.blsec-meta{flex:none}
+.blsec-chev{flex:none;padding:.3rem .5rem;transition:transform .2s;opacity:.7}
+.blsec-chev.open{transform:rotate(180deg)}
+.blsec-prev{padding:0 .8rem .8rem}
+.blsec-prev .rec{max-height:30vh;overflow-y:auto;white-space:pre-wrap;font-size:.85rem}
+.blfoot{display:flex;gap:.6rem;align-items:center;margin-top:.9rem}
+.blsel-fab{position:fixed;left:50%;transform:translateX(-50%);bottom:calc(1.2rem + env(safe-area-inset-bottom));z-index:50;border:0;border-radius:999px;padding:.9rem 1.4rem;font:inherit;font-weight:700;background:#e29a2d;color:#241407;box-shadow:0 8px 24px rgba(0,0,0,.4);cursor:pointer}
+html[data-theme="light"] .blsec{border-color:#e1d2c8;background:#fff}
+html[data-theme="light"] .blsec.sel{background:#fff3df}
+html[data-theme="light"] .blsec-tt small,html[data-theme="light"] .blsec-meta small{color:#7a6a5e}
 </style>
 
 <style id="ql-startup-buffer-style">
@@ -3356,7 +3378,178 @@ function renderDeck(id){
 function studyDeck(id){const d=data.decks.find(x=>x.id===id),c=dueCards(id);if(!c.length){toast("No cards due");return;}startSession(c,d.title,"#/deck/"+id);}
 function quizDeck(id){if(deckCards(id).length<4){toast("Add at least 4 flashcards first");return;}startQuiz(id);}
 function aiDeck(id,kind){if(!deckNotes(id).length){toast("Add a note first");return;}aiAct(id,kind);}
-let blurtingInterval=null, blurtingRemaining=0, blurtingSection="";
+let blurtingInterval=null, blurtingRemaining=0, blurtingSection="", blurtingTotal=120;
+/* ============================== BLURTING SECTION PICKER ============================== */
+/* Sections are detected (AI first, structural fallback otherwise), cached per note content,
+   and kept entirely separate from data.notes — the saved note is never touched. */
+const BL={deckId:null,noteId:null,sections:[],sel:new Set(),custom:null,customPick:false,trunc:false,run:0};
+const BL_CACHE_KEY="quicklearn-blurtsecs-v1";
+const blCache=(()=>{try{return JSON.parse(localStorage.getItem(BL_CACHE_KEY)||"{}")}catch(_){return{}}})();
+function blCacheSave(){try{const ks=Object.keys(blCache);if(ks.length>40)ks.slice(0,ks.length-30).forEach(k=>delete blCache[k]);localStorage.setItem(BL_CACHE_KEY,JSON.stringify(blCache))}catch(_){}}
+function blHash(t){let x=5381;const s=String(t);for(let i=0;i<s.length;i++)x=((x<<5)+x+s.charCodeAt(i))>>>0;return"h"+x.toString(36)}
+function blContent(){const notes=deckNotes(BL.deckId);if(BL.noteId==="*"){const t=notes.map(n=>n.content).join("\n\n");return{text:t,hash:blHash(t)}}const n=notes.find(v=>v.id===BL.noteId)||notes[0];return{text:n?n.content:"",hash:blHash(n?n.content:"")}}
+const blNorm=s=>String(s).replace(/\s+/g," ").trim();
+/* Fallback splitter: uses Markdown headings when present, otherwise groups paragraphs
+   into coherent ~1400-char parts. Purely structural, works offline, never invents text. */
+function blFallbackSections(text){
+  const raw=String(text||"");const lines=raw.split("\n");
+  const heads=[];lines.forEach((ln,i)=>{const m=ln.match(/^\s{0,3}(#{1,6})\s+(.+)$/);if(m)heads.push({i:i,title:m[2].replace(/\s*#+\s*$/,"").trim()});});
+  if(heads.length>=2){
+    const secs=[];
+    for(let k=0;k<heads.length;k++){const end=k+1<heads.length?heads[k+1].i:lines.length;const body=lines.slice(heads[k].i,end).join("\n").trim();if(body)secs.push({title:heads[k].title||("Section "+(k+1)),desc:"",text:body});}
+    if(secs.length)return secs;
+  }
+  let paras=raw.split(/\n\s*\n/).map(p=>p.trim()).filter(Boolean);
+  if(paras.length===1&&paras[0].length>1600){
+    const ls=paras[0].split("\n").map(x=>x.trim()).filter(Boolean);const gp=[];
+    for(let i=0;i<ls.length;i+=8)gp.push(ls.slice(i,i+8).join("\n"));
+    paras=gp;
+  }
+  if(!paras.length)return[];
+  const target=1400,secs=[];let cur=[],len=0;
+  for(const p of paras){
+    if(len+p.length>target&&cur.length){secs.push(cur);cur=[];len=0;}
+    cur.push(p);len+=p.length+2;
+  }
+  if(cur.length)secs.push(cur);
+  return secs.map((ps,i)=>{
+    const body=ps.join("\n\n");
+    const fl=ps[0].split("\n")[0].trim().replace(/^#{1,6}\s*/,"");
+    const ds=ps.length>1?ps[1].split("\n")[0].trim().replace(/^#{1,6}\s*/,""):"";
+    return{title:(fl||("Part "+(i+1))).slice(0,60),desc:ds.slice(0,80),text:body};
+  });
+}
+function blChunks(text,max){
+  const paras=String(text).split(/\n\s*\n/);const out=[];let cur="";
+  for(const p of paras){
+    if((cur+p).length>max&&cur.trim()){out.push(cur);cur="";}
+    cur+=p+"\n\n";
+  }
+  if(cur.trim())out.push(cur);
+  return out;
+}
+const BL_TIPS=["Grouping related ideas helps your memory connect them.","Read actively: ask yourself questions as you go.","Blurting works best when you write, not just think.","Pick smaller sections for a sharper recall workout.","You're building real memory — not just recognition."];
+/* AI sectioning: notes are processed in ordered chunks so long notes aren't silently cut,
+   and every returned section must be verbatim source text (validated later). */
+async function blAiSections(text,onStep){
+  const chunks=blChunks(text,8500);
+  BL.trunc=chunks.length>8;
+  const all=[];let tip=0;
+  for(let i=0;i<Math.min(chunks.length,8);i++){
+    onStep&&onStep(i+1,Math.min(chunks.length,8),BL_TIPS[tip++%BL_TIPS.length]);
+    const prompt=`Split the study notes below into meaningful SECTIONS a student could learn one at a time.
+LANGUAGE: reply in the same language as the notes. Never translate.
+- Use the note's own headings as section boundaries when they exist. If there are no headings, group the content into coherent sections by theme or subtopic.
+- Preserve the original ORDER of the material from start to finish. Cover the WHOLE chunk: nothing at the start or end may be skipped, summarised or truncated.
+- The "text" of every section MUST be copied VERBATIM from the notes (exact original wording, including headings, bullets and lists). Never rewrite, translate, or invent content. Never add facts that are not in the notes.
+- Give each section a short "title" (its heading, or a 3-6 word description) and a one-line "desc" of what it covers.
+Return ONLY valid JSON, no commentary and no markdown fences:
+{"sections":[{"title":"...","desc":"...","text":"...exact source text..."}]}
+NOTES:
+${chunks[i]}`;
+    const j=jparse(await gemini(prompt,undefined,{autoFallback:true}));
+    const arr=Array.isArray(j)?j:((j&&Array.isArray(j.sections))?j.sections:[]);
+    arr.forEach(s=>{if(s&&typeof s.text==="string"&&s.text.trim())all.push({title:String(s.title||"").trim()||("Section "+(all.length+1)),desc:String(s.desc||"").trim(),text:s.text.trim()});});
+  }
+  return all;
+}
+/* Only keep AI sections whose text actually appears in the source (whitespace-normalised),
+   and require reasonable coverage — otherwise we honestly fall back to structural sectioning. */
+function blValidate(src,secs){
+  const hay=blNorm(src);let chars=0;
+  const good=secs.filter(s=>{const t=blNorm(s.text);if(t.length>20&&hay.includes(t)){chars+=t.length;return true}return false;});
+  return{good:good,ok:good.length>0&&good.length/Math.max(1,secs.length)>=0.6&&(hay.length?chars/hay.length>=0.45:true)};
+}
+const blLoading=(i,n,tip)=>modal(`<div class="sh" style="text-align:center"><div class="genorb"></div><h2>Finding sections…</h2><p class="muted">${n?("Reading part "+i+" of "+n+"…"):"Reading your note…"}</p><div class="gen-tip"><b>✦ STUDY HACK</b><p>${esc(tip||BL_TIPS[0])}</p></div></div>`);
+async function openBlurtSections(){
+  const run=++BL.run;BL.customPick=false;
+  const c=blContent(),text=c.text;
+  if(!text.trim()){toast("This note is empty");return;}
+  blLoading(0,0);
+  let secs=blCache[c.hash]||null;
+  if(!secs){
+    if(getKey()&&navigator.onLine!==false){
+      try{
+        const ai=await blAiSections(text,(i,n,tip)=>{if(run===BL.run)blLoading(i,n,tip)});
+        if(run!==BL.run)return;
+        const v=blValidate(text,ai);
+        if(v.ok)secs=v.good;
+        else toast("AI sections didn't match your note, so its own structure was used instead.");
+      }catch(e){ if(run!==BL.run)return; }
+    }
+    if(!secs){secs=blFallbackSections(text);BL.trunc=false;}
+    blCache[c.hash]=secs;blCacheSave();
+  }
+  if(run!==BL.run)return;
+  BL.sections=secs;
+  BL.sel=new Set(secs.length===1?[0]:[]);
+  renderBlurtPicker();
+}
+function renderBlurtPicker(){
+  const secs=BL.sections,n=BL.sel.size+(BL.custom?1:0);
+  const fmtL=l=>l>=1000?Math.round(l/100)/10+"k":String(l);
+  const rows=secs.map((s,i)=>`<div class="blsec${BL.sel.has(i)?" sel":""}" data-i="${i}"><button class="blsec-head" data-nohap onclick="blToggle(${i})"><span class="blsec-ck" aria-hidden="true">${BL.sel.has(i)?"✓":""}</span><span class="blsec-tt"><b>${esc(s.title)}</b>${s.desc?`<small>${esc(s.desc)}</small>`:""}</span><span class="blsec-meta"><small>${fmtL(s.text.length)} chars</small></span><span class="blsec-chev" data-nohap onclick="event.stopPropagation();blPreview(${i})" aria-label="Preview section">▾</span></button><div class="blsec-prev" id="blprev${i}" hidden><div class="rec">${esc(s.text)}</div></div></div>`).join("");
+  const customRow=BL.custom?`<div class="blsec sel"><button class="blsec-head" data-nohap onclick="blDropCustom()"><span class="blsec-ck" aria-hidden="true">✓</span><span class="blsec-tt"><b>✂️ Custom selection</b><small>Tap to remove</small></span><span class="blsec-meta"><small>${fmtL(BL.custom.length)} chars</small></span></button></div>`:"";
+  modal(`<div class="sh"><h2>Choose what to blurt</h2><p class="muted" style="text-align:center;margin:.2rem 0 .7rem">Pick one or more sections — your notes are never changed.</p>
+  ${BL.trunc?`<p class="muted" style="font-size:.78rem;margin:.1rem 0 .5rem">⚠️ This note is very long, so only part of it was split into sections. Use “Custom text” for the rest.</p>`:""}
+  <div class="blsec-tools">${secs.length>1?`<button class="btn btn-secondary" data-nohap onclick="blAll()">Select all</button>`:""}${(secs.length>1||BL.custom)?`<button class="btn btn-secondary" data-nohap onclick="blClear()">Clear</button>`:""}<button class="btn btn-secondary" data-nohap onclick="blCustomView()">✂️ Custom text</button></div>
+  <div class="blsec-list">${customRow}${rows||`<div class="empty">Couldn't split this note into sections — try “Custom text” to pick your own passage.</div>`}</div>
+  <div class="blfoot"><select class="input" id="blurtingMinutes" data-nohap style="flex:0 0 7rem;min-width:0;min-height:46px;padding-right:1.6rem"><option value="1">1 min</option><option value="2" selected>2 min</option><option value="3">3 min</option><option value="5">5 min</option><option value="10">10 min</option><option value="15">15 min</option></select><button class="btn btn-primary" id="blStart" data-nohap style="flex:1" ${n?"":"disabled"} onclick="blStart()">${n?("Start Blurt ("+n+")"):"Start Blurt"}</button></div></div>`);
+}
+function blToggle(i){BL.sel.has(i)?BL.sel.delete(i):BL.sel.add(i);const el=document.querySelector('.blsec[data-i="'+i+'"]');if(el){el.classList.toggle("sel",BL.sel.has(i));const ck=el.querySelector(".blsec-ck");if(ck)ck.textContent=BL.sel.has(i)?"✓":"";}blStartLabel();haptic("select");}
+function blStartLabel(){const n=BL.sel.size+(BL.custom?1:0);const b=document.getElementById("blStart");if(b){b.disabled=!n;b.textContent=n?("Start Blurt ("+n+")"):"Start Blurt";}}
+function blAll(){BL.sel=new Set(BL.sections.map((_,i)=>i));renderBlurtPicker();haptic("select");}
+function blClear(){BL.sel.clear();BL.custom=null;renderBlurtPicker();haptic("tap");}
+function blPreview(i){const p=document.getElementById("blprev"+i);if(p){p.hidden=!p.hidden;const c=p.parentElement.querySelector(".blsec-chev");if(c)c.classList.toggle("open",!p.hidden);haptic("tap");}}
+function blDropCustom(){BL.custom=null;renderBlurtPicker();haptic("tap");}
+function blStart(){
+  const parts=[];[...BL.sel].sort((a,b)=>a-b).forEach(i=>{if(BL.sections[i])parts.push(BL.sections[i].text)});
+  if(BL.custom)parts.push(BL.custom);
+  const text=parts.join("\n\n").trim();
+  if(!text){toast("Select at least one section");return;}
+  const mins=Number(document.getElementById("blurtingMinutes")?.value)||2;
+  closeModal();
+  beginBlurtTimer(text,mins);
+}
+/* Full-note reading view where any passage can be highlighted and sent to Blurting. */
+function blCustomView(){
+  const text=blContent().text;
+  closeModal();
+  BL.customPick=true;
+  view.innerHTML=`<div class="kh"><button onclick="blBackFromCustom()" aria-label="Back">${IC.back}</button><h1>Select a passage</h1></div>
+  <div class="doc" id="blurtPick" style="padding-bottom:12rem"><p class="muted" style="margin-top:0">Highlight any part of your note, then tap the button that appears. Your note stays untouched.</p><div class="md">${md(text)}</div></div>
+  <button class="blsel-fab" id="blSelFab" data-nohap style="display:none" onclick="blUseSelection()"></button>`;
+  window.scrollTo(0,0);
+  blEnsureSelListener();
+}
+function blBackFromCustom(){
+  BL.customPick=false;
+  try{window.getSelection&&window.getSelection().removeAllRanges()}catch(_){}
+  if(location.hash.startsWith("#/deck/"))renderDeck(BL.deckId);
+  renderBlurtPicker();
+}
+let _blSelOn=false;
+function blEnsureSelListener(){
+  if(_blSelOn)return;_blSelOn=true;
+  document.addEventListener("selectionchange",()=>{
+    if(!BL.customPick)return;
+    const fab=document.getElementById("blSelFab");if(!fab)return;
+    const host=document.getElementById("blurtPick");
+    const sel=window.getSelection();const t=(sel?String(sel.toString()):"").trim();
+    let ok=false;
+    try{ok=!!(host&&sel&&sel.rangeCount>0&&t.length>=20&&host.contains(sel.getRangeAt(0).commonAncestorContainer));}catch(_){}
+    fab.style.display=ok?"":"none";
+    if(ok)fab.innerHTML="✂️ Blurt this selection · "+(t.length>=1000?Math.round(t.length/100)/10+"k":t.length)+" chars";
+  });
+}
+function blUseSelection(){
+  const t=(window.getSelection()?String(window.getSelection().toString()):"").trim();
+  if(t.length<20){toast("Select a bit more text first (at least 20 characters)");return;}
+  BL.custom=t;
+  try{window.getSelection().removeAllRanges()}catch(_){}
+  blBackFromCustom();
+  toast("Custom selection added");
+}
 function studyDeckAll(id){
   const d=data.decks.find(x=>x.id===id), c=deckCards(id);
   if(!c.length){ toast("No flashcards in this deck yet"); return; }
@@ -3368,16 +3561,25 @@ function studyMethodsSheet(id){
 }
 function startBlurtingSetup(id){
   const notes=deckNotes(id); if(!notes.length){toast("Add a note first");return;}
-  const content=notes.map(n=>stripMd(n.content)).join("\n\n");
-  modal(`<div class="sh"><h2>Blurting</h2><p class="muted" style="text-align:center">Choose the section you want to learn, then read it before the timer ends.</p><label class="label" for="blurtingSource">Study section</label><textarea class="input" id="blurtingSource" style="min-height:10rem">${esc(content)}</textarea><label class="label" for="blurtingMinutes">Reading time</label><select class="input" id="blurtingMinutes"><option value="1">1 minute</option><option value="2" selected>2 minutes</option><option value="3">3 minutes</option><option value="5">5 minutes</option><option value="10">10 minutes</option><option value="15">15 minutes</option></select><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="beginBlurting()">Start reading timer</button></div>`);
+  BL.deckId=id; BL.custom=null; BL.sel=new Set(); BL.trunc=false;
+  if(notes.length===1){ BL.noteId=notes[0].id; openBlurtSections(); return; }
+  modal(`<div class="sh"><h2>Blurting</h2><p class="muted" style="text-align:center;margin:.2rem 0 .8rem">Pick the note you want to blurt from — or use them all.</p>
+    ${notes.map(n=>`<button class="sr" onclick="BL.noteId='${n.id}';openBlurtSections()"><span class="tile" style="background:#4a1d12">${IC.doc}</span><span style="flex:1;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">${esc(stripMd(n.content).split("\n")[0].slice(0,42))||"Note"}</span></button>`).join("")}
+    <button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="BL.noteId='*';openBlurtSections()">Use all notes combined</button></div>`);
 }
-function beginBlurting(){
-  blurtingSection=document.getElementById("blurtingSource")?.value.trim()||"";
+function beginBlurtTimer(content, minutes){
+  blurtingSection=String(content||"").trim();
   if(!blurtingSection){toast("Choose a section to study");return;}
-  blurtingRemaining=(Number(document.getElementById("blurtingMinutes")?.value)||2)*60;
+  blurtingTotal=Math.max(30,(Number(minutes)||2)*60);
+  blurtingRemaining=blurtingTotal;
   renderBlurtingReading();
   clearInterval(blurtingInterval);
-  blurtingInterval=setInterval(()=>{blurtingRemaining--;const el=document.getElementById("blurtingCountdown");if(el)el.textContent=formatBlurtingTime(blurtingRemaining);const pb=document.getElementById("blurtingProgress");if(pb)pb.style.width=Math.max(0,blurtingRemaining/((Number(document.getElementById("blurtingMinutes")?.value)||2)*60)*100)+"%";if(blurtingRemaining<=0){clearInterval(blurtingInterval);blurtingInterval=null;showBlurtingRecall();}},1000);
+  blurtingInterval=setInterval(()=>{blurtingRemaining--;const el=document.getElementById("blurtingCountdown");if(el)el.textContent=formatBlurtingTime(blurtingRemaining);const pb=document.getElementById("blurtingProgress");if(pb)pb.style.width=Math.max(0,blurtingRemaining/blurtingTotal*100)+"%";if(blurtingRemaining<=0){clearInterval(blurtingInterval);blurtingInterval=null;showBlurtingRecall();}},1000);
+}
+function beginBlurting(){
+  const ta=document.getElementById("blurtingSource");
+  const mins=Number(document.getElementById("blurtingMinutes")?.value)||2;
+  beginBlurtTimer(ta?ta.value:"", mins);
 }
 function formatBlurtingTime(n){n=Math.max(0,n);return Math.floor(n/60)+":"+String(n%60).padStart(2,"0");}
 function renderBlurtingReading(){
