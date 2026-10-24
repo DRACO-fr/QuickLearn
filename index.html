@@ -6379,7 +6379,7 @@ function drawMM(deckId){
 }
 function attachPan(ext){
   const box = $("mm-box"), g = $("mm-g"); if(!box || !g) return;
-  let k = 1, x = 0, y = 0; const pts = new Map(); let moved = 0, startNode = null, t0 = 0, pinch0 = 0;
+  let k = 1, x = 0, y = 0; const pts = new Map(); let moved = 0, startNode = null, t0 = 0, pinch0 = 0, tapNode = null, tapT = 0;
   const apply = () => g.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k.toFixed(3)})`);
   const fit = () => { const r = box.getBoundingClientRect(); k = Math.max(0.35, Math.min(1.1, Math.min(r.width, r.height)/(2*ext))); x = r.width/2; y = r.height/2; apply(); };
   const zoomAt = (px, py, f) => { const nk = Math.max(0.3, Math.min(3.2, k*f)), f2 = nk/k; x = px - (px - x)*f2; y = py - (py - y)*f2; k = nk; apply(); };
@@ -6398,10 +6398,15 @@ function attachPan(ext){
   });
   const end = e => {
     if(!pts.has(e.pointerId)) return; pts.delete(e.pointerId);
-    if(e.type === "pointerup" && pts.size === 0 && startNode && moved < 9 && Date.now() - t0 < 700) IQ.mmNode(startNode.dataset.n);
+    if(e.type === "pointerup" && pts.size === 0 && startNode && moved < 9 && Date.now() - t0 < 700){
+      // open the sheet from the tap's own click, not from pointer-up, or that click lands on the new sheet's backdrop and closes it
+      tapNode = startNode.dataset.n; tapT = Date.now();
+      setTimeout(() => { if(tapNode){ const id = tapNode; tapNode = null; IQ.mmNode(id); } }, 320);   // safety net if no click arrives
+    }
     if(pts.size === 0) startNode = null; if(pts.size < 2) pinch0 = 0;
   };
   box.addEventListener("pointerup", end); box.addEventListener("pointercancel", end);
+  box.addEventListener("click", () => { if(tapNode && Date.now() - tapT < 600){ const id = tapNode; tapNode = null; IQ.mmNode(id); } });
   box.addEventListener("wheel", e => { e.preventDefault(); const r = box.getBoundingClientRect(); zoomAt(e.clientX - r.left, e.clientY - r.top, e.deltaY < 0 ? 1.12 : 0.89); }, { passive:false });
   IQ.mmZoom = f => { const r = box.getBoundingClientRect(); zoomAt(r.width/2, r.height/2, f); };
   IQ.mmFit = fit; fit();
