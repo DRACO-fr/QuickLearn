@@ -3235,6 +3235,19 @@ function demarcBlock(id){
    +" Anything not mentioned in either list: keep it if it supports the MUST INCLUDE topics, otherwise use judgement and keep only the core content. Never add facts that are not in the notes."
    +(m.include?"\nMUST INCLUDE:\n"+m.include:"")+(m.exclude?"\nCAN LEAVE OUT:\n"+m.exclude:"")+"\n\n";
 }
+function undoChip(id){
+  const d=data.decks.find(x=>x.id===id), st=d&&d.undo; if(!st||!st.length) return "";
+  return ` <button onclick="undoNotes('${id}')" style="margin:.1rem 0 .7rem;border:1px solid var(--border);background:transparent;color:inherit;border-radius:999px;padding:.35rem .8rem;font-size:.8rem;font-weight:600;cursor:pointer">↩ Undo ${esc(st[st.length-1].label)}</button>`;
+}
+function undoNotes(id){
+  const d=data.decks.find(x=>x.id===id); if(!d) return;
+  const st=d.undo||[], e=st.pop();
+  if(!e){ toast("Nothing to undo"); return; }
+  data.notes = data.notes.filter(n=>n.deckId!==id);
+  data.notes.unshift(...e.notes);
+  if(st.length) d.undo=st; else delete d.undo;
+  save(); toast("Undone: your note is back to how it was"); route();
+}
 function matchDemarc(id){
   if(!deckNotes(id).length){ toast("Add a note first"); return; }
   if(!demarcBlock(id)){ toast("Set your demarcation first"); demarcSheet(id); return; }
@@ -3332,7 +3345,7 @@ function renderDeck(id){
   const d=data.decks.find(x=>x.id===id); if(!d){go("#/");return;}
   const notes=deckNotes(id),cards=deckCards(id),due=dueCards(id),cv=deckTab==="cards";
   const head=`<div class="kh"><button onclick="history.back()" aria-label="Back">${IC.back}</button><div class="mid"><button class="pill" onclick="deckTab='${cv?"note":"cards"}';renderDeck('${id}')">${cv?IC.doc:IC.card} ${cv?"Notes":"Flashcards"}</button></div><button onclick="notePick('${id}')" aria-label="Edit note">${IC.pen}</button><button onclick="deckMenu('${id}')" aria-label="More">${IC.dots}</button></div>`;
-  const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${esc(subjectName(d))} · ${cards.length} cards · ${due.length} due</div>${demarcChip(id)}</div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
+  const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${esc(subjectName(d))} · ${cards.length} cards · ${due.length} due</div>${demarcChip(id)}${undoChip(id)}</div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
   let main;
   if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more flg${isHard(c)?" on":""}" onclick="event.stopPropagation();toggleHard('${c.id}');renderDeck('${id}')" aria-label="Mark as hard">${IC.flag}</span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
   else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md">${md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
@@ -4334,10 +4347,21 @@ function applyJob(job, text){
   }
   const note = cleanAiText(text || "");
   if(!note.trim()) throw new Error("The AI sent back an empty answer. Please try again.");
-  data.notes.unshift({ id:uid(), deckId:job.deckId, content:note, createdAt: todayISO() });
+  const _fresh = { id:uid(), deckId:job.deckId, content:note, createdAt: todayISO() };
+  if(["improve","summarize","refine","match"].includes(job.kind)){
+    const _d = data.decks.find(x=>x.id===job.deckId);
+    const _old = data.notes.filter(n=>n.deckId===job.deckId);
+    if(_old.length){
+      const _at = Math.max(0, data.notes.findIndex(n=>n.deckId===job.deckId));
+      _d.undo = (_d.undo||[]).concat({ label:{improve:"improve",summarize:"summary",refine:"refine",match:"match"}[job.kind], at:Date.now(), notes:JSON.parse(JSON.stringify(_old)) }).slice(-3);
+      while(_d.undo.length>1 && JSON.stringify(_d.undo).length>300000) _d.undo.shift();   // keep storage small
+      data.notes = data.notes.filter(n=>n.deckId!==job.deckId);
+      data.notes.splice(_at,0,_fresh);
+    } else data.notes.unshift(_fresh);
+  } else data.notes.unshift(_fresh);
   save();
   if(job.kind === "scan" && job.then) setTimeout(()=>aiAct(job.deckId, job.then), 60);
-  const done = { improve:"Improved note saved", summarize:"Summary saved", scan:"Scanned note saved", refine:"Refined note saved", match:"Notes matched to your demarcation and saved" }[job.kind];
+  const done = { improve:"Notes improved (tap Undo to go back)", summarize:"Notes summarized (tap Undo to go back)", scan:"Scanned note saved", refine:"Notes refined (tap Undo to go back)", match:"Notes matched to your demarcation (tap Undo to go back)" }[job.kind];
   return `${done} in “${name}”`;
 }
 
