@@ -1487,6 +1487,7 @@ function setTheme(t){
 /* Clear every due card in a session and you level up. The bar on the Level screen shows how much of
    today's due pile you've cleared; XP is a running total on top (bonuses for conquering hard cards). */
 const XP_FOR = { again:2, hard:6, good:10, easy:12 };
+const LEVEL_GOAL = 8;   // cards you need to clear to level up (or fewer, if fewer are due)
 function syncBase(){
   const g = data.game, due = dueCards().length, t = todayISO();
   let changed = false;
@@ -1497,16 +1498,25 @@ function syncBase(){
 }
 function levelProgress(){
   const due = syncBase(), base = data.game.base, done = Math.max(0, base - due);
-  return { due, base, done, pct: base ? Math.min(100, Math.round(done/base*100)) : 0 };
+  const need = base ? Math.min(base, LEVEL_GOAL) : 0, got = Math.min(need, done);
+  return { due, base, need, done: got, pct: need ? Math.min(100, Math.round(got/need*100)) : 0 };
+}
+function tryLevelUp(s){            // level up as soon as the goal is reached, even mid-session
+  const lp = levelProgress();
+  if(!(lp.need > 0 && lp.done >= lp.need && s.reviewed > 0)) return false;
+  const g = data.game;
+  if(s.fromLevel == null) s.fromLevel = g.level;
+  g.level++; g.xp += 50; s.xp += 50;
+  g.base = 0; g.day = todayISO();
+  s.lvlUps = (s.lvlUps||0) + 1;
+  save();
+  return true;
 }
 function finishSession(s){
   const g = data.game, due = syncBase();
   const res = { xp:s.xp||0, reviewed:s.reviewed||0, right:s.right||0, conq:s.conq||0, leveled:false, from:g.level, level:g.level };
-  if(s.dueAtStart>0 && due===0 && res.reviewed>0){      // the whole due pile is cleared → level up
-    g.level++; res.level = g.level; res.leveled = true;
-    g.xp += 50; res.xp += 50;                            // level-up bonus
-    g.base = 0; g.day = todayISO();
-  }
+  if(s.dueAtStart>0 && res.reviewed>0 && tryLevelUp(s)){ res.celebrate = true; }   // goal reached at the very end
+  if(s.lvlUps){ res.leveled = true; res.from = s.fromLevel; res.level = g.level; res.xp = s.xp; }
   save();
   return res;
 }
@@ -1527,12 +1537,12 @@ function renderLevel(){
   view.innerHTML = `<div class="lvscreen">
     <div class="lvhd"><button onclick="go('#/')" aria-label="Close">✕</button><h1>Level</h1><span style="width:2.2rem"></span></div>
     <h2 class="lvh2">Elevate your game and keep leveling up</h2>
-    <div class="lvcard"><div class="lvl-l"><div class="lvname">Level ${g.level}</div><div class="lvbar"><i style="width:0"></i></div><div class="lvsub">${lp.base ? `${lp.done}/${lp.base} due cards cleared` : "No cards due right now"}</div></div>${shieldBadge(g.level+1, 56)}</div>
-    ${row("linear-gradient(135deg,#d0523f,#e06c4f)", "🎯", lp.due ? `Clear your ${lp.due} due card${lp.due===1?"":"s"}` : "Clear your due cards", `Finish them all to reach Level ${g.level+1}`, "go('#/study')")}
+    <div class="lvcard"><div class="lvl-l"><div class="lvname">Level ${g.level}</div><div class="lvbar"><i style="width:0"></i></div><div class="lvsub">${lp.need ? `${lp.done}/${lp.need} cards cleared` : "No cards due right now"}</div></div>${shieldBadge(g.level+1, 56)}</div>
+    ${row("linear-gradient(135deg,#d0523f,#e06c4f)", "🎯", lp.need ? `Clear ${lp.need-lp.done} more card${lp.need-lp.done===1?"":"s"}` : "Clear your due cards", `Just ${LEVEL_GOAL} cards to reach Level ${g.level+1}`, "go('#/study')")}
     ${row("#5a2a3c", "🔥", "Crush your hard cards", hard.length ? `${hard.length} card${hard.length===1?"":"s"} you miss or flagged` : "Cards you miss or flag show up here", "startHardSession('#/level')")}
     ${row("#503917", "🃏", "Create & practice flashcards", "New cards are due right away", "openPlusMenu()")}
     <div class="lvstats"><div class="lvst"><b>${g.xp}</b><small>Total XP</small></div><div class="lvst"><b>${g.conquered||0}</b><small>Hard conquered</small></div><div class="lvst"><b>${hard.length}</b><small>Hard now</small></div></div>
-    <p class="lvnote">Clear every due card to level up. Cards you keep missing (or flag) come back sooner and always show first.</p>
+    <p class="lvnote">Clear a few due cards to level up. Cards you keep missing (or flag) come back sooner and always show first.</p>
   </div>`;
   requestAnimationFrame(()=>requestAnimationFrame(()=>{ const i = document.querySelector(".lvbar i"); if(i) i.style.width = lp.pct + "%"; }));
 }
@@ -1553,7 +1563,7 @@ function showLevelUp(from, to, res){
   }).join("");
   const el = document.createElement("div");
   el.id = "celebrate"; el.className = "celeb";
-  el.innerHTML = `<div class="confetti">${conf}</div><div class="celeb-in"><div class="celeb-k">LEVEL UP!</div><div class="celeb-badge" id="celebBadge">${shieldBadge(from, 150)}</div><div class="celeb-t">You're now Level ${to}</div><div class="celeb-s">All due cards cleared · +${res.xp} XP</div><button class="btn btn-primary" data-nohap style="width:100%" onclick="haptic('select');closeCelebrate()">Continue</button></div>`;
+  el.innerHTML = `<div class="confetti">${conf}</div><div class="celeb-in"><div class="celeb-k">LEVEL UP!</div><div class="celeb-badge" id="celebBadge">${shieldBadge(from, 150)}</div><div class="celeb-t">You're now Level ${to}</div><div class="celeb-s">Goal reached · +${res.xp} XP</div><button class="btn btn-primary" data-nohap style="width:100%" onclick="haptic('select');closeCelebrate()">Continue</button></div>`;
   document.body.appendChild(el);
   hapticLevelUp();
   setTimeout(()=>{                       // the number ticks up with the big haptic hit
@@ -2536,6 +2546,7 @@ function rate(r){
   save();
   haptic(r);
   floatXP(conquered ? `+${xp} XP · hard card conquered 💪` : `+${xp} XP`);
+  if(r!=="again" && tryLevelUp(session)){ const _f=g.level-1, _t=g.level; setTimeout(()=>showLevelUp(_f,_t,{xp:50}),350); }
   if(r==="again"){                                      // a miss comes straight back a few cards later
     session.cards.splice(Math.min(session.cards.length, session.idx + 4), 0, {...card, _rl:true, _rein:false});
   }else if((res.wasHard || res.nowHard) && !card._rein && !card._rl){   // difficult cards get a second look later in the session
@@ -3293,9 +3304,9 @@ function renderSession(){
     const r=s.result, g=data.game, lp=levelProgress();
     const acc=r.reviewed?Math.round(r.right/r.reviewed*100):0;
     const chips=`<div class="sumchips"><span class="sumchip">⚡ +${r.xp} XP</span><span class="sumchip">🃏 ${r.reviewed} reviewed</span><span class="sumchip">🎯 ${acc}%</span>${r.conq?`<span class="sumchip">💪 ${r.conq} hard conquered</span>`:""}</div>`;
-    const prog=`<div class="sumlv">${shieldBadge(g.level,46)}<div class="lvl-l"><div class="lvname">Level ${g.level}</div><div class="lvbar"><i style="width:${lp.pct}%"></i></div><div class="lvsub">${r.leveled?`Level ${g.level} unlocked!`:lp.due?`Clear ${lp.due} more due card${lp.due===1?"":"s"} to reach Level ${g.level+1}`:"You're all caught up"}</div></div></div>`;
+    const prog=`<div class="sumlv">${shieldBadge(g.level,46)}<div class="lvl-l"><div class="lvname">Level ${g.level}</div><div class="lvbar"><i style="width:${lp.pct}%"></i></div><div class="lvsub">${r.leveled?`Level ${g.level} unlocked!`:lp.need?`Clear ${lp.need-lp.done} more card${lp.need-lp.done===1?"":"s"} to reach Level ${g.level+1}`:"You're all caught up"}</div></div></div>`;
     view.innerHTML=hd("Session complete")+`<div class="sdone"><div class="sbig">${r.leveled?"🏆":"🎉"}</div><h2>${r.leveled?"Level up!":"Nice work"}</h2>${chips}${prog}</div><div style="padding:0 1.1rem">${lp.due&&!r.leveled?`<button class="btn btn-secondary" style="width:100%;margin-bottom:.6rem" onclick="startSession(dueCards(),'Due cards','${s.back}')">Study ${lp.due} remaining due</button>`:""}<button class="btn btn-primary" style="width:100%" onclick="go('${s.back}')">Done</button></div>`;
-    if(!s.fx){ s.fx=true; if(r.leveled) setTimeout(()=>showLevelUp(r.from,r.level,r),220); else haptic("complete"); }
+    if(!s.fx){ s.fx=true; if(r.celebrate) setTimeout(()=>showLevelUp(r.level-1,r.level,r),220); else haptic("complete"); }
     return;
   }
   const c=s.cards[s.idx],dk=data.decks.find(x=>x.id===c.deckId),pct=Math.round(s.idx/s.cards.length*100);
@@ -6665,6 +6676,41 @@ window.openSettings = function(){
 };
 
 IQ._t = { analyzeAll, deckStats, confStats, repeatStats, attemptStats, forgottenStats, recommend, localMap, sanitize, mmEval, layout, mapGroup, cardScore, fallbackLesson, pageKey };
+})();
+</script>
+<style id="ql-desktop">
+/* Desktop only: large screen + mouse. Phones and touch tablets are untouched. */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine){
+  body{padding-left:5.5rem}
+  body:has(nav.bottom[style*="none"]){padding-left:0}
+  .shell{max-width:1200px;width:100%}
+  main{padding:0 2.5rem}
+  header.top{padding-left:2.5rem;padding-right:2.5rem}
+  nav.bottom,html[data-theme="light"] nav.bottom{
+    top:0;bottom:0;left:0;right:auto;width:5.5rem;max-width:none;height:auto;margin:0;
+    flex-direction:column;justify-content:flex-start;gap:.7rem;padding:1.5rem .6rem;
+    border-top:0!important;border-right:1px solid #402c1e!important}
+  html[data-theme="light"] nav.bottom{border-right-color:#eee4dd!important}
+  .navitem{flex:none;width:100%;max-width:none;height:3.2rem}
+  .navitem:hover:not(.active){background:rgba(255,255,255,.08)}
+  html[data-theme="light"] .navitem:hover:not(.active){background:rgba(0,0,0,.05)}
+  #qai{max-width:960px}
+  #selbar,#selact{max-width:1200px;left:5.5rem}
+  .modal-bg .modal{border-radius:1.6rem;max-width:34rem}
+  .ql-fs{display:grid}
+}
+.ql-fs{display:none;position:fixed;left:.9rem;bottom:1rem;z-index:31;width:3.7rem;height:2.6rem;place-items:center;border:0;border-radius:.9rem;background:transparent;color:inherit;opacity:.65;cursor:pointer;font-size:1.25rem}
+.ql-fs:hover{opacity:1;background:rgba(255,255,255,.08)}
+body:has(nav.bottom[style*="none"]) .ql-fs{display:none}
+</style>
+<script>
+(function(){
+  var mq=window.matchMedia("(min-width:1024px) and (hover:hover) and (pointer:fine)");
+  if(!document.documentElement.requestFullscreen) return;
+  var b=document.createElement("button");
+  b.className="ql-fs";b.setAttribute("aria-label","Toggle fullscreen");b.title="Fullscreen";b.textContent="\u26F6";
+  b.onclick=function(){ try{ if(document.fullscreenElement) document.exitFullscreen(); else document.documentElement.requestFullscreen(); }catch(e){} };
+  document.body.appendChild(b);
 })();
 </script>
 </body>
