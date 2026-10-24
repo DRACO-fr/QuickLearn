@@ -1834,7 +1834,7 @@ function buildDocx(title, sections, opts){
 }
 
 // Ask the AI to turn one deck's raw notes into a structured study guide (Markdown).
-async function aiStudyGuide(title, notesText){
+async function aiStudyGuide(title, notesText, deckId){
   const prompt = `LANGUAGE (the most important rule): find the language the NOTES are written in and write EVERYTHING in that same language: every heading, explanation, table, question and answer. NEVER translate into English or any other language, even though these instructions are in English. If the notes mix languages, keep each term in the language it was written in and write the surrounding text in the main language of the notes.
 
 You are a teacher turning a student's raw study notes into a STUDY GUIDE for a test. The student will read it (often printed) and must be able to learn everything from it quickly and without confusion.
@@ -1861,7 +1861,7 @@ FIRST LINE OF YOUR ANSWER: exactly one line in this form, with the five phrases 
 
 FORMAT: Markdown only (## headings, ### sub-headings, **bold**, - bullets, numbered lists, | tables |, > callouts). No LaTeX or math notation (no $, \\rightarrow, \\text{}, etc.); use normal characters instead, e.g. write arrows as -> and chemical formulas as H2O. Return only the study guide, with no introduction or closing remarks.
 
-NOTES:
+${deckId?demarcBlock(deckId):""}NOTES:
 ${notesText}`;
   let text = cleanAiText(await gemini(prompt)).replace(/ -> /g, " → ");
   let labels = null;
@@ -1931,7 +1931,7 @@ async function createWordDoc(){
   if(!ids.length){ toast("Pick at least one deck"); return; }
   const mode = document.querySelector("input[name=docMode]:checked")?.value || "guide";
   const withCards = !!document.getElementById("docCards")?.checked;
-  const sections = ids.map(id => ({ title: data.decks.find(d => d.id === id)?.title || "Untitled deck", notes: deckNotes(id), cards: withCards ? deckCards(id) : [] })).filter(sec => sec.notes.length);
+  const sections = ids.map(id => ({ id, title: data.decks.find(d => d.id === id)?.title || "Untitled deck", notes: deckNotes(id), cards: withCards ? deckCards(id) : [] })).filter(sec => sec.notes.length);
   if(!sections.length){ toast("Those decks have no notes"); return; }
   if(mode === "guide" && !getKey()){
     setDocStatus("Study guides need your Gemini API key. Add it with the <b>AI key</b> button (top right), or choose <b>Raw notes</b> to export without AI.", true);
@@ -1943,7 +1943,7 @@ async function createWordDoc(){
     if(mode === "guide"){
       for(let i = 0; i < sections.length; i++){
         setDocStatus(`<span class="spin"></span> Writing study guide ${i + 1} of ${sections.length}: ${esc(sections[i].title)}… this can take a minute.`);
-        const g = await aiStudyGuide(sections[i].title, sections[i].notes.map(n => n.content).join("\n\n---\n\n"));
+        const g = await aiStudyGuide(sections[i].title, sections[i].notes.map(n => n.content).join("\n\n---\n\n"), sections[i].id);
         if(run !== docRun) return; // cancelled
         if(!g.text.trim()) throw new Error("The AI sent back an empty answer. Please try again.");
         sections[i].guide = g.text;
@@ -3213,11 +3213,40 @@ function renderStudy(){
 
 /* ---- Deck = note page ---- */
 let deckTab="note";
+/* ============================== DEMARCATION (exam scope) ============================== */
+function demarcOf(id){ const d=data.decks.find(x=>x.id===id); const m=d&&d.demarcation; return {include:(m&&m.include||"").trim(), exclude:(m&&m.exclude||"").trim()}; }
+function demarcBlock(id){
+  const m=demarcOf(id); if(!m.include&&!m.exclude) return "";
+  return "STUDENT'S DEMARCATION (the exact scope of what they must study). This OVERRIDES every other rule below, including any rule about covering every detail or leaving nothing out."
+   +" Everything under MUST INCLUDE has to be covered fully and accurately."
+   +" Everything under CAN LEAVE OUT must be left out completely: do not summarize it, teach it, or write cards or questions about it, even if it appears in the notes."
+   +" Anything not mentioned in either list: keep it if it supports the MUST INCLUDE topics, otherwise use judgement and keep only the core content. Never add facts that are not in the notes."
+   +(m.include?"\nMUST INCLUDE:\n"+m.include:"")+(m.exclude?"\nCAN LEAVE OUT:\n"+m.exclude:"")+"\n\n";
+}
+function demarcChip(id){
+  const m=demarcOf(id), on=!!(m.include||m.exclude);
+  return `<button onclick="demarcSheet('${id}')" style="margin:.1rem 0 .7rem;border:1px solid ${on?"#e29a2d":"var(--border)"};background:${on?"rgba(226,154,45,.14)":"transparent"};color:inherit;border-radius:999px;padding:.35rem .8rem;font-size:.8rem;font-weight:600;cursor:pointer">🎯 ${on?"Demarcation on":"Add demarcation"}</button>`;
+}
+function demarcSheet(id){
+  const m=demarcOf(id);
+  modal(`<div class="sh"><h2>🎯 Demarcation</h2><p class="muted" style="text-align:center;margin:.2rem 0 .8rem">Tell the AI exactly what is in your exam or test. When it summarizes, improves notes, or makes flashcards, courses, study guides and mind maps, it will follow this.</p>
+  <label class="label" for="dmInc">Must be in the material</label><textarea class="input" id="dmInc" style="min-height:7rem" placeholder="e.g. Chapters 3 and 4, the causes of the war, all dates and key people">${esc(m.include)}</textarea>
+  <label class="label" for="dmExc" style="margin-top:.7rem">Can be left out</label><textarea class="input" id="dmExc" style="min-height:7rem" placeholder="e.g. Chapter 5, the biography section, pages 20-25, extra examples">${esc(m.exclude)}</textarea>
+  <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="saveDemarc('${id}')">Save demarcation</button>
+  ${(m.include||m.exclude)?`<button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="clearDemarc('${id}')">Remove demarcation</button>`:""}</div>`);
+}
+function saveDemarc(id){
+  const d=data.decks.find(x=>x.id===id); if(!d) return;
+  const inc=(document.getElementById("dmInc")?.value||"").trim().slice(0,4000), exc=(document.getElementById("dmExc")?.value||"").trim().slice(0,4000);
+  if(inc||exc) d.demarcation={include:inc,exclude:exc}; else delete d.demarcation;
+  save(); closeModal(); toast(inc||exc?"Demarcation saved":"Demarcation removed"); route();
+}
+function clearDemarc(id){ const d=data.decks.find(x=>x.id===id); if(d) delete d.demarcation; save(); closeModal(); toast("Demarcation removed"); route(); }
 function renderDeck(id){
   const d=data.decks.find(x=>x.id===id); if(!d){go("#/");return;}
   const notes=deckNotes(id),cards=deckCards(id),due=dueCards(id),cv=deckTab==="cards";
   const head=`<div class="kh"><button onclick="history.back()" aria-label="Back">${IC.back}</button><div class="mid"><button class="pill" onclick="deckTab='${cv?"note":"cards"}';renderDeck('${id}')">${cv?IC.doc:IC.card} ${cv?"Notes":"Flashcards"}</button></div><button onclick="notePick('${id}')" aria-label="Edit note">${IC.pen}</button><button onclick="deckMenu('${id}')" aria-label="More">${IC.dots}</button></div>`;
-  const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${esc(subjectName(d))} · ${cards.length} cards · ${due.length} due</div></div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
+  const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${esc(subjectName(d))} · ${cards.length} cards · ${due.length} due</div>${demarcChip(id)}</div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
   let main;
   if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more flg${isHard(c)?" on":""}" onclick="event.stopPropagation();toggleHard('${c.id}');renderDeck('${id}')" aria-label="Mark as hard">${IC.flag}</span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
   else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md">${md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
@@ -3255,9 +3284,68 @@ function showBlurtingRecall(){
   modal(`<div class="sh"><h2>Blurting time</h2><p class="muted" style="text-align:center">No peeking. Type everything you can remember from the section.</p><textarea class="input" id="blurtingAnswer" placeholder="Write everything you remember…" style="min-height:45vh"></textarea><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="reviewBlurting()">Finish & compare</button></div>`);
   setTimeout(()=>document.getElementById("blurtingAnswer")?.focus(),100);
 }
+let blurtRun=0;
+function blurtDeckId(){ return (location.hash.split('/').pop()||'').replace(/[^a-zA-Z0-9_-]/g,''); }
+function blurtButtons(){ return `<button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal();toast('Blurting session complete')">Done</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="startBlurtingSetup('${blurtDeckId()}')">Try another round</button>`; }
+function blurtPlain(answer,note){
+  modal(`<div class="sh"><h2>Compare your recall</h2>${note?`<p class="muted" style="text-align:center;margin:.2rem 0 .8rem">${note}</p>`:""}<div class="label">Your answer</div><div class="rec" style="white-space:pre-wrap">${esc(answer||"You didn’t write anything this round.")}</div><div class="label">Original section</div><div class="rec" style="white-space:pre-wrap">${esc(blurtingSection)}</div>${blurtButtons()}</div>`);
+}
 function reviewBlurting(){
   const answer=document.getElementById("blurtingAnswer")?.value.trim()||"";
-  modal(`<div class="sh"><h2>Compare your recall</h2><div class="label">Your answer</div><div class="rec" style="white-space:pre-wrap">${esc(answer||"You didn’t write anything this round.")}</div><div class="label">Original section</div><div class="rec" style="white-space:pre-wrap">${esc(blurtingSection)}</div><button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal();toast('Blurting session complete')">Done</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="startBlurtingSetup('${(location.hash.split('/').pop()||'').replace(/[^a-zA-Z0-9_-]/g,'')}')">Try another round</button></div>`);
+  if(!answer){ blurtPlain(answer,"Write what you remember first, then the AI can check it."); return; }
+  if(!getKey()){ blurtPlain(answer,"Add your Gemini API key (AI key button) and the AI will check what you missed."); return; }
+  if(navigator.onLine===false){ blurtPlain(answer,"You're offline, so the AI can't check this round."); return; }
+  const run=++blurtRun;
+  modal(`<div class="sh" style="text-align:center"><h2>Checking your recall…</h2><p class="muted"><span class="spin"></span> The AI is comparing what you wrote with the original section.</p></div>`);
+  aiCheckBlurting(answer).then(r=>{
+    if(run!==blurtRun) return;
+    const li=(a,fn)=>a.length?`<ul style="margin:.3rem 0 0;padding-left:1.2rem;line-height:1.5">${a.map(fn).join("")}</ul>`:"";
+    const sc=Math.max(0,Math.min(100,Math.round(Number(r.score)||0)));
+    const col=sc>=75?"#4caf7d":sc>=45?"#e29a2d":"#e05b47";
+    modal(`<div class="sh"><h2>Your blurting results</h2>
+    <div style="text-align:center;margin:.3rem 0 .6rem"><div style="font-size:2.4rem;font-weight:800;color:${col}">${sc}%</div><div class="muted">${esc(r.verdict||"")}</div></div>
+    <div class="progress"><div style="width:${sc}%;background:${col}"></div></div>
+    ${r.missed.length?`<div class="label" style="margin-top:1rem">❌ You missed (${r.missed.length})</div>${li(r.missed,x=>`<li><b>${esc(x.point)}</b>${x.detail?` — ${esc(x.detail)}`:""}</li>`)}`:`<div class="label" style="margin-top:1rem">🎉 You didn’t miss anything important</div>`}
+    ${r.wrong.length?`<div class="label" style="margin-top:1rem">⚠️ Check these</div>${li(r.wrong,x=>`<li>You wrote: “${esc(x.said)}”<br><b>Correct:</b> ${esc(x.correct)}</li>`)}`:""}
+    ${r.remembered.length?`<div class="label" style="margin-top:1rem">✅ You remembered (${r.remembered.length})</div>${li(r.remembered,x=>`<li>${esc(x)}</li>`)}`:""}
+    <details style="margin-top:1rem"><summary style="cursor:pointer;font-weight:600">Your answer and the original section</summary><div class="label" style="margin-top:.6rem">Your answer</div><div class="rec" style="white-space:pre-wrap">${esc(answer)}</div><div class="label">Original section</div><div class="rec" style="white-space:pre-wrap">${esc(blurtingSection)}</div></details>
+    ${blurtButtons()}</div>`);
+  }).catch(e=>{
+    if(run!==blurtRun) return;
+    blurtPlain(answer,"The AI couldn’t check this round ("+esc(e.message||"error")+"). You can compare it yourself below.");
+  });
+}
+async function aiCheckBlurting(answer){
+  const prompt=`You are a strict but fair study coach checking a student's "blurting" recall. The student read the ORIGINAL SECTION, then wrote everything they remembered from memory. Compare their answer to the original, point by point.
+
+LANGUAGE: write every part of your reply in the same language as the ORIGINAL SECTION. Never translate.
+
+Rules:
+- Accept correct paraphrases and different wording as remembered. Do not penalise spelling or style.
+- "missed": EVERY important fact, term, definition, name, date, number, formula, step, cause or effect from the original that the student left out or only half said. Be thorough, list all of them, most important first. For each give a short "point" (what it is) and a "detail" (the correct information, taken from the original).
+- "wrong": things the student wrote that contradict the original or are inaccurate. Give what they said and the correct version. Empty array if none.
+- "remembered": the key points they got right, each a short phrase.
+- "score": 0-100, how much of the original's important content they recalled correctly.
+- "verdict": one short, encouraging sentence.
+- Use ONLY the original section. Never add outside facts.
+
+Return ONLY valid JSON, no commentary, no markdown fences:
+{"score":0,"verdict":"","remembered":["..."],"missed":[{"point":"...","detail":"..."}],"wrong":[{"said":"...","correct":"..."}]}
+
+ORIGINAL SECTION:
+${String(blurtingSection).slice(0,12000)}
+
+STUDENT'S ANSWER:
+${answer.slice(0,8000)}`;
+  const j=jparse(await gemini(prompt, undefined, {autoFallback:true}));
+  if(!j||typeof j!=="object"||Array.isArray(j)) throw new Error("Unreadable AI reply");
+  const arr=v=>Array.isArray(v)?v:[], str=v=>String(v==null?"":v).trim();
+  return {
+    score:j.score, verdict:str(j.verdict),
+    remembered:arr(j.remembered).map(str).filter(Boolean),
+    missed:arr(j.missed).map(x=>typeof x==="string"?{point:str(x),detail:""}:{point:str(x&&x.point),detail:str(x&&x.detail)}).filter(x=>x.point),
+    wrong:arr(j.wrong).map(x=>({said:str(x&&x.said),correct:str(x&&x.correct)})).filter(x=>x.said||x.correct)
+  };
 }
 
 function learnSheet(id){
@@ -3265,7 +3353,7 @@ function learnSheet(id){
   modal(`<div class="sh"><h2>Learn</h2><div class="lg">${lc("#3b290f",IC.card,"Flashcards","Mark as learned or not learned",`studyDeck('${id}')`)}${lc("#4a231d",IC.test,"Practice Test","Take a test on your notes",`quizDeck('${id}')`)}${lc("#64432d",IC.spark,"Make Cards","Create flashcards from notes",`aiDeck('${id}','cards')`)}${lc("#64432d",IC.spark,"Summarize","Turn notes into a summary",`aiDeck('${id}','summarize')`)}</div></div>`);
 }
 function deckMenu(id){
-  modal(`<div class="sh"><h2>Options</h2>${sheetRow("#64432d",IC.spark,"Improve note",`aiDeck('${id}','improve')`)}${sheetRow("#4a1d12",IC.doc,"Scan photo or PDF","document.getElementById('imgInput').click()")}${sheetRow("#37261b","📋","Copy all notes",`copyAllNotes('${id}')`)}${sheetRow("#4a1d12",IC.word,"Make Word doc","openWordDocModal()")}${sheetRow("#37261b",IC.folder("#fbca6d"),"Move to folder",`moveSheet('${id}')`)}${sheetRow("#37261b",IC.pen,"Rename deck",`renameDeck('${id}')`)}${sheetRow("#3a1d1d","🗑️","Delete deck",`askConfirm('Delete this deck?','This also deletes all of its notes and flashcards.','Delete',true).then(ok=>{if(ok){deleteDeck('${id}');go('#/')}})`,true)}</div>`);
+  modal(`<div class="sh"><h2>Options</h2>${sheetRow("#64432d",IC.spark,"Improve note",`aiDeck('${id}','improve')`)}${sheetRow("#64432d","🎯","Demarcation (exam scope)",`demarcSheet('${id}')`)}${sheetRow("#4a1d12",IC.doc,"Scan photo or PDF","document.getElementById('imgInput').click()")}${sheetRow("#37261b","📋","Copy all notes",`copyAllNotes('${id}')`)}${sheetRow("#4a1d12",IC.word,"Make Word doc","openWordDocModal()")}${sheetRow("#37261b",IC.folder("#fbca6d"),"Move to folder",`moveSheet('${id}')`)}${sheetRow("#37261b",IC.pen,"Rename deck",`renameDeck('${id}')`)}${sheetRow("#3a1d1d","🗑️","Delete deck",`askConfirm('Delete this deck?','This also deletes all of its notes and flashcards.','Delete',true).then(ok=>{if(ok){deleteDeck('${id}');go('#/')}})`,true)}</div>`);
 }
 function notePick(id){
   const ns=deckNotes(id); if(!ns.length){newNote(id);return;}
@@ -3541,7 +3629,7 @@ async function genCourse(id){
     let last;
     for(let attempt=0;attempt<3;attempt++){
       if(stop)throw new Error("Cancelled");
-      try{const out=await gemini(prompt, undefined, {autoFallback:true});if(!out.trim())throw new Error("The AI returned an empty response");return out}
+      try{const out=await gemini(demarcBlock(id)+prompt, undefined, {autoFallback:true});if(!out.trim())throw new Error("The AI returned an empty response");return out}
       catch(e){last=e;if(stop)throw e;if(attempt<2){prog(`${label} · retrying (${attempt+1}/2)…`,30);await pause(700*(attempt+1))}}
     }
     throw last||new Error("Couldn't generate this batch");
@@ -4123,6 +4211,7 @@ async function startJob(kind, deckId, prompt, files, then){
   const key = getKey();
   if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
   if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
+  if(kind!=="scan"){ const _dm=demarcBlock(deckId); if(_dm) prompt=_dm+prompt; }   // exam scope from the student
   const job = { id:uid(), kind, deckId, then:then||null, status:"running", startedAt:Date.now() };
   jobs.push(job); saveJobs(); renderJobs();
   const name = deckNameOf(deckId);
@@ -6310,7 +6399,7 @@ async function buildMap(deckId){
     const prompt = `You are building a mind map from a student's notes. Return ONLY JSON, no commentary:
 {"title":"main topic, max 5 words","nodes":[{"id":"n1","label":"concept, max 4 words","parent":"root or the id of another node","summary":"one short sentence","explanation":"2-4 clear sentences in simple language","examples":["a short concrete example"],"keywords":["3-6 lowercase words a flashcard about this concept would contain"],"related":["ids of other nodes this connects to"]}]}
 Rules: 8-16 nodes. Every distinct subject or heading in the notes gets its own node. At most 7 nodes may have parent "root"; put sub-ideas under their parent node. Use ids n1..nN. Stay faithful to the notes; if they lack an example, add a clear one. Plain text only.
-NOTES:
+${demarcBlock(deckId)}NOTES:
 ${text}`;
     const raw = await gemini(prompt, undefined, { autoFallback:true });
     const j = jparse(raw); nodes = sanitize(Array.isArray(j) ? j : j.nodes); if(j && j.title) title = clip(j.title, 40);
