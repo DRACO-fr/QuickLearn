@@ -1018,6 +1018,7 @@ window.__qlFinishStartup=function(){
 <!-- Firebase compat SDKs: chosen for compatibility with this single-file HTML app -->
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore-compat.js"></script>
 <script>
 /* ============================== FIREBASE AUTH ============================== */
 const firebaseConfig = {
@@ -1038,9 +1039,64 @@ try {
     quickLearnUser = user || null;
     const btn = document.getElementById('accountBtn');
     if (btn) btn.textContent = user ? (user.displayName ? user.displayName.split(' ')[0] : 'Account') : 'Sign in';
+    try { qlSyncOnAuth(user); } catch (e) { console.error('Sync start failed:', e); }
     if (user) { try { toast('Signed in as ' + (user.email || user.displayName || 'QuickLearn user')); } catch (_) {} }
   });
 } catch (e) { console.error('Firebase initialization failed:', e); }
+/* ============================== CLOUD SYNC (Firestore) ============================== */
+const QL_UPD_KEY='quicklearn-updated-v1', QL_UID_KEY='quicklearn-synced-uid-v1', QL_CHUNK=200000;
+let qlSyncReady=false, qlSyncUid=null, qlPushTimer=null, qlPushing=false, qlPushAgain=false;
+function qlDb(){ try{ return firebase.firestore(); }catch(_){ return null; } }
+function qlLocalHasData(){ try{ const d=JSON.parse(localStorage.getItem('quicklearn-data-v1')||'{}'); return ['decks','subjects','notes','cards'].some(k=>Array.isArray(d[k])&&d[k].length)||Object.keys(d.courses||{}).length>0; }catch(_){ return false; } }
+function qlSchedulePush(){ if(!qlSyncReady||!qlSyncUid) return; clearTimeout(qlPushTimer); qlPushTimer=setTimeout(qlPush,2500); }
+async function qlPush(){
+  if(!qlSyncReady||!qlSyncUid) return;
+  if(qlPushing){ qlPushAgain=true; return; }
+  const db=qlDb(); if(!db) return;
+  qlPushing=true;
+  try{
+    const raw=localStorage.getItem('quicklearn-data-v1')||'{}';
+    const updatedAt=Number(localStorage.getItem(QL_UPD_KEY))||Date.now();
+    const base=db.collection('users').doc(qlSyncUid).collection('sync');
+    const n=Math.max(1,Math.ceil(raw.length/QL_CHUNK));
+    for(let i=0;i<n;i++) await base.doc('chunk_'+i).set({text:raw.slice(i*QL_CHUNK,(i+1)*QL_CHUNK)});
+    await base.doc('meta').set({updatedAt,chunks:n});
+    localStorage.setItem(QL_UID_KEY,qlSyncUid);
+  }catch(e){ console.error('Cloud save failed:', e); try{ toast('Cloud sync failed. Check your connection.'); }catch(_){} }
+  qlPushing=false;
+  if(qlPushAgain){ qlPushAgain=false; qlSchedulePush(); }
+}
+async function qlSyncOnAuth(user){
+  qlSyncReady=false; clearTimeout(qlPushTimer);
+  if(!user){ qlSyncUid=null; return; }
+  const db=qlDb(); if(!db) return;
+  qlSyncUid=user.uid;
+  try{
+    const base=db.collection('users').doc(user.uid).collection('sync');
+    const meta=await base.doc('meta').get();
+    const localAt=Number(localStorage.getItem(QL_UPD_KEY))||0;
+    if(meta.exists){
+      const {updatedAt=0,chunks=1}=meta.data();
+      const sameUser=localStorage.getItem(QL_UID_KEY)===user.uid;
+      let useCloud;
+      if(sameUser) useCloud=updatedAt>localAt;
+      else if(qlLocalHasData()) useCloud=confirm('Your QuickLearn cloud data was found.\n\nOK = load your cloud data on this device (replaces what is here).\nCancel = upload this device\'s data instead (replaces the cloud copy).');
+      else useCloud=true;
+      if(useCloud){
+        let raw=''; for(let i=0;i<chunks;i++){ const c=await base.doc('chunk_'+i).get(); raw+=(c.exists?c.data().text:''); }
+        JSON.parse(raw);
+        localStorage.setItem('quicklearn-data-v1',raw);
+        localStorage.setItem(QL_UPD_KEY,String(updatedAt));
+        localStorage.setItem(QL_UID_KEY,user.uid);
+        location.reload(); return;
+      }
+    }
+    qlSyncReady=true;
+    if(!meta.exists||localAt>0||qlLocalHasData()){ if(!localStorage.getItem(QL_UPD_KEY)) localStorage.setItem(QL_UPD_KEY,String(Date.now())); await qlPush(); }
+    else localStorage.setItem(QL_UID_KEY,user.uid);
+  }catch(e){ console.error('Cloud load failed:', e); qlSyncReady=false; try{ toast('Could not reach cloud storage. Your data is safe on this device.'); }catch(_){} }
+}
+window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&qlSyncReady) qlPush(); });
 function qlEscapeHtml(value){ return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
 function openAccountModal() {
   const root = document.getElementById('modal-root');
@@ -1131,7 +1187,7 @@ function load(){
     };
   }catch{ return structuredClone(EMPTY); }
 }
-function save(){ localStorage.setItem(DATA_KEY, JSON.stringify(data)); }
+function save(){ localStorage.setItem(DATA_KEY, JSON.stringify(data)); try{ localStorage.setItem('quicklearn-updated-v1',String(Date.now())); qlSchedulePush(); }catch(_){} }
 function localISODate(){
   const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
@@ -4436,7 +4492,7 @@ window.qlImport=function(file){
     try{
       const o=JSON.parse(fr.result);if(!o||!o.data||!Array.isArray(o.data.decks))throw new Error("bad");
       askConfirm("Restore this backup?","This replaces everything stored on this device.","Restore",true).then(ok=>{
-        if(!ok)return;localStorage.setItem(DATA_KEY,JSON.stringify(o.data));
+        if(!ok)return;localStorage.setItem(DATA_KEY,JSON.stringify(o.data));localStorage.setItem('quicklearn-updated-v1',String(Date.now()));
         if(o.settings)localStorage.setItem(SETTINGS_KEY,JSON.stringify(o.settings));location.reload();
       });
     }catch(_){toast("That file isn’t a QuickLearn backup")}
