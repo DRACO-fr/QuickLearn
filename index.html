@@ -3288,13 +3288,14 @@ async function demarcFromFile(id, fileList){
 
 LANGUAGE: write in the same language as the document. Never translate.
 
-- "include": every topic, chapter, section, page range, skill or content item the student MUST study. Short lines, one item per line, with page numbers or chapter names exactly as given.
-- "exclude": anything the document says is NOT examined, can be skipped, or is excluded. Empty string if the document only lists what is covered.
+- "include": an array of strings. Each string is ONE topic, chapter, section, page range, skill or content item the student MUST study, with page numbers or chapter names exactly as given.
+- "exclude": an array of strings, one per item the document says is NOT examined, can be skipped, or is excluded. Empty array if the document only lists what is covered.
 - Use ONLY what is in the document. Do not add topics.
 
-Return ONLY valid JSON, no commentary, no markdown fences: {"include":"line one\nline two","exclude":""}${text.length>=80 ? "\n\nDOCUMENT TEXT:\n"+text.slice(0,20000) : ""}`;
+Return ONLY valid JSON on a single line, no commentary, no markdown fences, and never put line breaks inside a string: {"include":["item one","item two"],"exclude":[]}${text.length>=80 ? "\n\nDOCUMENT TEXT:\n"+text.slice(0,20000) : ""}`;
     const j = jparse(await gemini(prompt, images.length?images:undefined, {autoFallback:true}));
-    const inc = String(j&&j.include||"").trim(), exc = String(j&&j.exclude||"").trim();
+    const toLines = v => (Array.isArray(v) ? v : String(v||"").split(/\r?\n/)).map(x=>String(x==null?"":x).replace(/[\u0000-\u001f]/g," ").trim()).filter(Boolean).join("\n");
+    const inc = toLines(j&&j.include), exc = toLines(j&&j.exclude);
     if(!inc && !exc) throw new Error("Nothing readable found in that file.");
     put(inc, exc);
     status("Done. Check the lists below, edit anything that's wrong, then tap Save.");
@@ -3418,7 +3419,7 @@ ${answer.slice(0,8000)}`;
 
 function learnSheet(id){
   const lc=(bg,ic,t,s,fn)=>`<button class="lc" onclick="closeModal();${fn}"><span class="tile" style="background:${bg}">${ic}</span><b>${t}</b><small>${s}</small></button>`;
-  modal(`<div class="sh"><h2>Learn</h2><div class="lg">${lc("#3b290f",IC.card,"Flashcards","Mark as learned or not learned",`studyDeck('${id}')`)}${lc("#4a231d",IC.test,"Practice Test","Take a test on your notes",`quizDeck('${id}')`)}${lc("#64432d",IC.spark,"Make Cards","Create flashcards from notes",`aiDeck('${id}','cards')`)}${lc("#64432d",IC.spark,"Summarize","Turn notes into a summary",`aiDeck('${id}','summarize')`)}</div></div>`);
+  modal(`<div class="sh"><h2>Learn</h2><div class="lg">${lc("#3b290f",IC.card,"Flashcards","Mark as learned or not learned",`studyDeck('${id}')`)}${lc("#4a231d",IC.test,"Practice Test","Take a test on your notes",`quizDeck('${id}')`)}${lc("#64432d",IC.spark,"Make Cards","Create flashcards from notes",`aiDeck('${id}','cards')`)}${lc("#64432d",IC.spark,"Summarize","Turn notes into a summary",`aiDeck('${id}','summarize')`)}${lc("#64432d",IC.spark,"Improve Notes","Make them clearer and complete",`aiDeck('${id}','improve')`)}</div></div>`);
 }
 function deckMenu(id){
   modal(`<div class="sh"><h2>Options</h2>${sheetRow("#64432d",IC.spark,"Improve note",`aiDeck('${id}','improve')`)}${sheetRow("#64432d","🎯","Demarcation (exam scope)",`demarcSheet('${id}')`)}${sheetRow("#4a1d12",IC.doc,"Scan photo or PDF","document.getElementById('imgInput').click()")}${sheetRow("#37261b","📋","Copy all notes",`copyAllNotes('${id}')`)}${sheetRow("#4a1d12",IC.word,"Make Word doc","openWordDocModal()")}${sheetRow("#37261b",IC.folder("#fbca6d"),"Move to folder",`moveSheet('${id}')`)}${sheetRow("#37261b",IC.pen,"Rename deck",`renameDeck('${id}')`)}${sheetRow("#3a1d1d","🗑️","Delete deck",`askConfirm('Delete this deck?','This also deletes all of its notes and flashcards.','Delete',true).then(ok=>{if(ok){deleteDeck('${id}');go('#/')}})`,true)}</div>`);
