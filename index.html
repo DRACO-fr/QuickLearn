@@ -1220,7 +1220,7 @@ function load(){
       game:Object.assign({ level:1, xp:0, day:"", base:0, conquered:0, coins:0 }, d.game||{}),
       reviewLog:d.reviewLog||{}, courses:d.courses||{}, profile:d.profile||null, paperCourses:d.paperCourses||[],
       mascot:Object.assign({ name:"", asked:0, worn:{} }, d.mascot||{}),
-      events:Array.isArray(d.events)?d.events:[], seen:d.seen||{}, mindmaps:d.mindmaps||{}
+      events:Array.isArray(d.events)?d.events:[], seen:d.seen||{}, mindmaps:d.mindmaps||{}, perf:d.perf||null
     };
   }catch{ return structuredClone(EMPTY); }
 }
@@ -3573,7 +3573,7 @@ function studyDeckAll(id){
 }
 function studyMethodsSheet(id){
   const _fc=deckCards(id).length, _fd=dueCards(id).length;
-  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob method-card" onclick="closeModal();studyDeckAll('${id}')"><span style="font-size:1.5rem">🃏</span><span><b>Flashcards</b><small style="display:block;color:#aaa;margin-top:.2rem">${_fc?`Study this deck’s ${_fc} card${_fc===1?"":"s"}${_fd?` · ${_fd} due`:""}`:"No flashcards yet. Use Make Cards in Learn"}</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();PT.open('${id}')"><span class="pt-ico">${PT.icon}</span><span><b>Practice Test</b><small style="display:block;color:#aaa;margin-top:.2rem">A fresh randomised test on every topic in your notes</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();IQ.mindMap('${id}')"><span style="font-size:1.5rem">🕸️</span><span><b>Mind map</b><small style="display:block;color:#aaa;margin-top:.2rem">See every concept connected — tap weak ones for a mini-lesson</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card course-method" onclick="closeModal();go('#/course/${id}')"><span style="font-size:1.5rem">🎓</span><span><b>Course learning</b><small style="display:block;color:#aaa;margin-top:.2rem">Learn the entire note in bite-size lessons</small></span><span style="margin-left:auto">→</span></button><div class="study-tip"><span class="tip-spark">✦</span><b>Study tip</b><p>Try recalling an idea before rereading it. The effort to retrieve it helps strengthen memory.</p></div></div>`);
+  modal(`<div class="sh"><h2>🧠 Study methods</h2><button class="ob method-card" onclick="closeModal();studyDeckAll('${id}')"><span style="font-size:1.5rem">🃏</span><span><b>Flashcards</b><small style="display:block;color:#aaa;margin-top:.2rem">${_fc?`Study this deck’s ${_fc} card${_fc===1?"":"s"}${_fd?` · ${_fd} due`:""}`:"No flashcards yet. Use Make Cards in Learn"}</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();PT.open('${id}')"><span class="pt-ico">${PT.icon}</span><span><b>Practice Test</b><small style="display:block;color:#aaa;margin-top:.2rem">${(window.PT&&PT.hasResume&&PT.hasResume(id))?"⏸ Test in progress — tap to resume":"A fresh randomised test on every topic in your notes"}</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();startBlurtingSetup('${id}')"><span style="font-size:1.5rem">🧠</span><span><b>Blurting</b><small style="display:block;color:#aaa;margin-top:.2rem">Read, recall, then write everything you remember</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card" onclick="closeModal();IQ.mindMap('${id}')"><span style="font-size:1.5rem">🕸️</span><span><b>Mind map</b><small style="display:block;color:#aaa;margin-top:.2rem">See every concept connected — tap weak ones for a mini-lesson</small></span><span style="margin-left:auto">→</span></button><button class="ob method-card course-method" onclick="closeModal();go('#/course/${id}')"><span style="font-size:1.5rem">🎓</span><span><b>Course learning</b><small style="display:block;color:#aaa;margin-top:.2rem">Learn the entire note in bite-size lessons</small></span><span style="margin-left:auto">→</span></button><div class="study-tip"><span class="tip-spark">✦</span><b>Study tip</b><p>Try recalling an idea before rereading it. The effort to retrieve it helps strengthen memory.</p></div></div>`);
 }
 function startBlurtingSetup(id){
   const notes=deckNotes(id); if(!notes.length){toast("Add a note first");return;}
@@ -3624,6 +3624,7 @@ function reviewBlurting(){
     if(run!==blurtRun) return;
     const li=(a,fn)=>a.length?`<ul style="margin:.3rem 0 0;padding-left:1.2rem;line-height:1.5">${a.map(fn).join("")}</ul>`:"";
     const sc=Math.max(0,Math.min(100,Math.round(Number(r.score)||0)));
+    try{ PF.blurt({d:BL.deckId||blurtDeckId(),score:sc,missed:r.missed.slice(0,6).map(x=>x.point),wrong:r.wrong.length,n:r.missed.length+r.remembered.length}); }catch(_){}
     const col=sc>=75?"#4caf7d":sc>=45?"#e29a2d":"#e05b47";
     modal(`<div class="sh"><h2>Your blurting results</h2>
     <div style="text-align:center;margin:.3rem 0 .6rem"><div style="font-size:2.4rem;font-weight:800;color:${col}">${sc}%</div><div class="muted">${esc(r.verdict||"")}</div></div>
@@ -4158,6 +4159,7 @@ function checkAns(){const s=LS,q=s.qs[s.i],ok=s.sel===corrOf(q);s.chk=ok;
   renderLesson()}
 function nextQ(){const s=LS,cb=s.combo;s.combo=0;s.i++;s.sel=null;s.chk=null;renderLesson();if(cb&&animOn()&&LS&&s.i<s.qs.length)mxCombo(cb)}
 function finishLesson(){const s=LS,c=courseOf(s.id),k=s.u+"-"+s.l,acc=Math.round(s.right/s.total*100),first=c.done[k]==null,g=data.game,firstToday=g.lastPracticeDate!==localISODate();
+  try{ PF.course(s.id,(c.units[s.u].lessons[s.l]||{}).title||c.title||"",s.right,s.total); }catch(_){}
   c.done[k]=Math.max(c.done[k]||0,s.miss===0?3:s.miss<3?2:1);
   const all=c.units.every((u,ui)=>u.lessons.every((_,li)=>c.done[ui+"-"+li]!=null)),fin=all&&!c.finished,unit=c.units[s.u].lessons.every((_,li)=>c.done[s.u+"-"+li]!=null);
   let xp=s.xp+(first?20:5)+(fin?100:0); if(fin)c.finished=1; g.xp+=xp;
@@ -5165,16 +5167,16 @@ function ics(){const lead=P().set.remind||10,z=new Date().toISOString().replace(
   L.push("END:VCALENDAR");const a=document.createElement("a");a.href=URL.createObjectURL(new Blob([L.join("\r\n")],{type:"text/calendar"}));a.download="quicklearn-plan.ics";document.body.appendChild(a);a.click();a.remove();toast("Saved — open the file to add it to your phone calendar")}
 /* ---------- 1. AI ASSISTANT ---------- */
 const qa=()=>document.getElementById("qai");
-function ctx(){const g=data.game,t=localISODate(),s=P().set;return `Today: ${new Date().toDateString()} (${t}). Streak: ${cur()} days (practised today: ${g.lastPracticeDate===t}). Level ${g.level}. Cards due: ${dueCards().length}.\nSubjects:\n`+(data.subjects.map(x=>`- ${x.name}: mastery ${masteryOf(x)}%, upcoming exams: ${examsOf(x.id).filter(e=>e.date>=t).map(e=>e.date+(e.title?" "+e.title:"")).join(", ")||"none"}`).join("\n")||"- none yet")+"\nSchedule, next 3 days:\n"+[0,1,2].map(k=>{const d=new Date();d.setDate(d.getDate()+k);const ds=iso(d);return ds+": "+(evOn(ds).filter(e=>e.type!=="routine").map(e=>(e.start||"all-day")+" "+e.title).join("; ")||"nothing")}).join("\n")+`\nRoutine: wake ${s.wake}, bed ${s.sleep}, school/work ${s.ws}-${s.we}`}
+function ctx(){const g=data.game,t=localISODate(),s=P().set;return `Today: ${new Date().toDateString()} (${t}). Streak: ${cur()} days (practised today: ${g.lastPracticeDate===t}). Level ${g.level}. Cards due: ${dueCards().length}.\nSubjects:\n`+(data.subjects.map(x=>`- ${x.name}: mastery ${masteryOf(x)}%, upcoming exams: ${examsOf(x.id).filter(e=>e.date>=t).map(e=>e.date+(e.title?" "+e.title:"")).join(", ")||"none"}`).join("\n")||"- none yet")+"\nSchedule, next 3 days:\n"+[0,1,2].map(k=>{const d=new Date();d.setDate(d.getDate()+k);const ds=iso(d);return ds+": "+(evOn(ds).filter(e=>e.type!=="routine").map(e=>(e.start||"all-day")+" "+e.title).join("; ")||"nothing")}).join("\n")+`\nRoutine: wake ${s.wake}, bed ${s.sleep}, school/work ${s.ws}-${s.we}`+"\n\n"+(window.PF?PF.brief():"")}
 function draw(){const m=document.getElementById("qaiM"),h=P().chat;
   m.innerHTML=h.length?h.map((c,i)=>c.r==="u"?`<div class="qa-b u">${esc(c.t)}</div>`:`<div class="qa-b a">${c.tmp?"<span class=\"spin\"></span> Thinking…":md(cleanAiText(c.t))}${(c.a||[]).map((a,j)=>`<div class="qa-act"><span>${a.type==="add_event"?"📅 "+esc(a.title)+" · "+esc(a.date)+" "+esc(a.start||"")+"–"+esc(a.end||""):a.type==="add_exam"?"🎯 Exam: "+esc(a.subject)+" · "+esc(a.date):"🗓 Open the day planner"}</span><button class="btn ${a.ok?"btn-ghost":"btn-primary"}" onclick="QX.act(${i},${j})">${a.ok?"Added ✓":a.type==="plan"?"Open":"Add"}</button></div>`).join("")}${c.key?`<button class="btn btn-secondary" style="margin-top:.5rem" onclick="QX.close();openKeyModal()">Open AI key</button>`:""}</div>`).join(""):`<div class="qa-b a">Hi! I’m your study coach 👋 I can plan your day, build a revision timetable, add exams or activities to your calendar, and help you keep your streak. What do you need?</div>`;
   m.scrollTop=m.scrollHeight;
-  document.getElementById("qaiC").innerHTML=h.length?"":["🗓 Plan my days","What should I study today?","Build a revision timetable for my next exam","How do I protect my streak?"].map((t,i)=>`<button onclick="${i?`QX.send(this.textContent)`:"QX.close();QX.plan()"}">${t}</button>`).join("")}
+  document.getElementById("qaiC").innerHTML=h.length?"":["🗓 Plan my days","What should I study today?","Build a revision timetable for my next exam","How do I protect my streak?","What do I struggle with and how do I fix it?","📊 My performance"].map((t,i)=>`<button onclick="${i===5?"QX.close();PF.sheet()":i?`QX.send(this.textContent)`:"QX.close();QX.plan()"}">${t}</button>`).join("")}
 function fabSync(){const nav=document.querySelector("nav.bottom"),f=document.getElementById("qaiFab");if(f)f.style.display=(nav&&nav.style.display==="none")||qa().classList.contains("on")?"none":""}
 async function send(txt){txt=(txt||document.getElementById("qaiT").value).trim();if(!txt)return;const p=P(),T=document.getElementById("qaiT");T.value="";
   const hist=p.chat.slice(-8).map(c=>(c.r==="u"?"Student: ":"Coach: ")+c.t).join("\n");
   p.chat.push({r:"u",t:txt});const tmp={r:"a",t:"",tmp:1};p.chat.push(tmp);draw();
-  const prompt=`You are QuickLearn's friendly study coach inside a flashcard app. Be warm, concrete and brief (under 120 words unless asked for a plan). Use the student's data below.\n\n${ctx()}\n\nReply with ONLY JSON: {"reply":"markdown text","actions":[]}. Allowed actions — include them only when the student wants something scheduled: {"type":"add_event","title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","kind":"study|activity","subject":"optional subject name","weekly":false} | {"type":"add_exam","subject":"","date":"YYYY-MM-DD","title":""} | {"type":"plan"} (opens the full day planner).\n\nConversation so far:\n${hist}\nStudent: ${txt}`;
+  const prompt=`You are QuickLearn's friendly study coach inside a flashcard app. Be warm, concrete and brief (under 120 words unless asked for a plan). Use the student's data and PERFORMANCE BRIEF below. When asked about weaknesses or how to improve, name the specific topics and numbers from the brief, say what the pattern suggests, and give a short concrete plan (offer to schedule sessions with add_event actions). Never invent results that are not in the brief.\n\n${ctx()}\n\nReply with ONLY JSON: {"reply":"markdown text","actions":[]}. Allowed actions — include them only when the student wants something scheduled: {"type":"add_event","title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","kind":"study|activity","subject":"optional subject name","weekly":false} | {"type":"add_exam","subject":"","date":"YYYY-MM-DD","title":""} | {"type":"plan"} (opens the full day planner).\n\nConversation so far:\n${hist}\nStudent: ${txt}`;
   try{const raw=await gemini(prompt);let j=null;try{j=jparse(raw)}catch(_){}
     if(!j||typeof j!=="object"||Array.isArray(j))j={reply:raw};tmp.tmp=0;tmp.t=String(j.reply||"I’m not sure — could you rephrase that?");tmp.a=(Array.isArray(j.actions)?j.actions:[]).filter(a=>a&&["add_event","add_exam","plan"].includes(a.type)).slice(0,6)}
   catch(e){tmp.tmp=0;tmp.t=e.message;tmp.key=/key/i.test(e.message)}
@@ -7031,6 +7033,7 @@ function finishLesson(){
   const map = data.mindmaps[s.deckId], n = map.nodes.find(x => x.id === s.nodeId), score = s.res.filter(r => r.ok).length, tot = s.res.length || 1;
   n.m = ((n.m || "") + s.res.map(r => r.ok ? "o" : "x").join("")).slice(-9);
   s.res.forEach(r => pushEv({ t:Date.now(), c:null, d:s.deckId, s:sid(s.deckId), ok:r.ok ? 1 : 0, k:"mini", n:s.nodeId, a:s.id }));
+  s.res.forEach(r => { try{ PF.rec("mini",{ d:s.deckId, tp:(s.n&&s.n.label)||"", ok:r.ok }); }catch(_){} });
   data.game.xp += score*4; markPractice(); save();
   const st = mmEval(s.deckId, map)[s.nodeId], good = st.status === "good", all = score === tot;
   el.innerHTML = `<div class="mm-top"><button onclick="IQ.lessonClose()" aria-label="Close">✕</button><div class="mm-tt"><b>Mini-lesson</b><small>${esc(s.n.label)}</small></div><span style="width:2.4rem"></span></div><div class="ml-main ml-res"><div class="ml-big">${all ? "🎉" : score ? "👏" : "🌱"}</div><h2>${score} / ${tot} correct</h2><div class="iq-chip ${st.status}">${esc(n.label)}: ${STATUS_TXT[st.status]}${st.score != null ? " · " + pct(st.score) + "%" : ""}</div><p class="ml-body">${all ? "This concept is looking solid. Check back later and the app will test you again at the right time." : good ? "Good progress. This concept has turned green. A little repetition will lock it in." : "Still a bit shaky, and that's completely normal. A second round with fresh questions usually does it."}</p><small class="muted">+${score*4} XP</small></div><div class="ml-foot col"><button class="btn btn-primary" onclick="IQ.lessonBack()">Back to map</button>${all ? "" : `<button class="btn btn-secondary" onclick="IQ.lesson('${s.deckId}','${s.nodeId}')">Another round</button>`}</div>`;
@@ -7582,19 +7585,48 @@ function mount(){
   rootEl.innerHTML='<div class="pt-in" id="ptMain"></div>';
   document.body.appendChild(rootEl);
   keyH=onKey; hashH=()=>close();
+  visH=()=>{ if(document.hidden){ try{ snapSave(); }catch(_){} } };
   document.addEventListener('keydown',keyH); window.addEventListener('hashchange',hashH);
+  document.addEventListener('visibilitychange',visH); window.addEventListener('pagehide',visH);
 }
 function unmount(){
   clearInterval(clockT); clockT=null;
   if(keyH) document.removeEventListener('keydown',keyH); if(hashH) window.removeEventListener('hashchange',hashH);
   keyH=hashH=null;
+  if(visH){ document.removeEventListener('visibilitychange',visH); window.removeEventListener('pagehide',visH); visH=null; }
   const old=document.getElementById('pt-root'); if(old) old.remove(); rootEl=null;
 }
-function close(){ if(S) S.cancel=true; S=null; unmount(); }
+/* ---- save & resume: an unfinished test is stored per deck and can be picked up later ---- */
+const LS_RES='quicklearn-pt-resume-v1';
+let visH=null;
+const setRep=(k,v)=>v instanceof Set?{__set:[...v]}:v;
+const setRev=(k,v)=>(v&&typeof v==='object'&&Array.isArray(v.__set))?new Set(v.__set):v;
+function resAll(){ try{ return JSON.parse(localStorage.getItem(LS_RES)||'{}',setRev)||{}; }catch(_){ return {}; } }
+function resPut(all){ try{ localStorage.setItem(LS_RES,JSON.stringify(all,setRep)); }catch(_){} }
+function resClear(id){ const a=resAll(); if(a[id]){ delete a[id]; resPut(a); } }
+function getResume(id){ const r=resAll()[id]; if(!r||!Array.isArray(r.qs)||!r.qs.length||!Array.isArray(r.bank)) return null; if(Date.now()-(r.at||0)>30*864e5) return null; return r; }
+function hasResume(id){ return !!getResume(id); }
+function snapSave(){
+  if(!S||!S.deckId||!(S.screen==='q'||S.screen==='mid')||!S.qs||!S.qs.length) return;
+  const a=resAll(), ci=S.qs.indexOf(S.cur);
+  a[S.deckId]={at:Date.now(),screen:S.screen,opts:S.opts,bank:S.bank,qs:S.qs,i:S.i,phase:S.phase,res:S.res,learn:S.learn,lastType:S.lastType,cur:ci>=0?null:S.cur,ci,elapsed:Date.now()-S.t0};
+  resPut(a);
+}
+function resume(){
+  if(!S) return; const r=getResume(S.deckId); if(!r){ toast('Nothing to resume'); return; }
+  S.opts=r.opts||S.opts; S.bank=r.bank; S.byId={}; S.bank.forEach(c=>S.byId[c.id]=c);
+  S.qs=r.qs; S.i=Math.max(0,Math.min(r.i||0,S.qs.length)); S.phase=r.phase||'main'; S.res=r.res||{}; S.learn=r.learn||null; S.lastType=r.lastType||{}; S.fin=null;
+  S.cur=(r.ci>=0)?S.qs[r.ci]:r.cur; S.t0=Date.now()-(r.elapsed||0);
+  if(!S.cur){ resClear(S.deckId); toast("Couldn't restore that test"); draw(); return; }
+  if(S.cur.type==='match'&&!S.cur.finished) S.cur.t0=0;
+  S.screen=r.screen==='mid'?'mid':'q'; draw();
+}
+function discardResume(){ if(!S) return; resClear(S.deckId); draw(); }
+function close(){ try{ if(S&&(S.screen==='q'||S.screen==='mid')) snapSave(); }catch(_){} if(S) S.cancel=true; S=null; unmount(); }
 function exit(){
   if(!S) return;
   if(S.screen==='q'||S.screen==='mid'){
-    askConfirm('Leave this test?','Your progress in this test will be lost.','Leave',true).then(ok=>{ if(ok) close(); });
+    askConfirm('Leave this test?','Your progress is saved. Pick it up again any time from this deck’s Practice Test.','Save & leave',false).then(ok=>{ if(ok) close(); });
   } else close();
 }
 function draw(){
@@ -7603,6 +7635,7 @@ function draw(){
   const m=document.getElementById('ptMain'); if(!m) return;
   const fn={setup:scrSetup,gen:scrGen,q:scrQ,mid:scrMid,final:scrFinal}[S.screen];
   m.innerHTML=fn();
+  try{ snapSave(); }catch(_){}
   const body=m.querySelector('.pt-body'); if(body&&S.screen!=='q') body.scrollTop=0;
   const inp=document.getElementById('ptIn'); if(inp&&S.cur&&!S.cur.answered) setTimeout(()=>{ try{ inp.focus(); }catch(_){} },60);
   if(S.screen==='q'&&S.cur&&S.cur.type==='match'&&!S.cur.finished){
@@ -7621,9 +7654,11 @@ function scrSetup(){
     if(cb){ const tp=new Set(cb.concepts.map(c=>c.topic)).size; status=`Question bank ready: ${cb.concepts.length} ideas across ${tp} topic${tp===1?'':'s'} (${cb.src==='ai'?'written by AI':'built from your note structure'}). `+(canAI()?`<button class="pt-link" onclick="PT.start(true)">Rebuild</button>`:''); }
     else status=canAI()?'AI reads your notes once and saves the question bank on this device, so later tests start instantly.':'No AI key found, so questions are built from the structure of your notes. Add a Gemini key for sharper questions.';
   } else status='This deck has no notes yet, so the test uses your flashcards.';
+  const rs=getResume(S.deckId), agoT=t=>{ const m=Math.round((Date.now()-t)/6e4); return m<60?Math.max(1,m)+' min ago':m<1440?Math.round(m/60)+' h ago':Math.round(m/1440)+' d ago'; };
+  const resumeHtml=rs?`<div class="pt-sec"><div class="pt-lbl">Test in progress</div><div style="border:1px solid #e29a2d;border-radius:1rem;padding:.8rem 1rem"><b>${rs.phase==='learn'?'Mastery round':'Question '+Math.min((rs.i||0)+1,rs.qs.length)+' of '+rs.qs.length}</b><div class="muted" style="margin:.2rem 0 .7rem;font-size:.85rem">Saved ${agoT(rs.at)} · your answers are kept</div><div style="display:flex;gap:.5rem"><button class="btn btn-primary" style="flex:1" onclick="PT.resume()">Resume test</button><button class="btn btn-secondary" onclick="PT.discardResume()">Discard</button></div></div></div>`:'';
   const lastLine=last?`<div class="pt-note">Last attempt: <b>${last.pct}%</b> on ${E(last.date)}${last.n?` · ${last.n} ideas`:''}</div>`:'';
   return top('')+`<div class="pt-body"><div class="pt-hero"><div class="pt-ico big">${BRAIN}</div><h2>Practice Test</h2><p class="muted">A fresh test on every topic in this deck. Question types are shuffled each time: multiple choice, true or false, typed answers, fill-in-the-blank, reverse questions, matching pairs, ordering and more.</p></div>
-  <div class="pt-sec"><div class="pt-lbl">Length</div><div class="pt-seg">${seg('all','Every topic')}${seg('40','40')}${seg('20','20')}${seg('10','10')}</div></div>
+  ${resumeHtml}<div class="pt-sec"><div class="pt-lbl">Length</div><div class="pt-seg">${seg('all','Every topic')}${seg('40','40')}${seg('20','20')}${seg('10','10')}</div></div>
   <div class="pt-sec"><label class="quiz-opt pt-row"><input type="checkbox" ${S.opts.mastery?'checked':''} onchange="PT.setOpt('mastery',this.checked)"><span>Mastery rounds<small>Missed ideas come back, first as recognition, then as recall, until you've got them</small></span></label>
   ${S.notes&&S.cards.length?`<label class="quiz-opt pt-row"><input type="checkbox" ${S.opts.cards?'checked':''} onchange="PT.setOpt('cards',this.checked)"><span>Include my flashcards<small>${S.cards.length} card${S.cards.length===1?'':'s'} added to the mix</small></span></label>`:''}</div>
   <div class="pt-note">${status}</div>${lastLine}</div><div class="pt-foot"><button class="btn btn-primary" onclick="PT.start()">Start test</button></div>`;
@@ -7680,6 +7715,7 @@ async function start(force){
   if(!bank.length){ S.screen='setup'; draw(); toast('Nothing to test yet. Add some notes first.'); return; }
   S.bank=bank; S.byId={}; bank.forEach(c=>S.byId[c.id]=c);
   S.qs=buildTest(); S.i=0; S.phase='main'; S.res={}; S.learn=null; S.lastType={}; S.fin=null; S.t0=Date.now();
+  resClear(S.deckId);
   S.cur=S.qs[0]; S.screen='q'; draw();
 }
 
@@ -7802,6 +7838,7 @@ function onKey(e){
 /* ---- progression ---- */
 function commit(q){
   if(!q||q.committed||!q.answered) return; q.committed=true;
+  try{ PF.pt(q,S); }catch(_){}
   (q.oks||[]).forEach(o=>{ S.lastType[o.cid]=q.type; });
   if(S.phase==='main'){
     q.oks.forEach(o=>{ if(!S.res[o.cid]) S.res[o.cid]={first:o.ok,topic:S.byId[o.cid].topic,fixed:false}; });
@@ -7850,6 +7887,7 @@ function finish(){
   const pct=ids.length?Math.round(solid/ids.length*100):0;
   S.fin={pct,solid,fixed,still,n:ids.length,topics,secs:Math.max(1,Math.round((Date.now()-S.t0)/1000))};
   const all=lsGet(LS_LAST,{}); all[S.deckId]={pct,date:new Date().toISOString().slice(0,10),n:ids.length}; lsSet(LS_LAST,all);
+  try{ resClear(S.deckId); PF.test(S); }catch(_){}
   try{ markPractice(); }catch(_){}
   try{ haptic('complete'); }catch(_){}
   S.screen='final'; S.cur=null; draw();
@@ -7865,8 +7903,149 @@ function scrFinal(){
   <div class="pt-foot">${weak.length?`<button class="btn btn-secondary" onclick="PT.learnMissed()">Master ${weak.length} more</button>`:''}<button class="btn btn-primary" onclick="PT.start()">New test</button></div>`;
 }
 
-window.PT={ icon:BRAIN, open, exit, close, start, setLen, setOpt, stopGen, pick, tog, checkMulti, place, unplace, resetOrder, checkOrder, check, override, mL, mR, next, learnMissed, finishNow };
+window.PT={ icon:BRAIN, open, exit, close, start, setLen, setOpt, stopGen, pick, tog, checkMulti, place, unplace, resetOrder, checkOrder, check, override, mL, mR, next, learnMissed, finishNow, resume, discardResume, hasResume };
 if(window.__PT_TEST) window.PT.__t={ gradeFree, gradeWord, localConcepts, piecesOf, batchesOf, cleanAI, finalizeConcepts, B, buildTest, learnQ, matchQ, sample, spread, setState:s=>{ S=s; }, getState:()=>S };
+})();
+</script>
+<script>
+/* ============================== PERFORMANCE PROFILE ==============================
+   Records results from every study method (flashcards, quizzes, practice tests, mind-map
+   lessons, course lessons, blurting) into data.perf, and turns it into a short brief the
+   AI study coach receives with every message. */
+(function(){
+const DAY=864e5, METHODS={card:"Flashcards",quiz:"Quizzes",pt:"Practice tests",mini:"Mind-map lessons",course:"Course lessons",blurt:"Blurting"};
+function P(){ const p=data.perf||(data.perf={}); p.v=1; p.m=p.m||{}; p.t=p.t||{}; p.days=p.days||{}; p.tests=p.tests||[]; p.blurts=p.blurts||[]; return p; }
+let _st=null; function later(){ clearTimeout(_st); _st=setTimeout(()=>{ try{ save(); }catch(_){} },1500); }
+const dn=id=>{ const d=(data.decks||[]).find(x=>x.id===id); return d?d.title:"Deck"; };
+const iso=t=>{ const d=new Date(t); return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0"); };
+const clip=(t,n)=>{ t=String(t==null?"":t).replace(/\s+/g," ").trim(); return t.length>n?t.slice(0,n-1).trimEnd()+"…":t; };
+const pc=(a,b)=>b?Math.round(a/b*100):null;
+const ago=t=>{ if(!t) return "never"; const d=Math.floor((Date.now()-t)/DAY); return d<=0?"today":d+"d ago"; };
+function trim(p){
+  const dk=Object.keys(p.days); if(dk.length>150) dk.sort().slice(0,dk.length-120).forEach(k=>delete p.days[k]);
+  const tk=Object.keys(p.t); if(tk.length>300) tk.sort((a,b)=>(p.t[a].last||0)-(p.t[b].last||0)).slice(0,tk.length-250).forEach(k=>delete p.t[k]);
+}
+/* one answer: kind = card | quiz | pt | mini | course | blurt.  o = {d:deckId, tp:topic, ok:bool, fix:bool} */
+function rec(kind,o){ try{
+  o=o||{}; const p=P(), ok=o.ok?1:0, now=Date.now(), day=iso(now);
+  const dd=p.days[day]||(p.days[day]={n:0,ok:0,k:{}}); dd.n++; dd.ok+=ok; dd.k=dd.k||{}; dd.k[kind]=(dd.k[kind]||0)+1;
+  if(!o.fix){
+    const m=p.m[kind]||(p.m[kind]={n:0,ok:0,first:now}); m.n++; m.ok+=ok; m.last=now;
+    if(o.tp!=null){
+      const tp=String(o.tp).replace(/\s+/g," ").trim().slice(0,70), key=(o.d||"")+"|"+tp;
+      const t=p.t[key]||(p.t[key]={d:o.d||"",tp,n:0,ok:0,h:""}); t.n++; t.ok+=ok; t.h=(t.h+(ok?"o":"x")).slice(-12); t.last=now;
+    }
+  }
+  trim(p); later();
+}catch(_){} }
+function pt(q,S){ (q.oks||[]).forEach(o=>{ const c=S.byId&&S.byId[o.cid]; rec("pt",{d:S.deckId,tp:c?c.topic:"",ok:o.ok,fix:S.phase!=="main"}); }); }
+function test(S){ try{
+  const f=S.fin; if(!f) return; const p=P(), tp={};
+  Object.keys(f.topics).forEach(k=>{ tp[k]=[f.topics[k].n,f.topics[k].ok]; });
+  p.tests.push({t:Date.now(),d:S.deckId,pct:f.pct,n:f.n,secs:f.secs,still:f.still,tp});
+  if(p.tests.length>40) p.tests.splice(0,p.tests.length-40);
+  later();
+}catch(_){} }
+function blurt(o){ try{
+  const p=P(); p.blurts.push({t:Date.now(),d:o.d,score:o.score,missed:(o.missed||[]).slice(0,6).map(x=>clip(x,80)),wrong:o.wrong||0,n:o.n||0});
+  if(p.blurts.length>40) p.blurts.splice(0,p.blurts.length-40);
+  rec("blurt",{d:o.d,ok:o.score>=70});
+}catch(_){} }
+function course(id,title,right,total){ try{ for(let i=0;i<total;i++) rec("course",{d:id,tp:title,ok:i<right}); }catch(_){} }
+
+function profile(){
+  const p=P(), now=Date.now();
+  const o={methods:[],unused:[],weak:[],strong:[],repeat:[],conf:null,tests:[],blurt:null,nodes:[],courses:[],total:{n:0,ok:0,acc:null}};
+  Object.keys(METHODS).forEach(k=>{
+    const m=p.m[k];
+    if(m&&m.n){ o.methods.push({k,label:METHODS[k],n:m.n,acc:pc(m.ok,m.n),last:m.last}); if(k!=="blurt"){ o.total.n+=m.n; o.total.ok+=m.ok; } }
+    else o.unused.push(METHODS[k]);
+  });
+  o.total.acc=pc(o.total.ok,o.total.n);
+  const win=(a,b)=>{ let n=0,ok=0; for(let i=a;i<b;i++){ const d=p.days[iso(now-i*DAY)]; if(d){ n+=d.n; ok+=d.ok; } } return {n,ok}; };
+  o.cur=win(0,14); o.prev=win(14,28);
+  o.days14=0; for(let i=0;i<14;i++){ const d=p.days[iso(now-i*DAY)]; if(d&&d.n) o.days14++; }
+  const arr=Object.values(p.t), rate=t=>t.ok/t.n;
+  o.weak=arr.filter(t=>t.n>=3&&rate(t)<.65).sort((a,b)=>rate(a)-rate(b)||b.n-a.n).slice(0,6);
+  o.strong=arr.filter(t=>t.n>=4&&rate(t)>=.9).sort((a,b)=>b.n-a.n).slice(0,3);
+  o.repeat=(data.cards||[]).filter(c=>(c.lapses||0)>=3||(c.struggle||0)>=3||c.miscon)
+    .sort((a,b)=>Math.max(b.lapses||0,b.struggle||0)-Math.max(a.lapses||0,a.struggle||0)).slice(0,5)
+    .map(c=>({q:clip(c.question||c.front||"",60),deck:dn(c.deckId),n:Math.max(c.lapses||0,c.struggle||0),miscon:!!c.miscon}));
+  let sure=0,over=0,guess=0,under=0;
+  (data.events||[]).forEach(e=>{ if(typeof e.cf!=="number"||now-e.t>60*DAY) return; if(e.cf===2){ sure++; if(!e.ok) over++; } if(e.cf===0){ guess++; if(e.ok) under++; } });
+  if(sure+guess>=5) o.conf={sure,over,guess,under};
+  const byDeck={}; p.tests.forEach(t=>{ (byDeck[t.d]=byDeck[t.d]||[]).push(t); });
+  o.tests=Object.keys(byDeck).map(d=>({deck:dn(d),pcts:byDeck[d].slice(-4).map(t=>t.pct),last:byDeck[d][byDeck[d].length-1].t})).sort((a,b)=>b.last-a.last).slice(0,3);
+  const bl=p.blurts.slice(-5);
+  if(bl.length){ const f={}; bl.forEach(b=>(b.missed||[]).forEach(x=>{ const k=x.toLowerCase(); f[k]=f[k]||{x,n:0}; f[k].n++; }));
+    o.blurt={n:p.blurts.length,avg:Math.round(bl.reduce((s,b)=>s+b.score,0)/bl.length),missed:Object.values(f).sort((a,b)=>b.n-a.n).slice(0,4).map(v=>v.x)}; }
+  Object.keys(data.mindmaps||{}).forEach(did=>{ const mp=data.mindmaps[did]; (mp&&mp.nodes||[]).forEach(n=>{
+    const h=String(n.m||""), good=(h.match(/o/g)||[]).length, bad=(h.match(/x/g)||[]).length;
+    if(good+bad>=3&&good/(good+bad)<.6) o.nodes.push({label:n.label,deck:dn(did),acc:pc(good,good+bad)}); }); });
+  o.nodes.sort((a,b)=>a.acc-b.acc); o.nodes=o.nodes.slice(0,4);
+  Object.keys(data.courses||{}).forEach(id=>{ const c=data.courses[id]; if(!c||!c.units) return;
+    const total=c.units.reduce((s,u)=>s+u.lessons.length,0), done=Object.keys(c.done||{}).length;
+    if(done&&done<total) o.courses.push({deck:c.title||dn(id),done,total}); });
+  o.courses=o.courses.slice(0,3);
+  const g=data.game||{}; o.streak=g.streak||0; try{ o.due=dueCards().length; }catch(_){ o.due=0; }
+  return o;
+}
+function brief(){
+  const o=profile();
+  if(!o.total.n&&!o.methods.length) return "PERFORMANCE BRIEF: no study results recorded yet. Suggest a flashcard session or practice test so you can learn their strengths and weaknesses.";
+  const L=["PERFORMANCE BRIEF (all study methods, recorded on this device)"];
+  const a1=pc(o.cur.ok,o.cur.n), a2=pc(o.prev.ok,o.prev.n);
+  L.push(`Overall: ${o.total.n} answers, ${o.total.acc==null?"n/a":o.total.acc+"%"} correct. Last 14 days: ${a1==null?"no activity":a1+"% (n="+o.cur.n+")"}${a2!=null?`; prior 14 days: ${a2}% (n=${o.prev.n})${a1!=null?(a1>a2+3?", improving":a1<a2-3?", slipping":", steady"):""}`:""}. Active ${o.days14}/14 days, streak ${o.streak}, ${o.due} cards due.`);
+  L.push("By method: "+o.methods.map(m=>`${m.label} ${m.acc}% (n=${m.n}, last ${ago(m.last)})`).join(" | "));
+  if(o.weak.length) L.push("Weakest topics: "+o.weak.map(w=>`${dn(w.d)}${w.tp?" › "+w.tp:""} ${pc(w.ok,w.n)}% (n=${w.n}, recent ${w.h.slice(-6)})`).join("; "));
+  if(o.strong.length) L.push("Strongest: "+o.strong.map(w=>`${dn(w.d)}${w.tp?" › "+w.tp:""} ${pc(w.ok,w.n)}%`).join("; "));
+  if(o.repeat.length) L.push("Repeated mistakes: "+o.repeat.map(r=>`"${r.q}" (${r.deck}, missed ${r.n}x${r.miscon?", confident but wrong":""})`).join("; "));
+  if(o.conf) L.push(`Confidence: ${o.conf.over}/${o.conf.sure} answers marked "Sure" were wrong; ${o.conf.under}/${o.conf.guess} "Guessing" answers were right.`);
+  if(o.tests.length) L.push("Practice test scores (oldest→newest): "+o.tests.map(t=>`${t.deck} ${t.pcts.join("→")}%`).join("; "));
+  if(o.blurt) L.push(`Blurting: avg ${o.blurt.avg}% over last sessions${o.blurt.missed.length?"; often misses: "+o.blurt.missed.join("; "):""}.`);
+  if(o.nodes.length) L.push("Weak mind-map nodes: "+o.nodes.map(n=>`${n.label} (${n.deck}, ${n.acc}%)`).join("; "));
+  if(o.courses.length) L.push("Courses in progress: "+o.courses.map(c=>`${c.deck} ${c.done}/${c.total} lessons`).join("; "));
+  if(o.unused.length) L.push("Not yet tried: "+o.unused.join(", ")+".");
+  return L.join("\n").slice(0,2400);
+}
+function ensureCss(){ if(document.getElementById("pf-css")) return; const s=document.createElement("style"); s.id="pf-css";
+  s.textContent=".pf-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:.5rem;margin:.4rem 0 .8rem}.pf-card{background:rgba(255,255,255,.05);border-radius:.8rem;padding:.6rem;text-align:center}.pf-card b{display:block;font-size:1.3rem}.pf-card small{color:#aaa;font-size:.72rem}.pf-row{display:grid;grid-template-columns:minmax(0,1.1fr) 1fr 2.6rem;gap:.6rem;align-items:center;margin:.35rem 0;font-size:.85rem}.pf-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.pf-row div{height:.5rem;border-radius:9px;background:rgba(127,127,127,.25);overflow:hidden}.pf-row i{display:block;height:100%;background:#e29a2d;border-radius:9px}.pf-row b{text-align:right;font-weight:600}.pf-h{font-size:.78rem;letter-spacing:.04em;text-transform:uppercase;color:#aaa;margin:1rem 0 .3rem}.pf-li{font-size:.85rem;margin:.25rem 0;line-height:1.4}html[data-theme=light] .pf-card{background:#f6eee8}"; document.head.appendChild(s); }
+function sheet(){
+  ensureCss(); const o=profile();
+  if(!o.methods.length){ modal(`<div class="sh"><h2>My performance</h2><p class="muted" style="text-align:center">Nothing recorded yet. Study some flashcards, take a practice test or try a mini-lesson and your stats will build up here.</p><button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="closeModal()">Close</button></div>`); return; }
+  const row=(l,a)=>`<div class="pf-row"><span title="${esc(l)}">${esc(l)}</span><div><i style="width:${a||0}%"></i></div><b>${a==null?"–":a+"%"}</b></div>`;
+  const li=(a,f)=>a.length?a.map(x=>`<div class="pf-li">${f(x)}</div>`).join(""):"";
+  modal(`<div class="sh"><h2>My performance</h2>
+  <div class="pf-grid"><div class="pf-card"><b>${o.total.n}</b><small>answers</small></div><div class="pf-card"><b>${o.total.acc==null?"–":o.total.acc+"%"}</b><small>correct</small></div><div class="pf-card"><b>${o.days14}/14</b><small>active days</small></div></div>
+  <div class="pf-h">By study method</div>${o.methods.map(m=>row(m.label+" · "+m.n,m.acc)).join("")}
+  ${o.weak.length?`<div class="pf-h">Needs work</div>${o.weak.map(w=>row((w.tp||dn(w.d))+(w.tp?" · "+dn(w.d):""),pc(w.ok,w.n))).join("")}`:""}
+  ${o.strong.length?`<div class="pf-h">Strong</div>${o.strong.map(w=>row((w.tp||dn(w.d)),pc(w.ok,w.n))).join("")}`:""}
+  ${o.repeat.length?`<div class="pf-h">Repeated mistakes</div>${li(o.repeat,r=>`❌ ${esc(r.q)} <small class="muted">· ${esc(r.deck)} · ${r.n}×</small>`)}`:""}
+  ${o.conf?`<div class="pf-h">Confidence</div><div class="pf-li">${o.conf.over} of ${o.conf.sure} answers marked “Sure” were wrong.</div>`:""}
+  ${o.blurt?`<div class="pf-h">Blurting</div><div class="pf-li">Average ${o.blurt.avg}%${o.blurt.missed.length?" · often missed: "+esc(o.blurt.missed.join("; ")):""}</div>`:""}
+  ${o.unused.length?`<div class="pf-h">Not tried yet</div><div class="pf-li">${esc(o.unused.join(", "))}</div>`:""}
+  <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="closeModal();QX.chat();setTimeout(()=>QX.send('What do I struggle with most, and what is my plan to improve?'),350)">✨ Ask my coach for a plan</button>
+  <button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="closeModal()">Close</button></div>`);
+}
+/* one-off: seed lifetime counters from answers logged before this feature existed */
+(function(){ try{
+  const p=P(); if(p.bf) return; p.bf=1;
+  (data.events||[]).forEach(e=>{ const k=e.k==="card"||e.k==="extra"?"card":e.k==="quiz"?"quiz":e.k==="mini"?"mini":null; if(!k||!e.t) return;
+    const ok=e.ok?1:0, m=p.m[k]||(p.m[k]={n:0,ok:0,first:e.t}); m.n++; m.ok+=ok; m.last=Math.max(m.last||0,e.t);
+    const dd=p.days[iso(e.t)]||(p.days[iso(e.t)]={n:0,ok:0,k:{}}); dd.n++; dd.ok+=ok; dd.k=dd.k||{}; dd.k[k]=(dd.k[k]||0)+1; });
+  trim(p); later();
+}catch(_){} })();
+/* flashcard + quiz answers are already logged by IQ — mirror them into the profile */
+try{
+  const IQ=window.IQ;
+  if(IQ&&IQ.logCard){ const f=IQ.logCard; IQ.logCard=function(card,r){ const x=f.apply(this,arguments); try{ rec("card",{d:card.deckId,tp:card.topic||card.tag||"",ok:r==="good"||r==="easy"}); }catch(_){} return x; }; }
+  if(IQ&&IQ.logQuiz){ const f=IQ.logQuiz; IQ.logQuiz=function(q,ok){
+    let dup=false; try{ dup=!!(quizState&&quizState._lg===quizState.idx); }catch(_){}
+    const x=f.apply(this,arguments);
+    if(!dup){ try{ const c=q&&q.cid?data.cards.find(v=>v.id===q.cid):null; rec("quiz",{d:c?c.deckId:(quizState.deckId||""),tp:c?(c.topic||c.tag||""):"",ok}); }catch(_){} }
+    return x; }; }
+}catch(_){}
+window.PF={rec,pt,test,blurt,course,profile,brief,sheet};
 })();
 </script>
 </body>
