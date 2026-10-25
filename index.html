@@ -2022,14 +2022,30 @@ async function renameDeck(id){
   if(!v.trim()){ toast("Name can't be empty"); return; }
   d.title = v.trim(); save(); route(); toast("Deck renamed");
 }
-async function renameFolder(id){
-  const sub = data.subjects.find(x=>x.id===id); if(!sub) return;
-  const v = await askText("Rename folder", sub.name, "Folder name");
-  if(v === null) return;
-  if(!v.trim()){ toast("Name can't be empty"); return; }
-  sub.name = v.trim();
-  data.decks.forEach(d=>{ if(d.subjectId===id) d.subject = sub.name; }); // keep the stored copy in sync
-  save(); route(); toast("Folder renamed");
+function editFolder(id){
+  const sub=data.subjects.find(x=>x.id===id); if(!sub) return;
+  const idx=data.subjects.indexOf(sub), cur=sub.color||FCOL[idx%FCOL.length];
+  const sw=["#e29a2d","#ff7c5b","#ff6b9a","#c77dff","#6c8cff","#3fb6e8","#2fc4a0","#72c15a","#e5c364","#9a8478"];
+  window.__efc=cur;
+  modal(`<div class="sh"><h2>Edit folder</h2>
+    <div style="display:flex;align-items:center;gap:.75rem;margin:.4rem 0 .9rem"><span id="efPrev" style="display:flex;width:2.4rem;height:2.4rem">${IC.folder(cur).replace('width="22" height="22"','width="100%" height="100%"')}</span>
+    <input class="input" id="efName" value="${esc(sub.name)}" placeholder="Folder name" style="flex:1"></div>
+    <div class="sub" style="margin-bottom:.5rem">Icon colour</div>
+    <div id="efSw" style="display:flex;flex-wrap:wrap;gap:.55rem;align-items:center">${sw.map(c=>`<button type="button" data-c="${c}" aria-label="${c}" style="width:2rem;height:2rem;border-radius:50%;border:2px solid ${c.toLowerCase()===cur.toLowerCase()?"#fff":"transparent"};background:${c};cursor:pointer;padding:0"></button>`).join("")}
+      <label title="Custom colour" style="position:relative;width:2rem;height:2rem;border-radius:50%;border:2px dashed var(--muted-fg);display:flex;align-items:center;justify-content:center;cursor:pointer;overflow:hidden;background:conic-gradient(#f55,#fb4,#6d6,#4cf,#a6f,#f55)"><input type="color" id="efCustom" value="${/^#[0-9a-f]{6}$/i.test(cur)?cur:"#e29a2d"}" style="position:absolute;inset:-6px;width:150%;height:150%;opacity:0;cursor:pointer"></label></div>
+    <button class="btn btn-primary" style="width:100%;margin-top:1rem" onclick="saveFolderEdit('${id}')">Save</button></div>`);
+  const setC=c=>{window.__efc=c;document.getElementById("efPrev").innerHTML=IC.folder(c).replace('width="22" height="22"','width="100%" height="100%"');
+    document.querySelectorAll("#efSw button").forEach(b=>b.style.borderColor=b.dataset.c.toLowerCase()===c.toLowerCase()?"#fff":"transparent")};
+  setTimeout(()=>{document.querySelectorAll("#efSw button").forEach(b=>b.onclick=()=>setC(b.dataset.c));
+    const cu=document.getElementById("efCustom"); if(cu) cu.oninput=()=>setC(cu.value)},0);
+}
+function saveFolderEdit(id){
+  const sub=data.subjects.find(x=>x.id===id); if(!sub) return;
+  const v=(document.getElementById("efName")?.value||"").trim();
+  if(!v){ toast("Name can't be empty"); return; }
+  sub.name=v; sub.color=window.__efc||sub.color;
+  data.decks.forEach(d=>{ if(d.subjectId===id) d.subject=sub.name; });
+  save(); closeModal(); route(); toast("Folder updated");
 }
 async function renameExam(sid, eid){
   const e = (data.examSchedule[sid]||[]).find(x=>x.id===eid); if(!e) return;
@@ -2536,7 +2552,7 @@ function askConfirm(title, message, okLabel, danger){
 })();
 // Folder picker: a themed replacement for the native <select>. Writes its choice to a hidden input with id=`id`.
 function folderPicker(id, selected){
-  const list = [{id:"", name:"No folder", color:"#888"}, ...data.subjects.map((s,i)=>({id:s.id, name:s.name, color:FCOL[i%FCOL.length]}))];
+  const list = [{id:"", name:"No folder", color:"#888"}, ...data.subjects.map((s,i)=>({id:s.id, name:s.name, color:(s.color||FCOL[i%FCOL.length])}))];
   const cur = list.find(x=>x.id===selected) || list[0];
   return `<div class="fpick" id="${id}Wrap"><input type="hidden" id="${id}" value="${esc(cur.id)}">
     <button type="button" class="fp-trigger" aria-haspopup="listbox" aria-expanded="false" onclick="fpToggle('${id}')"><span class="fp-ic">${IC.folder(cur.color)}</span><span class="fp-name">${esc(cur.name)}</span><span class="fp-chev" aria-hidden="true">›</span></button>
@@ -3246,7 +3262,7 @@ function selMove(){
   const ids = [...SEL.items.values()].filter(v => v.k === "deck");
   if(!ids.length){ toast("Select at least one deck to move."); return; }
   const row = (sid,label,ic) => `<button class="sr" onclick="selMoveTo('${sid}')"><span class="tile" style="background:#37261b">${ic}</span><span style="flex:1">${label}</span></button>`;
-  modal(`<div class="sh"><h2>Move ${ids.length} deck${ids.length===1?"":"s"} to…</h2>${data.subjects.length?"":`<div class="sub">No folders yet. Use + to create one.</div>`}${data.subjects.map((s,i)=>row(s.id,esc(s.name),IC.folder(FCOL[i%FCOL.length]))).join("")}${row("","No folder",IC.folder("#888"))}</div>`);
+  modal(`<div class="sh"><h2>Move ${ids.length} deck${ids.length===1?"":"s"} to…</h2>${data.subjects.length?"":`<div class="sub">No folders yet. Use + to create one.</div>`}${data.subjects.map((s,i)=>row(s.id,esc(s.name),IC.folder((s.color||FCOL[i%FCOL.length])))).join("")}${row("","No folder",IC.folder("#888"))}</div>`);
 }
 function selMoveTo(sid){
   const s = data.subjects.find(x => x.id === sid), ids = new Set([...SEL.items.values()].filter(v => v.k === "deck").map(v => v.id));
@@ -3299,7 +3315,7 @@ function renderHome(){
 }
 function renderLibrary(){
   const loose = data.decks.filter(d => !d.subjectId || !data.subjects.some(s => s.id === d.subjectId));
-  const folders = data.subjects.map((s, i) => `<button class="row2" style="animation-delay:${i*45}ms" data-sk="folder" data-sid="${s.id}" onclick="selTap(event,'folder','${s.id}','#/folder/${s.id}')"><span class="ck2" aria-hidden="true">✓</span><span class="tile" style="background:none">${IC.folder(FCOL[i % FCOL.length])}</span><span class="t"><b>${esc(s.name)}</b><small>${ago(s.createdAt)}</small></span><span class="more" onclick="event.stopPropagation();folderMenu('${s.id}')">⋯</span></button>`).join("");
+  const folders = data.subjects.map((s, i) => `<button class="row2" style="animation-delay:${i*45}ms" data-sk="folder" data-sid="${s.id}" onclick="selTap(event,'folder','${s.id}','#/folder/${s.id}')"><span class="ck2" aria-hidden="true">✓</span><span class="tile" style="background:none">${IC.folder((s.color||FCOL[i % FCOL.length]))}</span><span class="t"><b>${esc(s.name)}</b><small>${ago(s.createdAt)}</small></span><span class="more" onclick="event.stopPropagation();folderMenu('${s.id}')">⋯</span></button>`).join("");
   view.innerHTML = hdr("Library", "", `<button onclick="go('#/search')" aria-label="Search">${IC.search}</button>`) +
     `<div class="chips" style="padding-top:.3rem"><button class="chip2 on">${IC.lib.replace("<svg","<svg width='18' height='18'")} My materials</button></div>
     <div class="rows">${folders}${loose.map((d, i) => deckRow(d, i + data.subjects.length)).join("")}</div>` +
@@ -3316,7 +3332,7 @@ function renderFolder(id){
 }
 function folderMenu(id){
   modal(`<div class="sh"><h2>Folder</h2>
-    <button class="sr" onclick="closeModal();renameFolder('${id}')">Rename folder</button>
+    <button class="sr" onclick="closeModal();editFolder('${id}')">Edit folder</button>
     <button class="sr" style="color:#ff6b6b" onclick="closeModal();askConfirm('Delete this folder?','Your decks stay. They just become unfiled.','Delete',true).then(ok=>{if(ok){deleteSubject('${id}');go('#/library');route()}})">Delete folder</button></div>`);
 }
 function newFolderSheet(){
@@ -4025,7 +4041,7 @@ function openPlusMenu(){
 function moveSheet(id){
   const d=data.decks.find(x=>x.id===id); if(!d) return;
   const row=(sid,label,ic)=>`<button class="sr" onclick="moveDeck('${id}','${sid}')"><span class="tile" style="background:#37261b">${ic}</span><span style="flex:1">${label}</span>${(d.subjectId||"")===sid?"✓":""}</button>`;
-  modal(`<div class="sh"><h2>Move to folder</h2>${data.subjects.length?"":`<div class="sub">No folders yet. Use + to create one.</div>`}${data.subjects.map((s,i)=>row(s.id,esc(s.name),IC.folder(FCOL[i%FCOL.length]))).join("")}${row("","No folder",IC.folder("#888"))}</div>`);
+  modal(`<div class="sh"><h2>Move to folder</h2>${data.subjects.length?"":`<div class="sub">No folders yet. Use + to create one.</div>`}${data.subjects.map((s,i)=>row(s.id,esc(s.name),IC.folder((s.color||FCOL[i%FCOL.length])))).join("")}${row("","No folder",IC.folder("#888"))}</div>`);
 }
 function moveDeck(id,sid){
   const d=data.decks.find(x=>x.id===id); if(!d) return;
@@ -8512,5 +8528,34 @@ html[data-fps="120"] *{-webkit-tap-highlight-color:transparent}
 html[data-fps="120"] body{overscroll-behavior-y:none}
 
 </style>
+<script>
+/* ===== QuickLearn custom icon set: replaces emoji with drawn SVG icons ===== */
+(function(){
+const P={"target": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.2\" fill=\"currentColor\"/>", "fire": "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z\"/>", "bolt": "<path d=\"M13 3L5 14h6l-1 7 8-11h-6z\"/>", "spark": "<path d=\"M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z\"/>", "brain": "<path d=\"M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 4 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 4 3 3 0 0 1-6 1\"/>", "party": "<path d=\"M4 20l4-12 8 8z\"/><path d=\"M14 5v2M19 9h2M17 3l-1 1M20 14l-1.5-.5\"/>", "book": "<path d=\"M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z\"/>", "mic": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4\"/>", "moon": "<path d=\"M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z\"/>", "school": "<path d=\"M3 9l9-5 9 5zM5 9v8M9.5 9v8M14.5 9v8M19 9v8M3 20h18\"/>", "cap": "<path d=\"M2 9l10-5 10 5-10 5zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6\"/>", "note": "<path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M14 3v5h5M9 12h7M9 16h7\"/>", "check": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8 12.5l3 3 5-6\"/>", "plant": "<path d=\"M12 21v-8M12 13c0-4 3-6 7-6 0 4-3 6-7 6zM12 16c0-3-2-5-6-5 0 3 2 5 6 5z\"/>", "cards": "<rect x=\"8\" y=\"3\" width=\"12\" height=\"15\" rx=\"2\"/><path d=\"M5 7a2 2 0 0 0-1 1.7V19a2 2 0 0 0 2 2h9\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "cal": "<rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"2\"/><path d=\"M4 10h16M8 3v4M16 3v4\"/>", "chart": "<path d=\"M4 20V4M4 20h16M8 16l4-5 3 3 5-7\"/>", "bars": "<path d=\"M6 20v-8M12 20V5M18 20v-5\"/>", "globe": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M15.5 8.5l-2 5-5 2 2-5z\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4 4-6 8-6s8 2 8 6\"/>", "trash": "<path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/>", "folder": "<path d=\"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M8.5 8L20 19M8.5 16L20 5\"/>", "web": "<circle cx=\"12\" cy=\"12\" r=\"2\"/><circle cx=\"5\" cy=\"6\" r=\"1.5\"/><circle cx=\"19\" cy=\"7\" r=\"1.5\"/><circle cx=\"12\" cy=\"20\" r=\"1.5\"/><path d=\"M10.5 11L6 7M13.5 11L18 8M12 14v5\"/>", "link": "<path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"/>", "speaker": "<path d=\"M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11\"/>", "palette": "<path d=\"M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.5 1.5-2.5H18a3 3 0 0 0 3-3C21 7 17 3 12 3z\"/><circle cx=\"8\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"7.5\" r=\"1\"/><circle cx=\"16\" cy=\"10\" r=\"1\"/>", "flask": "<path d=\"M9 3h6M10 3v6l-5 10a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-10V3M7.5 15h9\"/>", "pin": "<path d=\"M12 21v-7M8 3h8l-1 6 3 4H6l3-4z\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/>", "home": "<path d=\"M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z\"/>", "lock": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 8 0v3\"/>", "key": "<circle cx=\"8\" cy=\"15\" r=\"4\"/><path d=\"M11 12l9-9M16 7l3 3\"/>", "trophy": "<path d=\"M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 21h8\"/>", "crown": "<path d=\"M3 8l4 4 5-7 5 7 4-4-2 11H5z\"/>", "warn": "<path d=\"M12 4l9 16H3zM12 10v4M12 17v.5\"/>", "x": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9 9l6 6M15 9l-6 6\"/>", "bulb": "<path d=\"M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 11c.7.6 1 1.3 1 2h5c0-.7.3-1.4 1-2A6 6 0 0 0 12 3z\"/>", "chat": "<path d=\"M4 5h16v11H9l-5 4z\"/>", "think": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.5\"/>", "bag": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18\"/>", "laptop": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"10\" rx=\"1.5\"/><path d=\"M2 19h20\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1\"/>", "bell": "<path d=\"M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4\"/>", "clock": "<circle cx=\"12\" cy=\"13\" r=\"8\"/><path d=\"M12 9v4l3 2M9 2h6\"/>", "heart": "<path d=\"M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z\"/>", "hand": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "down": "<path d=\"M12 4v12M6 12l6 6 6-6M5 21h14\"/>", "up": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "camera": "<path d=\"M4 8h3l2-3h6l2 3h3v12H4z\"/><circle cx=\"12\" cy=\"14\" r=\"3.5\"/>", "image": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><circle cx=\"9\" cy=\"10\" r=\"1.5\"/><path d=\"M4 18l5-5 4 4 3-3 4 4\"/>", "play": "<path d=\"M7 4l13 8-13 8z\"/>", "pause": "<path d=\"M8 5v14M16 5v14\"/>", "stop": "<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"1\"/>", "next": "<path d=\"M5 5l9 7-9 7zM18 5v14\"/>", "ruler": "<path d=\"M3 17L17 3l4 4L7 21zM8 12l2 2M11 9l2 2M14 6l2 2\"/>", "scale": "<path d=\"M12 4v16M6 20h12M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z\"/>", "cube": "<path d=\"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5\"/>", "game": "<rect x=\"3\" y=\"8\" width=\"18\" height=\"10\" rx=\"4\"/><path d=\"M8 11v4M6 13h4M16 12v.5M18 14v.5\"/>", "ball": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 8l4 3-1.5 5h-5L8 11zM12 3v5M16 11l5-1M14.5 16l3 4M9.5 16l-3 4M8 11L3 10\"/>", "food": "<path d=\"M7 3v8a2 2 0 0 0 2 2v8M5 3v6M9 3v6M17 21V3c-3 1-4 4-4 8h4\"/>", "run": "<circle cx=\"14\" cy=\"4.5\" r=\"2\"/><path d=\"M9 21l3-6-3-3 2-4 4 2 3 3M6 12l3-3\"/>", "smile": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5v.5M15 9.5v.5\"/>", "atom": "<circle cx=\"12\" cy=\"12\" r=\"1.5\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(120 12 12)\"/>", "star": "<path d=\"M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8z\"/>", "edit": "<path d=\"M4 20l1-4L16 5l3 3L8 19zM14 7l3 3\"/>", "divide": "<path d=\"M5 12h14M12 6v.5M12 18v.5\"/>", "ruler2": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18M9 21V9\"/>"},M={"🎯": "target", "🔥": "fire", "⚡": "bolt", "✨": "spark", "✦": "spark", "🌟": "spark", "⭐": "star", "★": "star", "🧠": "brain", "🧬": "brain", "🧩": "brain", "🎉": "party", "👏": "party", "📖": "book", "📚": "book", "📘": "book", "📒": "book", "🔠": "book", "🎤": "mic", "🎙": "mic", "🗣": "mic", "🎧": "mic", "☀": "sun", "🌙": "moon", "🏛": "school", "🏫": "school", "🏤": "school", "🎓": "cap", "📝": "note", "📄": "note", "📋": "note", "📌": "note", "✍": "edit", "✏": "edit", "✅": "check", "🟢": "check", "🌱": "plant", "🌿": "plant", "🪴": "plant", "🌳": "plant", "🌲": "plant", "🍀": "plant", "🌾": "plant", "🏝": "plant", "🃏": "cards", "🗓": "cal", "📅": "cal", "📈": "chart", "📊": "bars", "🌍": "globe", "🗺": "globe", "🇿": "globe", "🇦": "globe", "🇺": "globe", "🇸": "globe", "🇬": "globe", "🇧": "globe", "🇨": "globe", "🧭": "compass", "👤": "user", "🗑": "trash", "📁": "folder", "✂": "scissors", "🕸": "web", "🔗": "link", "📎": "link", "🔊": "speaker", "🎵": "speaker", "🎨": "palette", "🎭": "palette", "🔬": "flask", "🧪": "flask", "⚗": "flask", "🔍": "search", "🔎": "search", "🏠": "home", "🔒": "lock", "🔑": "key", "🏆": "trophy", "👑": "crown", "⚠": "warn", "❌": "x", "❔": "x", "💡": "bulb", "💬": "chat", "😮": "chat", "🤔": "think", "💼": "bag", "🧳": "bag", "💻": "laptop", "🖥": "laptop", "⌨": "laptop", "🕹": "laptop", "⚙": "gear", "🔔": "bell", "📳": "bell", "⏰": "clock", "⏱": "clock", "❤": "heart", "👆": "hand", "👋": "hand", "💪": "hand", "⬇": "down", "📥": "down", "💾": "down", "⬆": "up", "📷": "camera", "🖼": "image", "🎞": "image", "▶": "play", "⏩": "play", "⏸": "pause", "⏹": "stop", "⏭": "next", "📐": "ruler", "📏": "ruler", "🪜": "ruler", "⚖": "scale", "🧮": "scale", "🧊": "cube", "🐉": "game", "⚽": "ball", "🍳": "food", "🥗": "food", "🍝": "food", "🍽": "food", "🏃": "run", "😬": "smile", "😎": "smile", "⚛": "atom", "➗": "divide", "🚪": "home"};
+const keys=Object.keys(M).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
+const RE=new RegExp("("+keys.join("|")+")[\\uFE0F\\u200D]?","gu");
+const st=document.createElement("style");
+st.textContent=".qi{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}";
+document.head.appendChild(st);
+const SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|TITLE|SVG|CODE|NOSCRIPT)$/;
+function svg(n){return '<svg class="qi" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'}
+function fix(root){
+  if(!root) return;
+  const w=document.createTreeWalker(root.nodeType===3?root.parentNode:root,NodeFilter.SHOW_TEXT,{acceptNode(t){
+    const p=t.parentNode; if(!p||SKIP.test(p.nodeName)||(p.isContentEditable)) return 3;
+    RE.lastIndex=0; return RE.test(t.nodeValue)?1:3}});
+  const hit=[]; let t; while((t=w.nextNode())) hit.push(t);
+  hit.forEach(t=>{
+    const html=t.nodeValue.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(RE,(m,g)=>svg(M[g]));
+    const sp=document.createElement("span"); sp.style.display="contents"; sp.innerHTML=html; t.parentNode.replaceChild(sp,t);
+  });
+}
+let busy=false;
+const mo=new MutationObserver(ms=>{ if(busy) return; busy=true;
+  try{ ms.forEach(m=>{ if(m.type==="characterData") fix(m.target); else m.addedNodes.forEach(n=>{ if(n.nodeType===1||n.nodeType===3) fix(n) }) }) }finally{ busy=false } });
+function start(){ fix(document.body); mo.observe(document.body,{childList:true,subtree:true,characterData:true}) }
+if(document.body) start(); else document.addEventListener("DOMContentLoaded",start);
+})();
+</script>
 </body>
 </html>
