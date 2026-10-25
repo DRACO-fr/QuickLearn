@@ -3341,7 +3341,7 @@ function newFolderSheet(){
   setTimeout(() => document.getElementById("nf")?.focus(), 320);
 }
 let _prevH = "#/", _sk;
-const depthOf = h => /^#\/(deck|folder)\/|^#\/(level|course|settings)/.test(h) ? 2 : 1;
+const depthOf = h => /^#\/(deck|folder)\/|^#\/(level|course|settings|music)/.test(h) ? 2 : 1;
 const _tabIdx = x => x==="#/"||x.startsWith("#/create") ? 0 : x.startsWith("#/search") ? 1 : x.startsWith("#/library") ? 2 : x.startsWith("#/study") ? 3 : -1;
 let _en;
 function route(){
@@ -3361,6 +3361,7 @@ function route(){
     else if(h.startsWith("#/study")) renderStudy();
     else if(h.startsWith("#/level")) renderLevel();
     else if(h.startsWith("#/course/")) renderCourse(h.split("/")[2]);
+    else if(h.startsWith("#/music")) renderMusicPage();
     else if(h.startsWith("#/settings")) renderSettingsPage(h);
     else if(h.startsWith("#/progress")) view.innerHTML = hdr("Progress") + `<div style="padding:0 1.1rem">${renderAnalytics()}</div>`;
     else renderHome();
@@ -8584,6 +8585,97 @@ apply();
 })();
 </script>
 <script>
+/* ===== Study music: import local songs/playlists, play inside the app ===== */
+(function(){
+const DB="ql-music",META="ql-music-meta";
+let db=null,tracks=[],lists=[],cur=-1,queue=[],listId="all",shuffle=false,urls={};
+const au=new Audio(); au.preload="metadata";
+const rd=()=>{try{return JSON.parse(localStorage.getItem(META)||"[]")}catch(_){return[]}};
+const wr=()=>{try{localStorage.setItem(META,JSON.stringify(lists))}catch(_){}};
+lists=rd();
+function open(){return new Promise((ok,no)=>{ if(db) return ok(db);
+  const r=indexedDB.open(DB,1); r.onupgradeneeded=()=>r.result.createObjectStore("t",{keyPath:"id"});
+  r.onsuccess=()=>{db=r.result;ok(db)}; r.onerror=()=>no(r.error)})}
+const tx=(m,f)=>open().then(d=>new Promise((ok,no)=>{const t=d.transaction("t",m),st=t.objectStore("t");const q=f(st);t.oncomplete=()=>ok(q&&q.result);t.onerror=()=>no(t.error)}));
+async function load(){ try{ tracks=(await tx("readonly",s=>s.getAll()))||[]; tracks.sort((a,b)=>a.added-b.added) }catch(e){tracks=[]} }
+const base=n=>String(n).split(/[\\/]/).pop().toLowerCase();
+const clean=n=>n.replace(/\.[^.]+$/,"");
+const isAudio=f=>/^audio\//.test(f.type)||/\.(mp3|m4a|aac|wav|flac|ogg|oga|opus|weba|aiff?)$/i.test(f.name);
+const isList=f=>/\.(m3u8?|m3u)$/i.test(f.name);
+async function importFiles(files){
+  files=[...files]; const aud=files.filter(isAudio), pl=files.filter(isList);
+  if(!aud.length&&!pl.length){ toast("No audio or playlist files found"); return; }
+  await load(); let added=0;
+  for(const f of aud){
+    if(tracks.some(t=>t.file===f.name&&t.size===f.size)) continue;
+    const t={id:"t"+Date.now().toString(36)+Math.random().toString(36).slice(2,6),name:clean(f.name),file:f.name,size:f.size,added:Date.now()+added,blob:f};
+    await tx("readwrite",s=>s.put(t)); added++;
+  }
+  await load(); let made=0,miss=0;
+  for(const f of pl){
+    const lines=(await f.text()).split(/\r?\n/).map(x=>x.trim()).filter(x=>x&&x[0]!=="#");
+    const ids=[]; lines.forEach(l=>{ let p=l; try{p=decodeURIComponent(l)}catch(_){} const t=tracks.find(t=>t.file.toLowerCase()===base(p)); if(t) ids.push(t.id); else miss++; });
+    if(ids.length){ lists.push({id:"p"+Date.now().toString(36)+made,name:clean(f.name),ids}); made++; }
+  }
+  wr();
+  toast((added?added+" song"+(added===1?"":"s")+" added":"")+(made?(added?" · ":"")+made+" playlist"+(made===1?"":"s"):"")+(miss?" · "+miss+" missing from playlist":"")||"Nothing new to add");
+  mr();
+}
+function visible(){ if(listId==="all") return tracks; const l=lists.find(x=>x.id===listId); return l?l.ids.map(i=>tracks.find(t=>t.id===i)).filter(Boolean):tracks; }
+function play(id){
+  let q=visible().slice();
+  if(shuffle){ q=q.filter(t=>t.id!==id); for(let i=q.length-1;i>0;i--){const j=Math.random()*(i+1)|0;[q[i],q[j]]=[q[j],q[i]]} q.unshift(tracks.find(t=>t.id===id)); }
+  else q=q.slice(q.findIndex(t=>t.id===id));
+  queue=q; cur=0; load1();
+}
+function load1(){
+  const t=queue[cur]; if(!t){ stop(); return; }
+  if(!urls[t.id]) urls[t.id]=URL.createObjectURL(t.blob);
+  au.src=urls[t.id]; au.play().catch(()=>{});
+  try{ if("mediaSession" in navigator){ navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:"QuickLearn"}); navigator.mediaSession.setActionHandler("nexttrack",next); navigator.mediaSession.setActionHandler("previoustrack",prev); navigator.mediaSession.setActionHandler("play",()=>au.play()); navigator.mediaSession.setActionHandler("pause",()=>au.pause()); } }catch(_){}
+  bar(); mr();
+}
+function stop(){ au.pause(); au.removeAttribute("src"); queue=[]; cur=-1; bar(); mr(); }
+function next(){ if(cur+1<queue.length){cur++;load1()} else stop(); }
+function prev(){ if(au.currentTime>3||cur<=0){au.currentTime=0} else {cur--;load1()} }
+au.addEventListener("ended",next);
+au.addEventListener("play",()=>{bar();mr()}); au.addEventListener("pause",()=>{bar();mr()});
+au.addEventListener("timeupdate",()=>{ const f=document.getElementById("mpF"); if(f&&au.duration) f.style.width=(au.currentTime/au.duration*100)+"%" });
+const fmt=n=>n?(n/1048576).toFixed(1)+" MB":"";
+function bar(){
+  let el=document.getElementById("mpBar"); const t=queue[cur];
+  if(!t){ if(el) el.remove(); return; }
+  if(!el){ el=document.createElement("div"); el.id="mpBar"; document.body.appendChild(el); }
+  el.innerHTML='<div class="mpf"><i id="mpF"></i></div><button data-nohap class="mpb" style="transform:scaleX(-1)" onclick="QM.prev()" aria-label="Previous">⏭</button><span class="mpt" onclick="go(\'#/music\')"><b>'+esc(t.name)+'</b><small>Study music</small></span><button data-nohap class="mpb mpp" onclick="QM.toggle()" aria-label="Play or pause">'+(au.paused?"▶":"⏸")+'</button><button data-nohap class="mpb" onclick="QM.next()" aria-label="Next">⏭</button><button data-nohap class="mpb" onclick="QM.stop()" aria-label="Close">✕</button>';
+}
+function mr(){ if(/^#\/music/.test(location.hash)){ const y=window.scrollY; renderMusicPage().then(()=>window.scrollTo(0,y)); } }
+window.renderMusicPage=async function(){
+  if(!tracks.length) await load();
+  const vis=visible(), playing=queue[cur]&&queue[cur].id;
+  const chips='<div style="display:flex;gap:.5rem;overflow-x:auto;margin:.2rem 0 .8rem"><button class="chip2'+(listId==="all"?" on":"")+'" onclick="QM.pick(\'all\')">All songs ('+tracks.length+')</button>'+lists.map(l=>'<button class="chip2'+(listId===l.id?" on":"")+'" onclick="QM.pick(\''+l.id+'\')">'+esc(l.name)+'</button>').join("")+'</div>';
+  const rows=vis.map(t=>'<button class="row2" onclick="QM.play(\''+t.id+'\')"><span class="stile">'+(t.id===playing&&!au.paused?"⏸":"▶")+'</span><span class="t"><b>'+esc(t.name)+'</b><small>'+fmt(t.size)+'</small></span><span class="more" onclick="event.stopPropagation();QM.del(\''+t.id+'\')" aria-label="Remove">✕</span></button>').join("");
+  view.innerHTML=hdr("Study music","#/settings")+'<div style="padding:0 1.1rem 7rem">'+
+    '<p class="muted" style="margin:.2rem 0 .8rem;font-size:.85rem">Import songs saved on your device. They are stored inside the app and keep playing while you study.</p>'+
+    '<div style="display:flex;gap:.6rem;flex-wrap:wrap;margin-bottom:.9rem"><button class="btn btn-primary" style="flex:1" onclick="document.getElementById(\'qmF\').click()">Import songs / playlists</button><button class="btn btn-secondary" style="flex:1" onclick="document.getElementById(\'qmD\').click()">Import folder</button>'+
+    '<button class="btn btn-secondary" data-nohap onclick="QM.shuf()">Shuffle: '+(shuffle?"on":"off")+'</button></div>'+
+    '<input type="file" id="qmF" multiple accept="audio/*,.mp3,.m4a,.flac,.wav,.ogg,.opus,.m3u,.m3u8" hidden onchange="QM.imp(this.files);this.value=\'\'"><input type="file" id="qmD" webkitdirectory multiple hidden onchange="QM.imp(this.files);this.value=\'\'">'+
+    (tracks.length?chips+'<div class="rows">'+(rows||'<div class="muted" style="padding:1rem 0">This playlist is empty.</div>')+'</div>':'<div class="muted" style="padding:1.5rem 0;text-align:center">No music yet. Pick audio files (MP3, M4A, FLAC, WAV…) and, optionally, an .m3u/.m3u8 playlist exported from your music app.</div>')+
+    (listId!=="all"?'<button class="btn btn-secondary" style="width:100%;margin-top:.8rem" onclick="QM.delList()">Delete this playlist (keeps songs)</button>':'')+'</div>';
+};
+window.QM={imp:importFiles,play,next,prev,stop,
+  toggle(){ au.paused?au.play():au.pause() },
+  pick(id){ listId=id; mr() },
+  shuf(){ shuffle=!shuffle; mr() },
+  delList(){ lists=lists.filter(l=>l.id!==listId); listId="all"; wr(); mr() },
+  async del(id){ if(!(await askConfirm("Remove this song?","It's removed from the app, not from your device.","Remove",true))) return;
+    await tx("readwrite",s=>s.delete(id)); lists.forEach(l=>l.ids=l.ids.filter(i=>i!==id)); wr();
+    if(queue[cur]&&queue[cur].id===id) stop(); tracks=tracks.filter(t=>t.id!==id); mr(); }};
+const st=document.createElement("style");
+st.textContent="#mpBar{position:fixed;left:.6rem;right:.6rem;bottom:calc(4.9rem + env(safe-area-inset-bottom));max-width:700px;margin:0 auto;z-index:25;display:flex;align-items:center;gap:.35rem;padding:.55rem .6rem .5rem;border-radius:1.1rem;background:var(--s2);border:1px solid var(--border);box-shadow:0 8px 24px #0006;overflow:hidden}#mpBar .mpf{position:absolute;left:0;right:0;top:0;height:3px;background:var(--line)}#mpBar .mpf i{display:block;height:100%;width:0;background:var(--primary)}#mpBar .mpt{flex:1;min-width:0;display:flex;flex-direction:column;cursor:pointer}#mpBar .mpt b{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mpBar .mpt small{font-size:.7rem;color:var(--muted-fg)}#mpBar .mpb{flex:none;width:2.3rem;height:2.3rem;border:0;border-radius:50%;background:none;color:var(--foreground);font-size:1.05rem;display:grid;place-items:center;cursor:pointer}#mpBar .mpp{background:var(--primary);color:var(--primary-fg)}@media (min-width:1024px) and (hover:hover){#mpBar{bottom:1rem;left:6.5rem}}";
+document.head.appendChild(st);
+})();
+</script>
+<script>
 /* ===== Settings as tabs: list page -> per-tab page, opening like decks ===== */
 (function(){
 const chain=window.openSettings;
@@ -8619,7 +8711,7 @@ window.renderSettingsPage=function(h){
   view.innerHTML=hdr("Settings","#/")+'<div class="rows">'+groups.map((x,i)=>{
     const m=META[x.id]||["⚙️",x.title,""];
     return '<button class="row2" style="animation-delay:'+(i*45)+'ms" onclick="go(\'#/settings/'+x.id+'\')"><span class="stile">'+m[0]+'</span><span class="t"><b>'+m[1]+'</b><small>'+m[2]+'</small></span><span style="opacity:.5;font-size:1.3rem">›</span></button>';
-  }).join("")+'</div>';
+  }).join("")+'<button class="row2" onclick="go(\'#/music\')"><span class="stile">🎵</span><span class="t"><b>Study music</b><small>Import songs and playlists from your device</small></span><span style="opacity:.5;font-size:1.3rem">›</span></button></div>';
 };
 window.openSettings=function(){
   if(/^#\/settings/.test(location.hash)) route(); else go("#/settings");
