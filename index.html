@@ -5267,7 +5267,7 @@ document.head.appendChild(st);
 .qa-i textarea{flex:1;min-height:44px;max-height:7rem;border-radius:1.2rem;border:1px solid var(--border);background:var(--surface-2);color:var(--foreground);padding:.7rem 1rem;font-size:16px;resize:none;outline:none}
 #qaiFab{position:fixed;right:max(1rem,calc(50% - 360px + 1rem));bottom:calc(5.4rem + env(safe-area-inset-bottom));z-index:29;width:3.1rem;height:3.1rem;border-radius:50%;border:0;background:linear-gradient(135deg,#e29a2d,#ff7c5b);color:#1b0f08;font-size:1.35rem;box-shadow:0 10px 26px -8px rgba(226,154,45,.8);cursor:pointer}
 </style>
-<div id="qai"><div class="qa-h"><b>✨ Study assistant</b><button onclick="QX.close()" aria-label="Close">✕</button></div><div class="qa-m" id="qaiM"></div><div class="qa-chips" id="qaiC"></div><div class="qa-i"><textarea id="qaiT" rows="1" placeholder="Ask anything, or say what to schedule…"></textarea><button class="btn btn-primary" onclick="QX.send()" aria-label="Send">➤</button></div></div>
+<div id="qai"><div class="qa-h"><b>✨ Study assistant</b><button onclick="QX.close()" aria-label="Close">✕</button></div><div class="qa-m" id="qaiM"></div><div class="qa-chips" id="qaiC"></div><div class="qa-i"><textarea id="qaiT" rows="1" placeholder="Ask anything…"></textarea><button class="btn btn-primary" onclick="QX.send()" aria-label="Send">➤</button></div></div>
 <script>
 (function(){
 /* ---------- helpers & storage (load() drops unknown keys, so restore the plan) ---------- */
@@ -8672,6 +8672,29 @@ window.QM={imp:importFiles,play,next,prev,stop,
     if(queue[cur]&&queue[cur].id===id) stop(); tracks=tracks.filter(t=>t.id!==id); mr(); }};
 const st=document.createElement("style");
 st.textContent="#mpBar{position:fixed;left:.6rem;right:.6rem;bottom:calc(4.9rem + env(safe-area-inset-bottom));max-width:700px;margin:0 auto;z-index:25;display:flex;align-items:center;gap:.35rem;padding:.55rem .6rem .5rem;border-radius:1.1rem;background:var(--s2);border:1px solid var(--border);box-shadow:0 8px 24px #0006;overflow:hidden}#mpBar .mpf{position:absolute;left:0;right:0;top:0;height:3px;background:var(--line)}#mpBar .mpf i{display:block;height:100%;width:0;background:var(--primary)}#mpBar .mpt{flex:1;min-width:0;display:flex;flex-direction:column;cursor:pointer}#mpBar .mpt b{font-size:.88rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}#mpBar .mpt small{font-size:.7rem;color:var(--muted-fg)}#mpBar .mpb{flex:none;width:2.3rem;height:2.3rem;border:0;border-radius:50%;background:none;color:var(--foreground);font-size:1.05rem;display:grid;place-items:center;cursor:pointer}#mpBar .mpp{background:var(--primary);color:var(--primary-fg)}@media (min-width:1024px) and (hover:hover){#mpBar{bottom:1rem;left:6.5rem}}";
+document.head.appendChild(st);
+})();
+</script>
+<script>
+/* ===== AI assistant: keyboard resizes the chat instead of scrolling the page ===== */
+(function(){
+const q=()=>document.getElementById("qai");
+const vv=window.visualViewport;
+function fit(){
+  const e=q(); if(!e||!e.classList.contains("on")){ if(e){e.style.height="";e.style.top=""} return; }
+  if(vv){ e.style.height=vv.height+"px"; e.style.top=vv.offsetTop+"px"; e.style.bottom="auto"; }
+  if(window.scrollY||document.documentElement.scrollTop) window.scrollTo(0,0);
+  const m=document.getElementById("qaiM"); if(m&&document.activeElement&&document.activeElement.id==="qaiT") m.scrollTop=m.scrollHeight;
+}
+function lock(){
+  const e=q(), on=!!(e&&e.classList.contains("on"));
+  document.documentElement.classList.toggle("qa-open",on); fit();
+}
+if(vv){ vv.addEventListener("resize",fit); vv.addEventListener("scroll",fit); }
+document.addEventListener("focusin",ev=>{ if(ev.target&&ev.target.id==="qaiT"){ fit(); setTimeout(fit,50); setTimeout(fit,300); } });
+const t=setInterval(()=>{ const e=q(); if(!e) return; clearInterval(t); new MutationObserver(lock).observe(e,{attributes:true,attributeFilter:["class"]}); lock(); },200);
+const st=document.createElement("style");
+st.textContent="html.qa-open,html.qa-open body{overflow:hidden;overscroll-behavior:none}#qai{height:100dvh;overflow:hidden}.qa-i textarea::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}";
 document.head.appendChild(st);
 })();
 </script>
