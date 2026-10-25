@@ -5420,7 +5420,7 @@ window.QX={streak:()=>streakSheet(),sm(d){const x=new Date(sm.y,sm.m+d,1);sm={y:
   build(){const g=id=>document.getElementById(id).value,days=[...document.querySelectorAll(".qp-d.on")].map(b=>+b.dataset.i),txt=g("qp_acts").trim(),acts=parseActs(txt),bad=txt?txt.split("\n").filter(l=>l.trim()).length-acts.length:0;
     build({len:+g("qp_len"),meals:+g("qp_meals"),acts,set:{wake:g("qp_wake"),sleep:g("qp_sleep"),ws:g("qp_ws"),we:g("qp_we"),days,study:+g("qp_study"),pref:g("qp_pref"),review:g("qp_rev"),len:+g("qp_len"),meals:+g("qp_meals"),remind:+g("qp_rem")}});
     closeModal();cal.sel=localISODate();redraw();toast(bad?`Plan built — I couldn’t read ${bad} activity line${bad>1?"s":""}`:"Your plan is ready — check the My exams calendar")},
-  chat(){qa().classList.add("on");fabSync();draw();setTimeout(()=>document.getElementById("qaiT").focus(),50)},close(){qa().classList.remove("on");fabSync()}};
+  chat(){qa().classList.add("on");fabSync();draw()},close(){qa().classList.remove("on");fabSync()}};
 document.getElementById("qaiT").addEventListener("keydown",e=>{if(e.key==="Enter"&&!e.shiftKey){e.preventDefault();send()}});
 const nv=document.querySelector("nav.bottom");{const ab=document.createElement("button");ab.className="navitem";ab.setAttribute("aria-label","Study assistant");ab.style.fontSize="1.35rem";ab.textContent="✨";ab.onclick=()=>QX.chat();nv.appendChild(ab)}new MutationObserver(fabSync).observe(nv,{attributes:true,attributeFilter:["style"]});
 window.addEventListener("hashchange",()=>setTimeout(fabSync,0));fabSync();
