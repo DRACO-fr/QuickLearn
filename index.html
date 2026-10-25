@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light");var __r=__s.reduceMotion;if(__r==null)__r=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;document.documentElement.setAttribute("data-motion",__r?"reduced":"full")}catch(e){}</script>
+<script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light");var __r=__s.reduceMotion;if(__r==null)__r=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;document.documentElement.setAttribute("data-motion",__r?"reduced":"full");if(__s.fps120)document.documentElement.setAttribute("data-fps","120")}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>QuickLearn — Notes, AI Flashcards & Smart Revision</title>
 <meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
@@ -1412,7 +1412,7 @@ function toggleHard(id){
 
 /* ============================== SETTINGS · HAPTICS · THEME ============================== */
 const SETTINGS_KEY = "quicklearn-settings-v1";
-let settings = (()=>{ try{ return { haptics:true, theme:"dark", reduceMotion:null, mascotAnim:true, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") }; }catch{ return { haptics:true, theme:"dark", reduceMotion:null, mascotAnim:true }; } })();
+let settings = (()=>{ try{ return { haptics:true, theme:"dark", reduceMotion:null, mascotAnim:true, fps120:false, ...JSON.parse(localStorage.getItem(SETTINGS_KEY)||"{}") }; }catch{ return { haptics:true, theme:"dark", reduceMotion:null, mascotAnim:true, fps120:false }; } })();
 const _osReduce = window.matchMedia ? matchMedia("(prefers-reduced-motion: reduce)") : null;
 const motionReduced = () => settings.reduceMotion == null ? !!(_osReduce && _osReduce.matches) : !!settings.reduceMotion;
 function applyMotion(){ document.documentElement.setAttribute("data-motion", motionReduced() ? "reduced" : "full"); try{ applyMx(); }catch(_){} }
@@ -8244,6 +8244,51 @@ try{
 window.PF={rec,pt,test,blurt,course,profile,brief,sheet};
 })();
 </script>
+<script id="ql-120hz">
+(function(){
+  const root=document.documentElement;
+  let hz=0, measuring=false;
+  function apply(){ if(settings.fps120) root.setAttribute("data-fps","120"); else root.removeAttribute("data-fps"); }
+  /* measure the real refresh rate from requestAnimationFrame timing */
+  function measure(cb){
+    if(measuring) return; measuring=true;
+    const d=[]; let last=0, n=0;
+    requestAnimationFrame(function f(t){
+      if(last) d.push(t-last); last=t;
+      if(++n<40 && !document.hidden) return requestAnimationFrame(f);
+      measuring=false;
+      if(d.length<8){ cb(0); return; }
+      d.sort((a,b)=>a-b);
+      const r=1000/d[d.length>>1];
+      hz=[240,165,144,120,90,75,60,30].reduce((a,b)=>Math.abs(b-r)<Math.abs(a-r)?b:a);
+      cb(hz);
+    });
+  }
+  function sub(){
+    if(!settings.fps120) return "Off · standard animations";
+    if(!hz) return "On · checking your display…";
+    return hz>=100 ? "On · display running at ~"+hz+" Hz" : "On · your device is limiting this screen to ~"+hz+" Hz";
+  }
+  function refresh(){ const el=document.getElementById("fpsSub"); if(el) el.textContent=sub(); }
+  window.qlFps120=function(btn){
+    settings.fps120=!settings.fps120; saveSettings(); apply();
+    btn.classList.toggle("on",settings.fps120); btn.setAttribute("aria-checked",settings.fps120);
+    haptic("select"); hz=0; refresh();
+    if(settings.fps120) measure(refresh);
+  };
+  const _os3=window.openSettings;
+  window.openSettings=function(){
+    _os3.apply(this,arguments);
+    const mot=document.getElementById("swMot"); const row=mot&&mot.closest(".setrow");
+    if(!row||document.getElementById("swFps")) return;
+    row.insertAdjacentHTML("afterend",
+      '<div class="setrow" style="cursor:default"><span class="seti">⚡</span><span class="sett"><b>120 Hz mode</b><small id="fpsSub">'+sub()+'</small></span>'+
+      '<button id="swFps" data-nohap class="sw'+(settings.fps120?" on":"")+'" role="switch" aria-checked="'+!!settings.fps120+'" aria-label="120 Hz mode" onclick="qlFps120(this)"><i></i></button></div>');
+    if(settings.fps120) measure(refresh);
+  };
+  apply();
+})();
+</script>
 <style id="ql-ui-system">
 /* =====================================================================
    QuickLearn · UI system pass (final layer)
@@ -8452,6 +8497,19 @@ svg{stroke-linecap:round;stroke-linejoin:round}
 /* perf: no filter animation on looping elements (filters repaint every frame) */
 @keyframes orbFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(5deg)}}
 @keyframes currentPulse{0%,100%{opacity:1}50%{opacity:.82}}
+
+/* ---------- 12. 120 Hz mode ---------- */
+/* Animations already run at the display's refresh rate; this mode keeps each frame cheap enough to hit 8.3 ms. */
+html[data-fps="120"] :is(header.top,nav.bottom,.kh .stats>*,.modal,.modal-bg,#modal-root *){backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+html[data-fps="120"] header.top{background:var(--background)}
+html[data-fps="120"] nav.bottom{background:var(--surface)}
+/* looping effects: transform/opacity only (no per-frame filter repaints) */
+@keyframes pulseg120{50%{opacity:.82}}
+html[data-fps="120"] .kh .stats>*{animation-name:pulseg120}
+/* promote moving pieces to their own GPU layers so they never repaint */
+html[data-fps="120"] :is(.fab,.plusbtn,.toast,.modal,.confetti,.genorb,.spin,.pg-layer){will-change:transform}
+html[data-fps="120"] *{-webkit-tap-highlight-color:transparent}
+html[data-fps="120"] body{overscroll-behavior-y:none}
 
 </style>
 </body>
