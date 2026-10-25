@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light");var __r=__s.reduceMotion;if(__r==null)__r=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;document.documentElement.setAttribute("data-motion",__r?"reduced":"full");if(__s.fps120)document.documentElement.setAttribute("data-fps","120")}catch(e){}</script>
+<script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light");if(__s.palette&&__s.palette!=="amber")document.documentElement.setAttribute("data-palette",__s.palette);var __r=__s.reduceMotion;if(__r==null)__r=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;document.documentElement.setAttribute("data-motion",__r?"reduced":"full");if(__s.fps120)document.documentElement.setAttribute("data-fps","120")}catch(e){}</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>QuickLearn — Notes, AI Flashcards & Smart Revision</title>
 <meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
@@ -3341,7 +3341,7 @@ function newFolderSheet(){
   setTimeout(() => document.getElementById("nf")?.focus(), 320);
 }
 let _prevH = "#/", _sk;
-const depthOf = h => /^#\/(deck|folder)\/|^#\/(level|course)/.test(h) ? 2 : 1;
+const depthOf = h => /^#\/(deck|folder)\/|^#\/(level|course|settings)/.test(h) ? 2 : 1;
 const _tabIdx = x => x==="#/"||x.startsWith("#/create") ? 0 : x.startsWith("#/search") ? 1 : x.startsWith("#/library") ? 2 : x.startsWith("#/study") ? 3 : -1;
 let _en;
 function route(){
@@ -3361,6 +3361,7 @@ function route(){
     else if(h.startsWith("#/study")) renderStudy();
     else if(h.startsWith("#/level")) renderLevel();
     else if(h.startsWith("#/course/")) renderCourse(h.split("/")[2]);
+    else if(h.startsWith("#/settings")) renderSettingsPage(h);
     else if(h.startsWith("#/progress")) view.innerHTML = hdr("Progress") + `<div style="padding:0 1.1rem">${renderAnalytics()}</div>`;
     else renderHome();
     window.scrollTo(0, 0);
@@ -8555,6 +8556,77 @@ const mo=new MutationObserver(ms=>{ if(busy) return; busy=true;
   try{ ms.forEach(m=>{ if(m.type==="characterData") fix(m.target); else m.addedNodes.forEach(n=>{ if(n.nodeType===1||n.nodeType===3) fix(n) }) }) }finally{ busy=false } });
 function start(){ fix(document.body); mo.observe(document.body,{childList:true,subtree:true,characterData:true}) }
 if(document.body) start(); else document.addEventListener("DOMContentLoaded",start);
+})();
+</script>
+<script>
+/* ===== colour palettes ===== */
+(function(){
+const PAL=[["amber", "Amber Glow", null, null], ["midnight", "Midnight", {"bg": "#0d0f1f", "s1": "#151833", "s2": "#1e2245", "fg": "#eceefc", "mut": "#9ea4cf", "p": "#8f96ff", "pf": "#0d0f1f", "a": "#ffb84d"}, {"bg": "#f4f5ff", "s1": "#ffffff", "s2": "#e8eaff", "fg": "#1a1c3d", "mut": "#5b6094", "p": "#4b3ad1", "pf": "#ffffff", "a": "#d9730d"}], ["ocean", "Ocean", {"bg": "#08161a", "s1": "#0e2227", "s2": "#15303a", "fg": "#e6f6f7", "mut": "#8fb5ba", "p": "#2ec4b6", "pf": "#06201f", "a": "#7fdbe8"}, {"bg": "#eef8f8", "s1": "#ffffff", "s2": "#dcf0f0", "fg": "#0c2a2e", "mut": "#4d7479", "p": "#00867b", "pf": "#ffffff", "a": "#0b6f8f"}], ["rose", "Rose", {"bg": "#1a0b12", "s1": "#26121c", "s2": "#341a28", "fg": "#fbe9f0", "mut": "#c29aab", "p": "#ff6b9a", "pf": "#2a0a17", "a": "#ffb199"}, {"bg": "#fff4f7", "s1": "#ffffff", "s2": "#ffe3ec", "fg": "#3a1020", "mut": "#8c5a6c", "p": "#d63a72", "pf": "#ffffff", "a": "#c2562f"}], ["forest", "Forest", {"bg": "#0b140d", "s1": "#121f15", "s2": "#1a2d1e", "fg": "#e9f5e8", "mut": "#9ab59c", "p": "#72c15a", "pf": "#0c1d0f", "a": "#d8e06a"}, {"bg": "#f3f9f1", "s1": "#ffffff", "s2": "#e1f0dd", "fg": "#12261a", "mut": "#567259", "p": "#2f8a3a", "pf": "#ffffff", "a": "#7a8a10"}]];
+const DEF={d:{bg:"#110d0a",p:"#f0b365",a:"#e9c97a",fg:"#f3e9de",s2:"#241d17"},l:{bg:"#fbf6ee",p:"#d98524",a:"#9a7410",fg:"#2a1d14",s2:"#f4eadc"}};
+function pid(){const p=settings.palette; return PAL.some(x=>x[0]===p)?p:"amber"}
+function apply(){
+  const id=pid(), el=document.documentElement;
+  if(id==="amber") el.removeAttribute("data-palette"); else el.setAttribute("data-palette",id);
+  const light=settings.theme==="light", e=PAL.find(x=>x[0]===id), c=e[light?3:2]||DEF[light?"l":"d"];
+  const m=document.querySelector('meta[name="theme-color"]'); if(m) m.setAttribute("content",c.bg);
+}
+const _at=window.applyTheme; window.applyTheme=function(){ if(_at) _at.apply(this,arguments); apply(); };
+window.setPalette=function(id){ settings.palette=id; saveSettings(); apply(); if(/^#\/settings/.test(location.hash)) route(); };
+window.paletteHtml=function(){
+  const light=settings.theme==="light", cur=pid();
+  return '<div class="label" style="margin:.2rem 0 .45rem">🎨 Colour theme</div><div class="pal-grid">'+PAL.map(e=>{
+    const c=e[light?3:2]||DEF[light?"l":"d"], cols=[c.bg,c.s2,c.p,c.a,c.fg];
+    return '<button class="pal'+(e[0]===cur?" on":"")+'" data-nohap onclick="setPalette(\''+e[0]+'\')"><span class="st">'+cols.map(x=>'<i style="background:'+x+'"></i>').join("")+'</span><b>'+e[1]+(e[0]===cur?'<em>✓</em>':'')+'</b></button>';
+  }).join("")+'</div>';
+};
+const st=document.createElement("style"); st.id="ql-palettes"; st.textContent="html[data-palette=\"midnight\"]{--teal:#8f96ff;--ql-mint:#8f96ff;--primary:#8f96ff;--primary-fg:#0d0f1f;--lime:#ffb84d;--ql-blue:#ffb84d;--ob:#0d0f1f;--background:#0d0f1f;--s1:#151833;--s2:#1e2245;--surface:#151833;--surface-2:#1e2245;--foreground:#eceefc;--mut:#9ea4cf;--muted-fg:#9ea4cf;--accent:#1e2245}\nhtml[data-palette=\"midnight\"][data-theme=\"light\"]{--teal:#4b3ad1;--ql-mint:#4b3ad1;--primary:#4b3ad1;--primary-fg:#ffffff;--lime:#d9730d;--ql-blue:#d9730d;--ob:#f4f5ff;--background:#f4f5ff;--s1:#ffffff;--s2:#e8eaff;--surface:#ffffff;--surface-2:#e8eaff;--foreground:#1a1c3d;--mut:#5b6094;--muted-fg:#5b6094;--accent:#e8eaff}\nhtml[data-palette=\"ocean\"]{--teal:#2ec4b6;--ql-mint:#2ec4b6;--primary:#2ec4b6;--primary-fg:#06201f;--lime:#7fdbe8;--ql-blue:#7fdbe8;--ob:#08161a;--background:#08161a;--s1:#0e2227;--s2:#15303a;--surface:#0e2227;--surface-2:#15303a;--foreground:#e6f6f7;--mut:#8fb5ba;--muted-fg:#8fb5ba;--accent:#15303a}\nhtml[data-palette=\"ocean\"][data-theme=\"light\"]{--teal:#00867b;--ql-mint:#00867b;--primary:#00867b;--primary-fg:#ffffff;--lime:#0b6f8f;--ql-blue:#0b6f8f;--ob:#eef8f8;--background:#eef8f8;--s1:#ffffff;--s2:#dcf0f0;--surface:#ffffff;--surface-2:#dcf0f0;--foreground:#0c2a2e;--mut:#4d7479;--muted-fg:#4d7479;--accent:#dcf0f0}\nhtml[data-palette=\"rose\"]{--teal:#ff6b9a;--ql-mint:#ff6b9a;--primary:#ff6b9a;--primary-fg:#2a0a17;--lime:#ffb199;--ql-blue:#ffb199;--ob:#1a0b12;--background:#1a0b12;--s1:#26121c;--s2:#341a28;--surface:#26121c;--surface-2:#341a28;--foreground:#fbe9f0;--mut:#c29aab;--muted-fg:#c29aab;--accent:#341a28}\nhtml[data-palette=\"rose\"][data-theme=\"light\"]{--teal:#d63a72;--ql-mint:#d63a72;--primary:#d63a72;--primary-fg:#ffffff;--lime:#c2562f;--ql-blue:#c2562f;--ob:#fff4f7;--background:#fff4f7;--s1:#ffffff;--s2:#ffe3ec;--surface:#ffffff;--surface-2:#ffe3ec;--foreground:#3a1020;--mut:#8c5a6c;--muted-fg:#8c5a6c;--accent:#ffe3ec}\nhtml[data-palette=\"forest\"]{--teal:#72c15a;--ql-mint:#72c15a;--primary:#72c15a;--primary-fg:#0c1d0f;--lime:#d8e06a;--ql-blue:#d8e06a;--ob:#0b140d;--background:#0b140d;--s1:#121f15;--s2:#1a2d1e;--surface:#121f15;--surface-2:#1a2d1e;--foreground:#e9f5e8;--mut:#9ab59c;--muted-fg:#9ab59c;--accent:#1a2d1e}\nhtml[data-palette=\"forest\"][data-theme=\"light\"]{--teal:#2f8a3a;--ql-mint:#2f8a3a;--primary:#2f8a3a;--primary-fg:#ffffff;--lime:#7a8a10;--ql-blue:#7a8a10;--ob:#f3f9f1;--background:#f3f9f1;--s1:#ffffff;--s2:#e1f0dd;--surface:#ffffff;--surface-2:#e1f0dd;--foreground:#12261a;--mut:#567259;--muted-fg:#567259;--accent:#e1f0dd}\n.pal-grid{display:grid;grid-template-columns:1fr 1fr;gap:.7rem;margin:.2rem 0 .6rem}.pal{border:2px solid transparent;border-radius:1rem;background:var(--s1);color:var(--foreground);padding:.55rem;font:inherit;text-align:left;cursor:pointer;display:flex;flex-direction:column;gap:.45rem}.pal.on{border-color:var(--primary)}.pal .st{display:flex;height:2rem;border-radius:.6rem;overflow:hidden}.pal .st i{flex:1}.pal b{font-size:.82rem;display:flex;justify-content:space-between;align-items:center}.pal b em{font-style:normal;color:var(--primary)}"; document.head.appendChild(st);
+apply();
+})();
+</script>
+<script>
+/* ===== Settings as tabs: list page -> per-tab page, opening like decks ===== */
+(function(){
+const chain=window.openSettings;
+const META={focus:["🎯","Focus & sound","Focus mode and sound effects"],voice:["🎧","Voice & listening","Reading aloud, voice commands, language"],display:["🎨","Display & comfort","Theme, text size, motion"],feedback:["🕹️","Feedback","Vibrations and haptics"],buddy:["🐉","Study buddy","Mascot, name and animations"],account:["👤","Account & AI","Sign in and your AI key"],data:["💾","Your data","Backup, restore and tips"]};
+const ID={"Focus & sound":"focus","Voice & listening":"voice","Display & comfort":"display","Feedback":"feedback","Study buddy":"buddy","Account & AI":"account","Your data":"data"};
+function build(){
+  const real=document.getElementById("modal-root"), oldModal=window.modal;
+  const tmp=document.createElement("div"); tmp.style.display="none";
+  real.id="modal-root-x"; tmp.id="modal-root"; document.body.appendChild(tmp);
+  window.modal=h=>{tmp.innerHTML=h};
+  const groups=[]; let cur=null;
+  try{
+    chain();
+    const sc=tmp.querySelector(".sh > div");
+    if(sc) [...sc.children].forEach(el=>{
+      if(el.classList.contains("label")){
+        const t=el.textContent.replace(/^[^A-Za-z]+/,"").trim();
+        cur={id:ID[t]||t.toLowerCase().replace(/\W+/g,""),title:t,html:""}; groups.push(cur);
+      } else { if(!cur){ cur={id:"other",title:"More",html:""}; groups.push(cur); } cur.html+=el.outerHTML; }
+    });
+  }catch(e){console.error(e)}
+  finally{ window.modal=oldModal; tmp.remove(); real.id="modal-root"; }
+  return groups;
+}
+window.renderSettingsPage=function(h){
+  const groups=build(), tab=h.split("/")[2];
+  const g=tab&&groups.find(x=>x.id===tab);
+  if(g){
+    view.innerHTML=hdr(g.title,"#/settings")+'<div class="stab" style="padding:0 1.1rem 1rem">'+(g.id==="display"&&window.paletteHtml?window.paletteHtml():"")+g.html+'</div>';
+    try{ if(typeof qlFillVoices==="function") qlFillVoices(); }catch(_){}
+    return;
+  }
+  view.innerHTML=hdr("Settings","#/")+'<div class="rows">'+groups.map((x,i)=>{
+    const m=META[x.id]||["⚙️",x.title,""];
+    return '<button class="row2" style="animation-delay:'+(i*45)+'ms" onclick="go(\'#/settings/'+x.id+'\')"><span class="stile">'+m[0]+'</span><span class="t"><b>'+m[1]+'</b><small>'+m[2]+'</small></span><span style="opacity:.5;font-size:1.3rem">›</span></button>';
+  }).join("")+'</div>';
+};
+window.openSettings=function(){
+  if(/^#\/settings/.test(location.hash)) route(); else go("#/settings");
+};
+const st=document.createElement("style");
+st.textContent=".stile{flex:none;display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:.85rem;background:color-mix(in oklab,var(--primary) 22%,var(--surface-2));color:var(--primary);font-size:1.25rem}.stab .label:first-child{margin-top:.2rem}";
+document.head.appendChild(st);
 })();
 </script>
 </body>
