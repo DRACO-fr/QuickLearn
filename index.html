@@ -1636,7 +1636,7 @@ function askText(title, value, placeholder){
       else if(c === "save") done(input.value);
     });
     input.addEventListener("keydown", e=>{ if(e.key === "Enter"){ e.preventDefault(); done(input.value); } });
-    document.body.appendChild(el);
+    document.body.appendChild(el); _overlayIn(el, false, null);
     setTimeout(()=>{ input.focus(); input.select(); }, 50);
   });
 }
@@ -2065,7 +2065,7 @@ function askFallback(status){
       if(!c) return;
       animateOut(el, 220); resolve(c);
     });
-    document.body.appendChild(el);
+    document.body.appendChild(el); _overlayIn(el, false, null);
   });
 }
 
@@ -2273,11 +2273,175 @@ const _ERR = /couldn'?t|can'?t|unable|failed|went wrong|denied|not allowed|offli
 const _WARN = /first$|at least|have no notes/i;
 const _OK = /^(moved to|removed from|note copied|copied |study guide created|word document created|course generated|key saved|saved|deleted)/i;
 function toastKind(m){ return _ERR.test(m) ? "error" : _WARN.test(m) ? "warn" : _OK.test(m) ? "success" : ""; }
+/* ============================== MOTION · shared-element transitions ==============================
+   Things open FROM the object you tapped and close back INTO it (like opening an app from the home screen).
+   - sheets / dialogs: the panel grows out of the tapped element and shrinks back into it
+   - pages / study sessions: the new page zooms out of the tapped card; going back zooms it into the same card
+   Only transform / opacity / clip-path are animated (compositor-friendly), via the Web Animations API. */
+let _tap = null, _openRec = null, _rg = 0;
+const _TAPSEL = 'button,a[href],[onclick],[role="button"],.row2,.xcard,.navitem';
+const _E_OUT = "cubic-bezier(.22,1,.36,1)", _E_IN = "cubic-bezier(.3,0,.15,1)";
+const _spr = {};
+function _springEase(z){                 // damped spring as a CSS linear() easing (slight overshoot, then settles)
+  if(_spr[z]) return _spr[z];
+  let e = "cubic-bezier(.3,1.35,.5,1)";
+  try{
+    if(window.CSS && CSS.supports && CSS.supports("animation-timing-function","linear(0,1)")){
+      const k = 5.5, w = k / z, wd = w * Math.sqrt(1 - z*z), c = z * w / wd, p = [];
+      for(let i = 0; i <= 40; i++){ const t = i / 40; p.push((i === 40 ? 1 : 1 - Math.exp(-k*t) * (Math.cos(wd*t) + c*Math.sin(wd*t))).toFixed(4)); }
+      e = "linear(" + p.join(",") + ")";
+    }
+  }catch(_){}
+  return _spr[z] = e;
+}
+function _rad(el, r){
+  const v = getComputedStyle(el).borderTopLeftRadius || "0";
+  let n = parseFloat(v) || 0; if(/%$/.test(v)) n = n / 100 * Math.min(r.width, r.height);
+  return Math.min(n, Math.min(r.width, r.height) / 2);
+}
+function _noteTap(e){
+  const el = e.target && e.target.closest ? e.target.closest(_TAPSEL) : null;
+  if(!el){ _tap = null; return; }
+  const a = el.querySelector(":scope > .c") || el;      // quick-action buttons grow out of their icon circle
+  const r = a.getBoundingClientRect();
+  if(r.width < 8 || r.height < 8 || r.bottom < 0 || r.top > innerHeight){ _tap = null; return; }
+  _tap = { el:a, rect:r, radius:_rad(a, r), key: el.getAttribute("onclick") || el.getAttribute("href") || "", y: window.scrollY, t: performance.now() };
+}
+document.addEventListener("pointerdown", _noteTap, true);
+document.addEventListener("click", e => { if(e.detail === 0) _noteTap(e); }, true);   // keyboard activation
+function _takeOrigin(ms){ const o = _tap; if(o && performance.now() - o.t < (ms || 900)){ _tap = null; return o; } return null; }
+function _tapFresh(){ return !!(_tap && performance.now() - _tap.t < 900); }
+// the origin's current position (it may have scrolled or been re-rendered since the tap)
+function _liveOrigin(o){
+  if(!o) return null;
+  let r = o.rect;
+  if(o.el && o.el.isConnected){ const n = o.el.getBoundingClientRect(); if(n.width > 4 && n.height > 4) r = n; }
+  if(r.bottom < 0 || r.top > innerHeight || r.right < 0 || r.left > innerWidth) return null;
+  return { rect:r, radius:o.radius, el:o.el };
+}
+// find the same object on the page we're returning to
+function _target(rec){
+  if(rec.key){
+    let best = null, bd = 1e9;
+    view.querySelectorAll("[onclick],a[href]").forEach(c => {
+      if((c.getAttribute("onclick") || c.getAttribute("href") || "") !== rec.key) return;
+      const a = c.querySelector(":scope > .c") || c, r = a.getBoundingClientRect();
+      if(r.width < 8 || r.bottom < 0 || r.top > innerHeight) return;
+      const d = Math.abs(r.top - rec.rect.top) + Math.abs(r.left - rec.rect.left);
+      if(d < bd){ bd = d; best = { el:a, rect:r, radius:_rad(a, r) }; }
+    });
+    if(best) return best;
+  }
+  return { el:null, rect:rec.rect, radius:rec.radius };
+}
+function _pageBg(){
+  const b = getComputedStyle(document.body).backgroundColor;
+  return (b && b !== "rgba(0, 0, 0, 0)" && b !== "transparent") ? b : getComputedStyle(document.documentElement).backgroundColor;
+}
+// a frozen, non-interactive copy of the page that can be scaled around without touching the live DOM
+function _snap(y){
+  const d = document.createElement("div"); d.className = "pg-layer"; d.setAttribute("aria-hidden","true"); d.inert = true;
+  d.style.width = document.documentElement.clientWidth + "px"; d.style.height = innerHeight + "px"; d.style.background = _pageBg();
+  const c = view.cloneNode(true); c.classList.remove("goR","goL","tabR","tabL","enter"); c.removeAttribute("style");
+  c.style.transform = "translateY(" + (-(y || 0)) + "px)";
+  d.appendChild(c); return d;
+}
+function _clearLayers(){ document.querySelectorAll(".pg-layer").forEach(n => n.remove()); view.style.visibility = ""; }
+// keyframes that morph a full-screen layer into / out of a rect (uniform scale + crop, so content never gets squashed)
+function _zoomFrames(r, rad){
+  const W = document.documentElement.clientWidth, H = innerHeight;
+  const s = Math.max(.03, r.width / W), visH = r.height / s;
+  return {
+    small:{ transform:"translate(" + r.left + "px," + r.top + "px) scale(" + s + ")", clipPath:"inset(0px 0px " + Math.max(0, H - visH) + "px 0px round " + (rad / s) + "px)" },
+    full:{ transform:"translate(0px,0px) scale(1)", clipPath:"inset(0px 0px 0px 0px round 0px)" }
+  };
+}
+// OPEN: the new page grows out of the tapped object while the old page recedes
+function _zoomOpen(o, oldL){
+  const gen = _rg, dur = 440, f = _zoomFrames(o.rect, o.radius);
+  const L = _snap(0); L.style.zIndex = 28;
+  const layers = [L];
+  view.style.visibility = "hidden";
+  if(oldL){
+    oldL.style.zIndex = 27; document.body.appendChild(oldL); layers.push(oldL);
+    oldL.style.transformOrigin = (o.rect.left + o.rect.width/2) + "px " + (o.rect.top + o.rect.height/2) + "px";
+    oldL.animate([{ transform:"scale(1)", opacity:1 }, { transform:"scale(.94)", opacity:.4 }], { duration:dur, easing:_E_OUT, fill:"forwards" });
+  }
+  document.body.appendChild(L);
+  L.animate([f.small, f.full], { duration:dur, easing:_E_OUT, fill:"backwards" });
+  L.animate([{ opacity:0 }, { opacity:1 }], { duration:140, easing:"ease-out", fill:"backwards" });
+  const done = () => { layers.forEach(n => n.remove()); if(gen === _rg) view.style.visibility = ""; };
+  setTimeout(done, dur + 30);
+}
+// CLOSE: the page we're leaving shrinks back into the object that opened it
+function _zoomClose(rec, oldL){
+  const gen = _rg, dur = 320, t = _target(rec), f = _zoomFrames(t.rect, t.radius);
+  oldL.style.zIndex = 28; document.body.appendChild(oldL);
+  oldL.animate([f.full, f.small], { duration:dur, easing:_E_IN, fill:"forwards" });
+  oldL.animate([{ opacity:1 }, { opacity:1, offset:.55 }, { opacity:0 }], { duration:dur, fill:"forwards" });
+  view.animate([{ opacity:.35 }, { opacity:1 }], { duration:dur, easing:"ease-out" });
+  if(t.el) t.el.animate([{ transform:"scale(1)" }, { transform:"scale(1.05)", offset:.45 }, { transform:"scale(1)" }], { duration:340, delay:dur*.62, easing:"ease-out" });
+  setTimeout(() => oldL.remove(), dur + 40);
+}
+// Sheets and dialogs: open from the tapped element (or rise / pop in when nothing was tapped).
+function _overlayIn(bg, had, inherit){
+  const m = bg && bg.querySelector(".modal"); if(!m) return;
+  const o = _takeOrigin(1000);
+  bg._co = inherit || o || null;                       // where this overlay returns to when it closes
+  if(motionReduced() || !m.animate) return;
+  bg.style.animation = "none"; m.style.animation = "none";
+  const dlg = bg.classList.contains("dlg");
+  if(!had) bg.animate([{ opacity:0 }, { opacity:1 }], { duration:220, easing:"ease-out" });
+  const mr = m.getBoundingClientRect(), cs = getComputedStyle(m);
+  const corners = ["TopLeft","TopRight","BottomRight","BottomLeft"];
+  const sheetFill = dlg ? {} : { boxShadow:"0 90px 0 0 " + cs.backgroundColor };   // keeps the sheet covering the screen edge while it overshoots
+  if(o && mr.width > 0 && mr.height > 0){
+    const sx = Math.min(1.4, Math.max(.04, o.rect.width / mr.width)), sy = Math.min(1.4, Math.max(.04, o.rect.height / mr.height));
+    const from = Object.assign({ transformOrigin:"0 0", transform:"translate(" + (o.rect.left - mr.left) + "px," + (o.rect.top - mr.top) + "px) scale(" + sx + "," + sy + ")" }, sheetFill);
+    const to = Object.assign({ transformOrigin:"0 0", transform:"translate(0px,0px) scale(1,1)" }, sheetFill);
+    corners.forEach(c => { from["border" + c + "Radius"] = (o.radius / sx) + "px " + (o.radius / sy) + "px"; to["border" + c + "Radius"] = cs["border" + c + "Radius"]; });
+    m.animate([from, to], { duration:460, easing:_springEase(.72), fill:"backwards" });
+    [...m.children].forEach(c => c.animate([{ opacity:0 }, { opacity:1 }], { duration:200, delay:110, easing:"ease-out", fill:"backwards" }));
+  } else if(dlg){
+    m.animate([{ opacity:0, transform:"translateY(16px) scale(.92)" }, { opacity:1, transform:"none" }], { duration:420, easing:_springEase(.7), fill:"backwards" });
+  } else if(had){
+    m.animate([{ opacity:0, transform:"translateY(18px)" }, { opacity:1, transform:"none" }], { duration:300, easing:_E_OUT, fill:"backwards" });
+  } else {
+    m.animate([Object.assign({ transform:"translateY(100%)" }, sheetFill), Object.assign({ transform:"translateY(0)" }, sheetFill)], { duration:440, easing:_springEase(.8), fill:"backwards" });
+  }
+}
+function _overlayOut(bg, done){
+  const m = bg.querySelector(".modal"); let over = false;
+  const fin = () => { if(over) return; over = true; done(); };
+  if(!m || !m.animate || motionReduced()){ fin(); return; }
+  bg.style.pointerEvents = "none";
+  if(bg.getAnimations) bg.getAnimations({ subtree:true }).forEach(a => a.cancel());
+  const dlg = bg.classList.contains("dlg"), o = _liveOrigin(bg._co), mr = m.getBoundingClientRect(), cs = getComputedStyle(m);
+  const sheetFill = dlg ? {} : { boxShadow:"0 90px 0 0 " + cs.backgroundColor };
+  let dur = 280;
+  if(o && mr.width > 0 && mr.height > 0){
+    const sx = Math.min(1.4, Math.max(.04, o.rect.width / mr.width)), sy = Math.min(1.4, Math.max(.04, o.rect.height / mr.height));
+    const from = Object.assign({ transformOrigin:"0 0", transform:"translate(0px,0px) scale(1,1)" }, sheetFill);
+    const to = Object.assign({ transformOrigin:"0 0", transform:"translate(" + (o.rect.left - mr.left) + "px," + (o.rect.top - mr.top) + "px) scale(" + sx + "," + sy + ")" }, sheetFill);
+    ["TopLeft","TopRight","BottomRight","BottomLeft"].forEach(c => { from["border" + c + "Radius"] = cs["border" + c + "Radius"]; to["border" + c + "Radius"] = (o.radius / sx) + "px " + (o.radius / sy) + "px"; });
+    m.animate([from, to], { duration:dur, easing:_E_IN, fill:"forwards" });
+    m.animate([{ opacity:1 }, { opacity:1, offset:.7 }, { opacity:0 }], { duration:dur, fill:"forwards" });
+    [...m.children].forEach(c => c.animate([{ opacity:1 }, { opacity:0 }], { duration:dur*.4, easing:"ease-in", fill:"forwards" }));
+    if(o.el && o.el.animate) o.el.animate([{ transform:"scale(1)" }, { transform:"scale(1.06)", offset:.5 }, { transform:"scale(1)" }], { duration:300, delay:dur*.6, easing:"ease-out" });
+  } else if(dlg){
+    dur = 200; m.animate([{ opacity:1, transform:"none" }, { opacity:0, transform:"translateY(10px) scale(.95)" }], { duration:dur, easing:"cubic-bezier(.4,0,1,1)", fill:"forwards" });
+  } else {
+    dur = 260; m.animate([Object.assign({ transform:"translateY(0)" }, sheetFill), Object.assign({ transform:"translateY(105%)" }, sheetFill)], { duration:dur, easing:"cubic-bezier(.4,0,1,1)", fill:"forwards" });
+  }
+  bg.animate([{ opacity:1 }, { opacity:0 }], { duration:dur, easing:"ease-in", fill:"forwards" });
+  setTimeout(fin, dur + 40);
+}
 // Plays the closing animation, then removes the element (instantly when motion is reduced).
 function animateOut(el, ms){
   if(!el || el.dataset.closing) return;
   el.dataset.closing = "1";
   if(motionReduced()){ el.remove(); return; }
+  if(el.classList.contains("modal-bg")){ _overlayOut(el, ()=>el.remove()); return; }   // dialogs return to what opened them
   el.classList.add("closing");
   setTimeout(()=>el.remove(), ms || 260);
 }
@@ -2299,16 +2463,18 @@ let _modalTimer;
 function modal(html){
   const root = document.getElementById("modal-root");
   clearTimeout(_modalTimer);
-  const had = !!root.firstElementChild;   // sheet-to-sheet: keep the backdrop steady, just swap the sheet
+  const prev = root.firstElementChild, had = !!prev;   // sheet-to-sheet: keep the backdrop steady, just swap the sheet
+  const inherit = prev && prev._co || null;             // ...and keep returning to whatever opened the first sheet
   root.innerHTML = `<div class="modal-bg${had?" swap":""}" onclick="if(event.target===this)closeModal()"><div class="modal hasgrab"><div class="grab" aria-hidden="true"></div>${html}</div></div>`;
+  _overlayIn(root.firstElementChild, had, inherit);
 }
 function closeModal(){
   const root = document.getElementById("modal-root"), bg = root.firstElementChild;
-  if(!bg) return;
+  if(!bg || bg.dataset.closing) return;
   clearTimeout(_modalTimer);
   if(motionReduced()){ root.innerHTML = ""; return; }
-  bg.classList.add("closing");
-  _modalTimer = setTimeout(()=>{ if(bg.parentNode === root) root.innerHTML = ""; }, 260);
+  bg.dataset.closing = "1";
+  _overlayOut(bg, ()=>{ if(bg.parentNode === root) root.innerHTML = ""; });
 }
 // Themed replacement for the browser's confirm(): resolves true / false.
 function askConfirm(title, message, okLabel, danger){
@@ -2326,7 +2492,7 @@ function askConfirm(title, message, okLabel, danger){
       if(c) done(c === "yes");
     });
     document.addEventListener("keydown", onKey);
-    document.body.appendChild(el);
+    document.body.appendChild(el); _overlayIn(el, false, null);
     setTimeout(()=>el.querySelector('[data-c="yes"]')?.focus(), 60);
   });
 }
@@ -2341,7 +2507,7 @@ function askConfirm(title, message, okLabel, danger){
     if(bg.classList.contains("closing")) return;
     g = { id:e.pointerId, y0:e.clientY, t0:performance.now(), dy:0, modal, bg, grab, h:modal.offsetHeight };
     try{ grab.setPointerCapture(e.pointerId); }catch(_){}
-    modal.style.animation = "none"; modal.style.transition = "none";
+    modal.style.animation = "none"; modal.style.transition = "none"; if(modal.getAnimations) modal.getAnimations({ subtree:true }).forEach(a => a.cancel());
   });
   root.addEventListener("pointermove", e=>{
     if(!g || e.pointerId !== g.id) return;
@@ -2354,7 +2520,7 @@ function askConfirm(title, message, okLabel, danger){
     const { modal, bg, dy, t0, h } = g; g = null;
     const fast = dy / Math.max(1, performance.now() - t0) > .6;
     if(dy > 110 || fast){
-      clearTimeout(_modalTimer);
+      clearTimeout(_modalTimer); bg.dataset.closing = "1";
       if(motionReduced()){ root.innerHTML = ""; return; }
       bg.style.pointerEvents = "none";
       modal.style.transition = "transform .22s cubic-bezier(.4,0,1,1)"; bg.style.transition = "opacity .22s";
@@ -2393,7 +2559,12 @@ function fpPick(id, btn){
 document.addEventListener("click", e=>{ document.querySelectorAll(".fpick.open").forEach(w=>{ if(!w.contains(e.target)) fpToggle(w.id.replace(/Wrap$/,""), false); }); });
 // Plays an entrance animation on the main view (used when a study session / lesson opens).
 function enterView(cls){
-  view.classList.remove("goR","goL","tabR","tabL"); void view.offsetWidth; view.classList.add(cls);
+  view.classList.remove("goR","goL","tabR","tabL");
+  if(cls === "goR" && !motionReduced()){
+    const o = _takeOrigin(900);
+    if(o){ _rg++; _clearLayers(); _openRec = { hash:location.hash || "#/", key:o.key, rect:o.rect, radius:o.radius, y:o.y }; _zoomOpen(o, null); return; }
+  }
+  void view.offsetWidth; view.classList.add(cls);
   setTimeout(()=>view.classList.remove(cls), 340);
 }
 function openCreateDeckModal(){
@@ -3160,6 +3331,9 @@ let _en;
 function route(){
   selClear();
   const wasSub = !!(session || LS);
+  _rg++; _clearLayers();
+  const oldL = (!motionReduced() && (_tapFresh() || _openRec) && view.firstElementChild) ? _snap(window.scrollY) : null;   // what's on screen right now
+  let noEnter = false;
   session = null; LS = null; syncBase();
   const h = location.hash || "#/";
   document.querySelectorAll(".navitem").forEach(n => n.classList.toggle("active", n.dataset.nav === "#/" ? (h === "#/" || h === "#/create") : h.startsWith(n.dataset.nav)));
@@ -3174,7 +3348,7 @@ function route(){
     else if(h.startsWith("#/progress")) view.innerHTML = hdr("Progress") + `<div style="padding:0 1.1rem">${renderAnalytics()}</div>`;
     else renderHome();
     window.scrollTo(0, 0);
-    if(stag){ view.classList.add("enter"); clearTimeout(_en); _en = setTimeout(()=>view.classList.remove("enter"), 900); }
+    if(stag && !noEnter){ view.classList.add("enter"); clearTimeout(_en); _en = setTimeout(()=>view.classList.remove("enter"), 900); }
   };
   const a = depthOf(h), b = depthOf(_prevH);
   const changed = h !== _prevH, pi = _tabIdx(_prevH), ci = _tabIdx(h);
@@ -3183,13 +3357,35 @@ function route(){
   if(!cls && wasSub) cls = "goL";
   const stag = changed || wasSub;
   const prevH0 = _prevH;
+  let o = null, back = null;
+  if(oldL){
+    if(_openRec && _openRec.hash === h && (changed || wasSub)) back = _openRec;     // returning to where we came from
+    else if(cls === "goR") o = _takeOrigin(900);                                    // opening something the person tapped
+  }
+  const anim = !!(o || back);
+  if(anim) noEnter = true;
+  if(o) _openRec = { hash:prevH0, key:o.key, rect:o.rect, radius:o.radius, y:o.y };
   _prevH = h; clearTimeout(_sk);
-  view.className = cls; document.querySelector("nav.bottom").style.display = /^#\/(deck|level|course)/.test(h) ? "none" : "";
-  if(/^#\/(library|folder\/)/.test(h)){
+  view.className = anim ? "" : cls;
+  const nav = document.querySelector("nav.bottom"), hideNav = /^#\/(deck|level|course)/.test(h);
+  if(nav) nav.getAnimations().forEach(a => a.cancel());
+  if(anim && nav){
+    if(hideNav){
+      if(nav.style.display !== "none"){ const g = _rg; nav.animate([{ transform:"none" }, { transform:"translateY(100%)" }], { duration:240, easing:"cubic-bezier(.4,0,1,1)", fill:"forwards" }).finished.then(()=>{ if(g === _rg) nav.style.display = "none"; }).catch(()=>{}); }
+    } else if(nav.style.display === "none"){
+      nav.style.display = ""; nav.animate([{ transform:"translateY(100%)" }, { transform:"none" }], { duration:380, delay:140, easing:_E_OUT, fill:"backwards" });
+    } else nav.style.display = "";
+  } else if(nav) nav.style.display = hideNav ? "none" : "";
+  if(!anim && /^#\/(library|folder\/)/.test(h)){
     view.innerHTML = '<div class="kh"><h1>&nbsp;</h1></div>' + '<div class="sk"></div>'.repeat(6);
-    _sk = setTimeout(draw, 650);
+    _sk = setTimeout(draw, 280);
   } else draw();
-  if(cls) setTimeout(() => { view.classList.remove("goR", "goL", "tabR", "tabL"); }, 340);
+  if(o) _zoomOpen(o, oldL);
+  else if(back){ window.scrollTo({ top:back.y, behavior:"instant" }); _zoomClose(back, oldL); _openRec = null; }
+  else {
+    if(cls === "goL") _openRec = null;
+    if(cls) setTimeout(() => { view.classList.remove("goR", "goL", "tabR", "tabL"); }, 340);
+  }
 }
 
 
@@ -8235,6 +8431,27 @@ svg{stroke-linecap:round;stroke-linejoin:round}
 :is(html,html[data-theme="light"]) body .avatar,:is(html,html[data-theme="light"]) body .hp-qa .c,:is(html,html[data-theme="light"]) body .fab,:is(html,html[data-theme="light"]) body .plusbtn{display:grid;place-items:center}
 :is(html,html[data-theme="light"]) body .hp-qa .c svg,:is(html,html[data-theme="light"]) body .fab svg,:is(html,html[data-theme="light"]) body .plusbtn svg{display:block}
 @media (prefers-reduced-motion:reduce){:is(html,html[data-theme="light"]) body .row2,:is(html,html[data-theme="light"]) body .xcard{animation:none}}
+
+
+/* ---------- 11. Motion v7 · functional animation ---------- */
+:root{--press:cubic-bezier(.34,1.5,.64,1)}
+@supports (transition-timing-function:linear(0,1)){:root{--press:linear(0,0.059,0.209,0.409,0.622,0.822,0.99,1.114,1.193,1.229,1.23,1.205,1.163,1.114,1.065,1.021,0.987,0.963,0.95,0.945,0.948,0.956,0.967,0.979,0.99,0.999,1.006,1.01,1.012,1.013,1.011,1.009,1.006,1.004,1.001,0.999,1)}}
+/* layers used for open-from / close-into transitions */
+.pg-layer{position:fixed;left:0;top:0;overflow:hidden;pointer-events:none;transform-origin:0 0;will-change:transform,opacity,clip-path}
+.pg-layer *{animation:none!important;transition:none!important}
+/* tactile press: instant squash on touch, springy settle on release */
+:is(.row2,.xcard,.qa button,.navitem,.fab,.plusbtn,.chip2,.btn,.quiz-opt,.sr,.lopt){transition:transform .5s var(--press),background-color .2s ease,color .2s ease,border-color .2s ease,box-shadow .2s ease,opacity .2s ease;-webkit-tap-highlight-color:transparent}
+:is(.row2,.xcard,.qa button,.navitem,.fab,.plusbtn,.chip2,.btn,.quiz-opt,.sr,.lopt):active{transition-duration:.1s,.12s,.12s,.12s,.12s,.12s}
+/* list entrance: shorter, tighter stagger (whole list lands in about half a second) */
+#view.enter :is(.row2,.xcard,.lvrow,.ext,.lc,.xm,.sp2,.panel,.deck-card,.sumchip,.lvcard,.empty2){animation-duration:.36s}
+#view.enter :is(.row2,.xcard,.lvrow,.ext,.lc,.xm,.sp2,.panel,.deck-card,.sumchip,.lvcard):nth-child(2){animation-delay:.03s}
+#view.enter :is(.row2,.xcard,.lvrow,.ext,.lc,.xm,.sp2,.panel,.deck-card,.sumchip,.lvcard):nth-child(3){animation-delay:.06s}
+#view.enter :is(.row2,.xcard,.lvrow,.ext,.lc,.xm,.sp2,.panel,.deck-card,.sumchip,.lvcard):nth-child(4){animation-delay:.09s}
+#view.enter :is(.row2,.xcard,.lvrow,.ext,.lc,.xm,.sp2,.panel,.deck-card,.sumchip,.lvcard):nth-child(5){animation-delay:.12s}
+#view.enter :is(.row2,.xcard,.lvrow,.ext,.lc,.xm,.sp2,.panel,.deck-card,.sumchip,.lvcard):nth-child(n+6){animation-delay:.14s}
+/* perf: no filter animation on looping elements (filters repaint every frame) */
+@keyframes orbFloat{0%,100%{transform:translateY(0) rotate(-5deg)}50%{transform:translateY(-7px) rotate(5deg)}}
+@keyframes currentPulse{0%,100%{opacity:1}50%{opacity:.82}}
 
 </style>
 </body>
