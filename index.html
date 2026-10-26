@@ -1082,22 +1082,24 @@ try {
 } catch (e) { console.error('Firebase initialization failed:', e); }
 /* ============================== CLOUD SYNC (Firestore) ============================== */
 const QL_UPD_KEY='quicklearn-updated-v1', QL_UID_KEY='quicklearn-synced-uid-v1', QL_CHUNK=200000;
-let qlSyncReady=false, qlSyncUid=null, qlPushTimer=null, qlPushing=false, qlPushAgain=false;
+let qlSyncReady=false, qlSyncUid=null, qlPushTimer=null, qlPushing=false, qlPushAgain=false, qlPushPending=false, qlPulling=false, qlLastPull=0;
 function qlDb(){ try{ return firebase.firestore(); }catch(_){ return null; } }
 function qlLocalHasData(){ try{ const d=JSON.parse(localStorage.getItem('quicklearn-data-v1')||'{}'); return ['decks','subjects','notes','cards'].some(k=>Array.isArray(d[k])&&d[k].length)||Object.keys(d.courses||{}).length>0; }catch(_){ return false; } }
-function qlSchedulePush(){ if(!qlSyncReady||!qlSyncUid) return; clearTimeout(qlPushTimer); qlPushTimer=setTimeout(qlPush,2500); }
+function qlSchedulePush(){ if(!qlSyncReady||!qlSyncUid) return; qlPushPending=true; clearTimeout(qlPushTimer); qlPushTimer=setTimeout(qlPush,2500); }
 async function qlPush(){
   if(!qlSyncReady||!qlSyncUid) return;
   if(qlPushing){ qlPushAgain=true; return; }
   const db=qlDb(); if(!db) return;
-  qlPushing=true;
+  qlPushing=true; qlPushPending=false;
   try{
     const raw=localStorage.getItem('quicklearn-data-v1')||'{}';
     const updatedAt=Number(localStorage.getItem(QL_UPD_KEY))||Date.now();
     const base=db.collection('users').doc(qlSyncUid).collection('sync');
     const n=Math.max(1,Math.ceil(raw.length/QL_CHUNK));
-    for(let i=0;i<n;i++) await base.doc('chunk_'+i).set({text:raw.slice(i*QL_CHUNK,(i+1)*QL_CHUNK)});
-    await base.doc('meta').set({updatedAt,chunks:n});
+    const batch=db.batch();
+    for(let i=0;i<n;i++) batch.set(base.doc('chunk_'+i),{text:raw.slice(i*QL_CHUNK,(i+1)*QL_CHUNK)});
+    batch.set(base.doc('meta'),{updatedAt,chunks:n});
+    await batch.commit();
     localStorage.setItem(QL_UID_KEY,qlSyncUid);
   }catch(e){ console.error('Cloud save failed:', e); try{ toast('Cloud sync failed. Check your connection.'); }catch(_){} }
   qlPushing=false;
@@ -1133,7 +1135,30 @@ async function qlSyncOnAuth(user){
     else localStorage.setItem(QL_UID_KEY,user.uid);
   }catch(e){ console.error('Cloud load failed:', e); qlSyncReady=false; try{ toast('Could not reach cloud storage. Your data is safe on this device.'); }catch(_){} }
 }
-window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&qlSyncReady) qlPush(); });
+async function qlPullIfNewer(){
+  if(!qlSyncReady||!qlSyncUid||qlPulling||qlPushing||qlPushPending||qlPushAgain) return;
+  if(Date.now()-qlLastPull<5000) return;
+  try{ if(typeof session!=='undefined'&&session) return; }catch(_){}
+  qlPulling=true; qlLastPull=Date.now();
+  try{
+    const db=qlDb(); if(!db) return;
+    const base=db.collection('users').doc(qlSyncUid).collection('sync');
+    const meta=await base.doc('meta').get({source:'server'}); if(!meta.exists) return;
+    const {updatedAt=0,chunks=1}=meta.data();
+    if(updatedAt<=(Number(localStorage.getItem(QL_UPD_KEY))||0)) return;
+    let raw=''; for(let i=0;i<chunks;i++){ const c=await base.doc('chunk_'+i).get({source:'server'}); raw+=(c.exists?c.data().text:''); }
+    JSON.parse(raw);
+    if(qlPushing||qlPushPending) return;
+    localStorage.setItem('quicklearn-data-v1',raw);
+    localStorage.setItem(QL_UPD_KEY,String(updatedAt));
+    try{ toast('Synced from cloud'); }catch(_){}
+    setTimeout(()=>location.reload(),400);
+  }catch(e){ console.error('Cloud refresh failed:', e); }
+  finally{ qlPulling=false; }
+}
+window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&qlSyncReady) qlPush(); else if(document.visibilityState==='visible') qlPullIfNewer(); });
+window.addEventListener('online',()=>qlPullIfNewer());
+window.addEventListener('pageshow',e=>{ if(e.persisted) qlPullIfNewer(); });
 function qlEscapeHtml(value){ return String(value ?? '').replace(/[&<>\"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','\"':'&quot;',"'":'&#39;'}[ch])); }
 function openAccountModal() {
   const root = document.getElementById('modal-root');
@@ -1224,7 +1249,7 @@ function load(){
     };
   }catch{ return structuredClone(EMPTY); }
 }
-function save(){ localStorage.setItem(DATA_KEY, JSON.stringify(data)); try{ localStorage.setItem('quicklearn-updated-v1',String(Date.now())); qlSchedulePush(); }catch(_){} }
+function save(quiet){ localStorage.setItem(DATA_KEY, JSON.stringify(data)); if(quiet) return; try{ localStorage.setItem('quicklearn-updated-v1',String(Date.now())); qlSchedulePush(); }catch(_){} }
 function localISODate(){
   const d=new Date(); return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
 }
@@ -1530,7 +1555,7 @@ function syncBase(){
   let changed = false;
   if(g.day !== t){ g.day = t; g.base = due; changed = true; }
   else if(due > g.base){ g.base = due; changed = true; }
-  if(changed) save();
+  if(changed) save(true);
   return due;
 }
 function levelProgress(){
