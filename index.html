@@ -3,6 +3,59 @@
 <head>
 <meta charset="UTF-8">
 <script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light");if(__s.palette&&__s.palette!=="amber")document.documentElement.setAttribute("data-palette",__s.palette);var __r=__s.reduceMotion;if(__r==null)__r=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;document.documentElement.setAttribute("data-motion",__r?"reduced":"full");if(__s.fps120)document.documentElement.setAttribute("data-fps","120")}catch(e){}</script>
+<script id="ql-icons">
+/* ===== QuickLearn custom icon set: loads first and watches the whole page, so emoji never paint ===== */
+(function(){
+const P={"target": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.2\" fill=\"currentColor\"/>", "fire": "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z\"/>", "bolt": "<path d=\"M13 3L5 14h6l-1 7 8-11h-6z\"/>", "spark": "<path d=\"M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z\"/>", "brain": "<path d=\"M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 4 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 4 3 3 0 0 1-6 1\"/>", "party": "<path d=\"M4 20l4-12 8 8z\"/><path d=\"M14 5v2M19 9h2M17 3l-1 1M20 14l-1.5-.5\"/>", "book": "<path d=\"M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z\"/>", "mic": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4\"/>", "moon": "<path d=\"M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z\"/>", "school": "<path d=\"M3 9l9-5 9 5zM5 9v8M9.5 9v8M14.5 9v8M19 9v8M3 20h18\"/>", "cap": "<path d=\"M2 9l10-5 10 5-10 5zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6\"/>", "note": "<path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M14 3v5h5M9 12h7M9 16h7\"/>", "check": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8 12.5l3 3 5-6\"/>", "plant": "<path d=\"M12 21v-8M12 13c0-4 3-6 7-6 0 4-3 6-7 6zM12 16c0-3-2-5-6-5 0 3 2 5 6 5z\"/>", "cards": "<rect x=\"8\" y=\"3\" width=\"12\" height=\"15\" rx=\"2\"/><path d=\"M5 7a2 2 0 0 0-1 1.7V19a2 2 0 0 0 2 2h9\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "cal": "<rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"2\"/><path d=\"M4 10h16M8 3v4M16 3v4\"/>", "chart": "<path d=\"M4 20V4M4 20h16M8 16l4-5 3 3 5-7\"/>", "bars": "<path d=\"M6 20v-8M12 20V5M18 20v-5\"/>", "globe": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M15.5 8.5l-2 5-5 2 2-5z\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4 4-6 8-6s8 2 8 6\"/>", "trash": "<path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/>", "folder": "<path d=\"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M8.5 8L20 19M8.5 16L20 5\"/>", "web": "<circle cx=\"12\" cy=\"12\" r=\"2\"/><circle cx=\"5\" cy=\"6\" r=\"1.5\"/><circle cx=\"19\" cy=\"7\" r=\"1.5\"/><circle cx=\"12\" cy=\"20\" r=\"1.5\"/><path d=\"M10.5 11L6 7M13.5 11L18 8M12 14v5\"/>", "link": "<path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"/>", "speaker": "<path d=\"M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11\"/>", "palette": "<path d=\"M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.5 1.5-2.5H18a3 3 0 0 0 3-3C21 7 17 3 12 3z\"/><circle cx=\"8\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"7.5\" r=\"1\"/><circle cx=\"16\" cy=\"10\" r=\"1\"/>", "flask": "<path d=\"M9 3h6M10 3v6l-5 10a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-10V3M7.5 15h9\"/>", "pin": "<path d=\"M12 21v-7M8 3h8l-1 6 3 4H6l3-4z\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/>", "home": "<path d=\"M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z\"/>", "lock": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 8 0v3\"/>", "key": "<circle cx=\"8\" cy=\"15\" r=\"4\"/><path d=\"M11 12l9-9M16 7l3 3\"/>", "trophy": "<path d=\"M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 21h8\"/>", "crown": "<path d=\"M3 8l4 4 5-7 5 7 4-4-2 11H5z\"/>", "warn": "<path d=\"M12 4l9 16H3zM12 10v4M12 17v.5\"/>", "x": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9 9l6 6M15 9l-6 6\"/>", "bulb": "<path d=\"M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 11c.7.6 1 1.3 1 2h5c0-.7.3-1.4 1-2A6 6 0 0 0 12 3z\"/>", "chat": "<path d=\"M4 5h16v11H9l-5 4z\"/>", "think": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.5\"/>", "bag": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18\"/>", "laptop": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"10\" rx=\"1.5\"/><path d=\"M2 19h20\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1\"/>", "bell": "<path d=\"M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4\"/>", "clock": "<circle cx=\"12\" cy=\"13\" r=\"8\"/><path d=\"M12 9v4l3 2M9 2h6\"/>", "heart": "<path d=\"M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z\"/>", "hand": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "down": "<path d=\"M12 4v12M6 12l6 6 6-6M5 21h14\"/>", "up": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "camera": "<path d=\"M4 8h3l2-3h6l2 3h3v12H4z\"/><circle cx=\"12\" cy=\"14\" r=\"3.5\"/>", "image": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><circle cx=\"9\" cy=\"10\" r=\"1.5\"/><path d=\"M4 18l5-5 4 4 3-3 4 4\"/>", "play": "<path d=\"M7 4l13 8-13 8z\"/>", "pause": "<path d=\"M8 5v14M16 5v14\"/>", "stop": "<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"1\"/>", "next": "<path d=\"M5 5l9 7-9 7zM18 5v14\"/>", "ruler": "<path d=\"M3 17L17 3l4 4L7 21zM8 12l2 2M11 9l2 2M14 6l2 2\"/>", "scale": "<path d=\"M12 4v16M6 20h12M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z\"/>", "cube": "<path d=\"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5\"/>", "game": "<rect x=\"3\" y=\"8\" width=\"18\" height=\"10\" rx=\"4\"/><path d=\"M8 11v4M6 13h4M16 12v.5M18 14v.5\"/>", "ball": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 8l4 3-1.5 5h-5L8 11zM12 3v5M16 11l5-1M14.5 16l3 4M9.5 16l-3 4M8 11L3 10\"/>", "food": "<path d=\"M7 3v8a2 2 0 0 0 2 2v8M5 3v6M9 3v6M17 21V3c-3 1-4 4-4 8h4\"/>", "run": "<circle cx=\"14\" cy=\"4.5\" r=\"2\"/><path d=\"M9 21l3-6-3-3 2-4 4 2 3 3M6 12l3-3\"/>", "smile": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5v.5M15 9.5v.5\"/>", "atom": "<circle cx=\"12\" cy=\"12\" r=\"1.5\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(120 12 12)\"/>", "star": "<path d=\"M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8z\"/>", "edit": "<path d=\"M4 20l1-4L16 5l3 3L8 19zM14 7l3 3\"/>", "divide": "<path d=\"M5 12h14M12 6v.5M12 18v.5\"/>", "ruler2": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18M9 21V9\"/>", "sync": "<path d=\"M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5\"/>", "tick": "<path d=\"M5 12.5l4.5 4.5L19 7\"/>", "closex": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "arrowr": "<path d=\"M4 12h15M13 6l6 6-6 6\"/>", "arrowl": "<path d=\"M20 12H5M11 6l-6 6 6 6\"/>", "arrowlr": "<path d=\"M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4\"/>", "undo": "<path d=\"M9 6L4 11l5 5M4 11h10a5 5 0 0 1 0 10h-3\"/>", "send": "<path d=\"M21 3L10 14M21 3l-7 18-4-7-7-4z\"/>", "full": "<path d=\"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5\"/>", "chevd": "<path d=\"M6 9l6 6 6-6\"/>", "chevu": "<path d=\"M6 15l6-6 6 6\"/>"};
+const M={"🎯": "target", "🔥": "fire", "⚡": "bolt", "✨": "spark", "✦": "spark", "🌟": "spark", "⭐": "star", "★": "star", "🧠": "brain", "🧬": "brain", "🧩": "brain", "🎉": "party", "👏": "party", "📖": "book", "📚": "book", "📘": "book", "📒": "book", "🔠": "book", "🎤": "mic", "🎙": "mic", "🗣": "mic", "🎧": "mic", "☀": "sun", "🌙": "moon", "🏛": "school", "🏫": "school", "🏤": "school", "🎓": "cap", "📝": "note", "📄": "note", "📋": "note", "📌": "note", "✍": "edit", "✏": "edit", "✅": "check", "🟢": "check", "🌱": "plant", "🌿": "plant", "🪴": "plant", "🌳": "plant", "🌲": "plant", "🍀": "plant", "🌾": "plant", "🏝": "plant", "🃏": "cards", "🗓": "cal", "📅": "cal", "📈": "chart", "📊": "bars", "🌍": "globe", "🗺": "globe", "🇿": "globe", "🇦": "globe", "🇺": "globe", "🇸": "globe", "🇬": "globe", "🇧": "globe", "🇨": "globe", "🧭": "compass", "👤": "user", "🗑": "trash", "📁": "folder", "✂": "scissors", "🕸": "web", "🔗": "link", "📎": "link", "🔊": "speaker", "🎵": "speaker", "🎨": "palette", "🎭": "palette", "🔬": "flask", "🧪": "flask", "⚗": "flask", "🔍": "search", "🔎": "search", "🏠": "home", "🔒": "lock", "🔑": "key", "🏆": "trophy", "👑": "crown", "⚠": "warn", "❌": "x", "❔": "x", "💡": "bulb", "💬": "chat", "😮": "chat", "🤔": "think", "💼": "bag", "🧳": "bag", "💻": "laptop", "🖥": "laptop", "⌨": "laptop", "🕹": "laptop", "⚙": "gear", "🔔": "bell", "📳": "bell", "⏰": "clock", "⏱": "clock", "❤": "heart", "👆": "hand", "👋": "hand", "💪": "hand", "⬇": "down", "📥": "down", "💾": "down", "⬆": "up", "📷": "camera", "🖼": "image", "🎞": "image", "▶": "play", "⏩": "play", "⏸": "pause", "⏹": "stop", "⏭": "next", "📐": "ruler", "📏": "ruler", "🪜": "ruler", "⚖": "scale", "🧮": "scale", "🧊": "cube", "🐉": "game", "⚽": "ball", "🍳": "food", "🥗": "food", "🍝": "food", "🍽": "food", "🏃": "run", "😬": "smile", "😎": "smile", "⚛": "atom", "➗": "divide", "🚪": "home", "✕": "closex", "✗": "closex", "✖": "closex", "✓": "tick", "✔": "tick", "➤": "send", "⛶": "full", "→": "arrowr", "⇒": "arrowr", "←": "arrowl", "↔": "arrowlr", "↩": "undo", "↻": "sync", "🔄": "sync", "🔁": "sync", "🔃": "sync", "▾": "chevd", "▼": "chevd", "▲": "chevu", "🗽": "school", "🕊": "heart"};
+const SVGNS="http://www.w3.org/2000/svg", ATTRS=["placeholder","title","aria-label","alt"];
+const SK="\\u{1F1E6}-\\u{1F1FF}", GEN="[\\u{1F000}-\\u{1FAFF}\\u{2600}-\\u{27BF}\\u{2B00}-\\u{2BFF}\\u{2300}-\\u{23FF}]";
+const RE=new RegExp("(?:["+SK+"]{2}|"+GEN+"|[\\u2192\\u2190\\u2194\\u21D2\\u21A9\\u21BB\\u25BE\\u25BC\\u25B2])(?:[\\uFE0F\\uFE0E]|[\\u{1F3FB}-\\u{1F3FF}]|\\u200D"+GEN+")*","gu");
+const SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|TITLE|NOSCRIPT|CODE)$/;
+function nameOf(m){const cp=m.codePointAt(0);if(cp>=0x1F1E6&&cp<=0x1F1FF)return"globe";return M[String.fromCodePoint(cp)]||"spark";}
+function svg(n){return '<svg class="qi" viewBox="0 0 24 24" aria-hidden="true">'+(P[n]||P.spark)+'</svg>';}
+const strip=v=>v.replace(RE,"").replace(/\s{2,}/g," ").replace(/^\s+/,"");
+function fixText(t){
+  const p=t.parentNode; if(!p||p.nodeType!==1) return;
+  const v=t.nodeValue; RE.lastIndex=0; if(!RE.test(v)) return;
+  RE.lastIndex=0;
+  if(p.namespaceURI===SVGNS||p.nodeName==="OPTION"){ t.nodeValue=strip(v); return; }
+  if(SKIP.test(p.nodeName)||p.isContentEditable) return;
+  const html=v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(RE,m=>svg(nameOf(m)));
+  const sp=document.createElement("span"); sp.style.display="contents"; sp.innerHTML=html; p.replaceChild(sp,t);
+}
+function attrs(e){ if(!e||e.nodeType!==1) return; ATTRS.forEach(a=>{ const v=e.getAttribute(a); if(v){ RE.lastIndex=0; if(RE.test(v)){ RE.lastIndex=0; e.setAttribute(a,strip(v).trim()); } } }); }
+function fix(root){
+  if(!root) return;
+  if(root.nodeType===3){ fixText(root); return; }
+  if(root.nodeType!==1&&root.nodeType!==9&&root.nodeType!==11) return;
+  if(root.nodeType===1&&SKIP.test(root.nodeName)) return;
+  const w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT,{acceptNode(t){
+    const p=t.parentNode; if(!p||SKIP.test(p.nodeName)) return NodeFilter.FILTER_SKIP;
+    RE.lastIndex=0; return RE.test(t.nodeValue)?NodeFilter.FILTER_ACCEPT:NodeFilter.FILTER_SKIP}});
+  const hit=[]; let t; while((t=w.nextNode())) hit.push(t);
+  hit.forEach(fixText);
+  const el=root.nodeType===1?root:root.documentElement||root;
+  if(root.nodeType===1) attrs(root);
+  if(el.querySelectorAll) el.querySelectorAll("[placeholder],[title],[aria-label],[alt]").forEach(attrs);
+}
+const mo=new MutationObserver(ms=>{
+  for(const m of ms){
+    if(m.type==="characterData"){ if(m.target.isConnected) fixText(m.target); }
+    else if(m.type==="attributes"){ attrs(m.target); }
+    else m.addedNodes.forEach(n=>{ if(n.isConnected) fix(n); });
+  }
+  mo.takeRecords();
+});
+mo.observe(document.documentElement,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATTRS});
+const st=document.createElement("style");
+st.textContent=".qi{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}";
+document.head.appendChild(st);
+window.QLIcon={P:P,M:M,svg:svg,fix:fix};
+document.addEventListener("DOMContentLoaded",()=>fix(document.body));
+window.addEventListener("load",()=>fix(document.body));
+})();
+</script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
 <title>QuickLearn — Notes, AI Flashcards & Smart Revision</title>
 <meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
@@ -279,7 +332,7 @@ body{background:#130c08;background-image:radial-gradient(60rem 30rem at 85% -10%
 .study-tip .tip-spark{display:inline-grid;place-items:center;width:1.6rem;height:1.6rem;border-radius:50%;background:#e29a2d;color:#130d04;margin-right:.45rem;animation:sparkSpin 5s linear infinite}
 .study-tip b{color:#ffc66d}.study-tip p{margin:.55rem 0 0;color:#e5d5c8;font-size:.88rem;line-height:1.5}
 .genorb{width:4.2rem;height:4.2rem;margin:.6rem auto 1rem;border-radius:50%;display:grid;place-items:center;background:radial-gradient(circle at 35% 25%,#ffd88a,#e29a2d 45%,#6e3214 80%);box-shadow:0 0 0 8px #e29a2d12,0 0 38px #e29a2d55;animation:orbFloat 2s ease-in-out infinite}
-.genorb:after{content:"✦";font-size:2rem;color:#241407;animation:sparkSpin 7s linear infinite}
+.genorb:after{content:"";width:2rem;height:2rem;background:#241407;-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d=%22M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='black' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d=%22M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z%22/%3E%3C/svg%3E") center/contain no-repeat;animation:sparkSpin 7s linear infinite}
 .gen-tip{margin:.8rem 0 0;padding:.8rem 1rem;border:1px solid #63431e;border-radius:.9rem;background:linear-gradient(100deg,#30200f,#25170f);text-align:left;animation:tipIn .4s both}
 .gen-tip b{color:#ffc66d;font-size:.8rem}.gen-tip p{margin:.3rem 0 0;color:#dfcbb8;font-size:.82rem;line-height:1.45}
 .unit{animation:unitBloom .5s cubic-bezier(.2,1.1,.3,1) both}
@@ -1090,7 +1143,7 @@ async function qlPush(){
   if(!qlSyncReady||!qlSyncUid) return;
   if(qlPushing){ qlPushAgain=true; return; }
   const db=qlDb(); if(!db) return;
-  qlPushing=true; qlPushPending=false;
+  qlPushing=true; qlPushPending=false; let ok=false;
   try{
     const raw=localStorage.getItem('quicklearn-data-v1')||'{}';
     const updatedAt=Number(localStorage.getItem(QL_UPD_KEY))||Date.now();
@@ -1101,9 +1154,11 @@ async function qlPush(){
     batch.set(base.doc('meta'),{updatedAt,chunks:n});
     await batch.commit();
     localStorage.setItem(QL_UID_KEY,qlSyncUid);
+    ok=true; try{ qlMarkSynced(); }catch(_){}
   }catch(e){ console.error('Cloud save failed:', e); try{ toast('Cloud sync failed. Check your connection.'); }catch(_){} }
   qlPushing=false;
   if(qlPushAgain){ qlPushAgain=false; qlSchedulePush(); }
+  return ok;
 }
 async function qlSyncOnAuth(user){
   qlSyncReady=false; clearTimeout(qlPushTimer);
@@ -1155,6 +1210,67 @@ async function qlPullIfNewer(){
     setTimeout(()=>location.reload(),400);
   }catch(e){ console.error('Cloud refresh failed:', e); }
   finally{ qlPulling=false; }
+}
+
+/* ----- manual Sync: the newest save (this device or the cloud) wins ----- */
+const QL_LAST_KEY='quicklearn-lastsync-v1';
+let qlSyncing=false;
+function qlMarkSynced(){ try{ localStorage.setItem(QL_LAST_KEY,String(Date.now())); }catch(_){} qlSyncUi(); }
+function qlAgo(ts){
+  if(!ts) return 'Not synced on this device yet';
+  const sec=Math.max(0,Math.round((Date.now()-ts)/1000));
+  if(sec<45) return 'Last synced just now';
+  const m=Math.round(sec/60); if(m<60) return 'Last synced '+m+' min ago';
+  const h=Math.round(m/60); if(h<24) return 'Last synced '+h+' hr ago';
+  return 'Last synced '+Math.round(h/24)+' d ago';
+}
+function qlSyncSub(){ return quickLearnUser ? qlAgo(Number(localStorage.getItem(QL_LAST_KEY))||0)+' · newest save wins' : 'Sign in to sync across your devices'; }
+function qlSyncUi(busy){
+  const sub=document.getElementById('qlSyncSub'), b=document.getElementById('qlSyncBtn');
+  if(sub) sub.textContent=busy?'Syncing…':qlSyncSub();
+  if(b){ b.disabled=!!busy; b.textContent=busy?'Syncing…':'Sync'; }
+}
+async function qlSyncNow(){
+  if(qlSyncing) return;
+  const user=quickLearnUser;
+  if(!user){ try{ toast('Sign in to sync your data'); openAccountModal(); }catch(_){} return; }
+  if(navigator.onLine===false){ toast("You're offline. Connect to the internet to sync."); return; }
+  const db=qlDb(); if(!db){ toast('Cloud sync is not available right now.'); return; }
+  qlSyncing=true; qlSyncUi(true);
+  let reloading=false;
+  try{
+    clearTimeout(qlPushTimer);
+    while(qlPushing) await new Promise(r=>setTimeout(r,150));
+    if(localStorage.getItem(QL_UID_KEY)!==user.uid){
+      /* first time on this account here: reuse the sign-in flow, which asks which copy to keep */
+      await qlSyncOnAuth(user);
+      if(qlSyncReady){ qlMarkSynced(); toast('Synced'); }
+      return;
+    }
+    const base=db.collection('users').doc(user.uid).collection('sync');
+    const meta=await base.doc('meta').get({source:'server'});
+    const localAt=Number(localStorage.getItem(QL_UPD_KEY))||0;
+    const cloudAt=meta.exists?(Number(meta.data().updatedAt)||0):0;
+    qlSyncUid=user.uid;
+    if(meta.exists&&cloudAt>localAt){
+      const chunks=meta.data().chunks||1; let raw='';
+      for(let i=0;i<chunks;i++){ const c=await base.doc('chunk_'+i).get({source:'server'}); if(!c.exists) throw new Error('missing chunk '+i); raw+=c.data().text; }
+      JSON.parse(raw);
+      localStorage.setItem('quicklearn-data-v1',raw);
+      localStorage.setItem(QL_UPD_KEY,String(cloudAt));
+      qlMarkSynced(); reloading=true;
+      toast('Synced · loaded the newer cloud copy');
+      setTimeout(()=>location.reload(),600);
+    } else if(!meta.exists||localAt>cloudAt){
+      qlSyncReady=true;
+      if(!localAt) localStorage.setItem(QL_UPD_KEY,String(Date.now()));
+      const ok=await qlPush();
+      if(ok) toast('Synced · saved your latest changes to the cloud');
+    } else {
+      qlSyncReady=true; qlMarkSynced(); toast('Already up to date');
+    }
+  }catch(e){ console.error('Manual sync failed:', e); toast('Sync failed. Check your connection and try again.'); }
+  finally{ qlSyncing=false; if(!reloading) qlSyncUi(false); }
 }
 window.addEventListener('visibilitychange',()=>{ if(document.visibilityState==='hidden'&&qlSyncReady) qlPush(); else if(document.visibilityState==='visible') qlPullIfNewer(); });
 window.addEventListener('online',()=>qlPullIfNewer());
@@ -5232,6 +5348,7 @@ window.openSettings=function(){
     (quickLearnUser?'<div class="setrow"><span class="seti">🚪</span><span class="sett"><b>Account</b><small>'+esc(quickLearnUser.email||quickLearnUser.displayName||"Signed in")+'</small></span><button class="btn btn-secondary" style="flex:none" onclick="quickLearnSignOut();closeModal()">Sign out</button></div>':nav("👤","Sign in","Keep your decks and courses with your account","closeModal();openAccountModal()"))+
     nav("🔑","AI key","Needed for AI flashcards, courses and exam lessons","closeModal();openKeyModal()");
   const dataSec=
+    '<div class="setrow" style="cursor:default"><span class="seti">🔄</span><span class="sett"><b>Sync</b><small id="qlSyncSub">'+qlSyncSub()+'</small></span><button id="qlSyncBtn" class="btn btn-secondary" data-nohap style="flex:none" onclick="qlSyncNow()">Sync</button></div>'+
     nav("⬇️","Export backup","Download all your decks, cards and progress","qlExport()")+
     nav("⬆️","Import backup","Restore from a QuickLearn backup file","document.getElementById(\'qlImp\').click()")+
     '<input type="file" id="qlImp" accept="application/json,.json" hidden onchange="qlImport(this.files[0]);this.value=\'\'">';
@@ -5995,7 +6112,7 @@ window.QL_PAPERS_URL="papers.json";
 #ql-onb .ob-bar i{display:block;height:100%;width:0;background:var(--primary);transition:width .35s ease}
 #ql-onb .ob-steps{list-style:none;padding:0;margin:.4rem 0 0;width:100%;max-width:22rem;max-height:30vh;overflow:auto;text-align:left;font-size:.92rem;color:var(--muted-fg,#aaa)}
 #ql-onb .ob-steps li{padding:.22rem 0}
-#ql-onb .ob-steps li:before{content:"✓ ";color:var(--primary);font-weight:700}
+#ql-onb .ob-steps li:before{content:"";display:inline-block;width:1em;height:1em;margin-right:.45em;vertical-align:-.15em;background:var(--primary);-webkit-mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d=%22M5 12.5l4.5 4.5L19 7%22/%3E%3C/svg%3E") center/contain no-repeat;mask:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='1.9' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d=%22M5 12.5l4.5 4.5L19 7%22/%3E%3C/svg%3E") center/contain no-repeat}
 .pp-row{display:flex;align-items:center;gap:.6rem;background:var(--surface);border-radius:.9rem;padding:.65rem .7rem;margin-bottom:.45rem}
 .pp-row.done .pp-t{opacity:.55;text-decoration:line-through}
 .pp-chk{flex:none;width:1.7rem;height:1.7rem;border-radius:.5rem;border:1.5px solid var(--primary);background:transparent;color:var(--primary-fg);font-weight:800;cursor:pointer;padding:0}
@@ -7060,7 +7177,7 @@ function mapGroup(map, st, pos){
   const seen = new Set(), rel = [];
   map.nodes.forEach(n => n.related.forEach(r => { const k = [n.id, r].sort().join("|"); if(seen.has(k) || !pos[r]) return; seen.add(k); const a = pos[n.id], b = pos[r]; rel.push(`<path class="mm-rel" d="M${a.x.toFixed(1)},${a.y.toFixed(1)}Q${((a.x+b.x)*0.3).toFixed(1)},${((a.y+b.y)*0.3).toFixed(1)} ${b.x.toFixed(1)},${b.y.toFixed(1)}"/>`); }));
   const node = (id, label, p, i) => { const s = st[id], lines = wrapLabel(label, p.depth >= 2 ? 13 : 16), txt = s.score == null ? "?" : pct(s.score);
-    return `<g class="mm-n ${id === "root" ? "root " : ""}${s.status}" data-n="${id}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})" style="animation-delay:${i*35}ms"><circle class="mm-ring" r="${p.r+7}"/><circle class="mm-c" r="${p.r}"/><text class="mm-i" y="4">${id === "root" && s.score == null ? "🧠" : txt}</text>${lines.map((ln, j) => `<text class="mm-l" y="${p.r+15+j*12}">${esc(ln)}</text>`).join("")}</g>`; };
+    return `<g class="mm-n ${id === "root" ? "root " : ""}${s.status}" data-n="${id}" transform="translate(${p.x.toFixed(1)},${p.y.toFixed(1)})" style="animation-delay:${i*35}ms"><circle class="mm-ring" r="${p.r+7}"/><circle class="mm-c" r="${p.r}"/>${id === "root" && s.score == null ? `<svg class="mm-ico" x="-9" y="-9" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--foreground)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" pointer-events="none">${window.QLIcon.P.brain}</svg>` : `<text class="mm-i" y="4">${txt}</text>`}${lines.map((ln, j) => `<text class="mm-l" y="${p.r+15+j*12}">${esc(ln)}</text>`).join("")}</g>`; };
   return edges + rel.join("") + node("root", map.title || "Topic", pos.root, 0) + map.nodes.map((n, i) => node(n.id, n.label, pos[n.id], i+1)).join("");
 }
 function extent(pos){ let m = 80; Object.values(pos).forEach(p => { m = Math.max(m, Math.abs(p.x) + p.r + 46, Math.abs(p.y) + p.r + 46); }); return m; }
@@ -8556,33 +8673,7 @@ html[data-fps="120"] body{overscroll-behavior-y:none}
 
 </style>
 <script>
-/* ===== QuickLearn custom icon set: replaces emoji with drawn SVG icons ===== */
-(function(){
-const P={"target": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.2\" fill=\"currentColor\"/>", "fire": "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z\"/>", "bolt": "<path d=\"M13 3L5 14h6l-1 7 8-11h-6z\"/>", "spark": "<path d=\"M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z\"/>", "brain": "<path d=\"M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 4 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 4 3 3 0 0 1-6 1\"/>", "party": "<path d=\"M4 20l4-12 8 8z\"/><path d=\"M14 5v2M19 9h2M17 3l-1 1M20 14l-1.5-.5\"/>", "book": "<path d=\"M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z\"/>", "mic": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4\"/>", "moon": "<path d=\"M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z\"/>", "school": "<path d=\"M3 9l9-5 9 5zM5 9v8M9.5 9v8M14.5 9v8M19 9v8M3 20h18\"/>", "cap": "<path d=\"M2 9l10-5 10 5-10 5zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6\"/>", "note": "<path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M14 3v5h5M9 12h7M9 16h7\"/>", "check": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8 12.5l3 3 5-6\"/>", "plant": "<path d=\"M12 21v-8M12 13c0-4 3-6 7-6 0 4-3 6-7 6zM12 16c0-3-2-5-6-5 0 3 2 5 6 5z\"/>", "cards": "<rect x=\"8\" y=\"3\" width=\"12\" height=\"15\" rx=\"2\"/><path d=\"M5 7a2 2 0 0 0-1 1.7V19a2 2 0 0 0 2 2h9\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "cal": "<rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"2\"/><path d=\"M4 10h16M8 3v4M16 3v4\"/>", "chart": "<path d=\"M4 20V4M4 20h16M8 16l4-5 3 3 5-7\"/>", "bars": "<path d=\"M6 20v-8M12 20V5M18 20v-5\"/>", "globe": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M15.5 8.5l-2 5-5 2 2-5z\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4 4-6 8-6s8 2 8 6\"/>", "trash": "<path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/>", "folder": "<path d=\"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M8.5 8L20 19M8.5 16L20 5\"/>", "web": "<circle cx=\"12\" cy=\"12\" r=\"2\"/><circle cx=\"5\" cy=\"6\" r=\"1.5\"/><circle cx=\"19\" cy=\"7\" r=\"1.5\"/><circle cx=\"12\" cy=\"20\" r=\"1.5\"/><path d=\"M10.5 11L6 7M13.5 11L18 8M12 14v5\"/>", "link": "<path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"/>", "speaker": "<path d=\"M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11\"/>", "palette": "<path d=\"M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.5 1.5-2.5H18a3 3 0 0 0 3-3C21 7 17 3 12 3z\"/><circle cx=\"8\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"7.5\" r=\"1\"/><circle cx=\"16\" cy=\"10\" r=\"1\"/>", "flask": "<path d=\"M9 3h6M10 3v6l-5 10a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-10V3M7.5 15h9\"/>", "pin": "<path d=\"M12 21v-7M8 3h8l-1 6 3 4H6l3-4z\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/>", "home": "<path d=\"M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z\"/>", "lock": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 8 0v3\"/>", "key": "<circle cx=\"8\" cy=\"15\" r=\"4\"/><path d=\"M11 12l9-9M16 7l3 3\"/>", "trophy": "<path d=\"M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 21h8\"/>", "crown": "<path d=\"M3 8l4 4 5-7 5 7 4-4-2 11H5z\"/>", "warn": "<path d=\"M12 4l9 16H3zM12 10v4M12 17v.5\"/>", "x": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9 9l6 6M15 9l-6 6\"/>", "bulb": "<path d=\"M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 11c.7.6 1 1.3 1 2h5c0-.7.3-1.4 1-2A6 6 0 0 0 12 3z\"/>", "chat": "<path d=\"M4 5h16v11H9l-5 4z\"/>", "think": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.5\"/>", "bag": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18\"/>", "laptop": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"10\" rx=\"1.5\"/><path d=\"M2 19h20\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1\"/>", "bell": "<path d=\"M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4\"/>", "clock": "<circle cx=\"12\" cy=\"13\" r=\"8\"/><path d=\"M12 9v4l3 2M9 2h6\"/>", "heart": "<path d=\"M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z\"/>", "hand": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "down": "<path d=\"M12 4v12M6 12l6 6 6-6M5 21h14\"/>", "up": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "camera": "<path d=\"M4 8h3l2-3h6l2 3h3v12H4z\"/><circle cx=\"12\" cy=\"14\" r=\"3.5\"/>", "image": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><circle cx=\"9\" cy=\"10\" r=\"1.5\"/><path d=\"M4 18l5-5 4 4 3-3 4 4\"/>", "play": "<path d=\"M7 4l13 8-13 8z\"/>", "pause": "<path d=\"M8 5v14M16 5v14\"/>", "stop": "<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"1\"/>", "next": "<path d=\"M5 5l9 7-9 7zM18 5v14\"/>", "ruler": "<path d=\"M3 17L17 3l4 4L7 21zM8 12l2 2M11 9l2 2M14 6l2 2\"/>", "scale": "<path d=\"M12 4v16M6 20h12M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z\"/>", "cube": "<path d=\"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5\"/>", "game": "<rect x=\"3\" y=\"8\" width=\"18\" height=\"10\" rx=\"4\"/><path d=\"M8 11v4M6 13h4M16 12v.5M18 14v.5\"/>", "ball": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 8l4 3-1.5 5h-5L8 11zM12 3v5M16 11l5-1M14.5 16l3 4M9.5 16l-3 4M8 11L3 10\"/>", "food": "<path d=\"M7 3v8a2 2 0 0 0 2 2v8M5 3v6M9 3v6M17 21V3c-3 1-4 4-4 8h4\"/>", "run": "<circle cx=\"14\" cy=\"4.5\" r=\"2\"/><path d=\"M9 21l3-6-3-3 2-4 4 2 3 3M6 12l3-3\"/>", "smile": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5v.5M15 9.5v.5\"/>", "atom": "<circle cx=\"12\" cy=\"12\" r=\"1.5\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(120 12 12)\"/>", "star": "<path d=\"M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8z\"/>", "edit": "<path d=\"M4 20l1-4L16 5l3 3L8 19zM14 7l3 3\"/>", "divide": "<path d=\"M5 12h14M12 6v.5M12 18v.5\"/>", "ruler2": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18M9 21V9\"/>"},M={"🎯": "target", "🔥": "fire", "⚡": "bolt", "✨": "spark", "✦": "spark", "🌟": "spark", "⭐": "star", "★": "star", "🧠": "brain", "🧬": "brain", "🧩": "brain", "🎉": "party", "👏": "party", "📖": "book", "📚": "book", "📘": "book", "📒": "book", "🔠": "book", "🎤": "mic", "🎙": "mic", "🗣": "mic", "🎧": "mic", "☀": "sun", "🌙": "moon", "🏛": "school", "🏫": "school", "🏤": "school", "🎓": "cap", "📝": "note", "📄": "note", "📋": "note", "📌": "note", "✍": "edit", "✏": "edit", "✅": "check", "🟢": "check", "🌱": "plant", "🌿": "plant", "🪴": "plant", "🌳": "plant", "🌲": "plant", "🍀": "plant", "🌾": "plant", "🏝": "plant", "🃏": "cards", "🗓": "cal", "📅": "cal", "📈": "chart", "📊": "bars", "🌍": "globe", "🗺": "globe", "🇿": "globe", "🇦": "globe", "🇺": "globe", "🇸": "globe", "🇬": "globe", "🇧": "globe", "🇨": "globe", "🧭": "compass", "👤": "user", "🗑": "trash", "📁": "folder", "✂": "scissors", "🕸": "web", "🔗": "link", "📎": "link", "🔊": "speaker", "🎵": "speaker", "🎨": "palette", "🎭": "palette", "🔬": "flask", "🧪": "flask", "⚗": "flask", "🔍": "search", "🔎": "search", "🏠": "home", "🔒": "lock", "🔑": "key", "🏆": "trophy", "👑": "crown", "⚠": "warn", "❌": "x", "❔": "x", "💡": "bulb", "💬": "chat", "😮": "chat", "🤔": "think", "💼": "bag", "🧳": "bag", "💻": "laptop", "🖥": "laptop", "⌨": "laptop", "🕹": "laptop", "⚙": "gear", "🔔": "bell", "📳": "bell", "⏰": "clock", "⏱": "clock", "❤": "heart", "👆": "hand", "👋": "hand", "💪": "hand", "⬇": "down", "📥": "down", "💾": "down", "⬆": "up", "📷": "camera", "🖼": "image", "🎞": "image", "▶": "play", "⏩": "play", "⏸": "pause", "⏹": "stop", "⏭": "next", "📐": "ruler", "📏": "ruler", "🪜": "ruler", "⚖": "scale", "🧮": "scale", "🧊": "cube", "🐉": "game", "⚽": "ball", "🍳": "food", "🥗": "food", "🍝": "food", "🍽": "food", "🏃": "run", "😬": "smile", "😎": "smile", "⚛": "atom", "➗": "divide", "🚪": "home"};
-const keys=Object.keys(M).sort((a,b)=>b.length-a.length).map(k=>k.replace(/[.*+?^${}()|[\]\\]/g,"\\$&"));
-const RE=new RegExp("("+keys.join("|")+")[\\uFE0F\\u200D]?","gu");
-const st=document.createElement("style");
-st.textContent=".qi{display:inline-block;width:1.15em;height:1.15em;vertical-align:-.2em;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round;flex:none}";
-document.head.appendChild(st);
-const SKIP=/^(SCRIPT|STYLE|TEXTAREA|INPUT|OPTION|TITLE|SVG|CODE|NOSCRIPT)$/;
-function svg(n){return '<svg class="qi" viewBox="0 0 24 24" aria-hidden="true">'+P[n]+'</svg>'}
-function fix(root){
-  if(!root) return;
-  const w=document.createTreeWalker(root.nodeType===3?root.parentNode:root,NodeFilter.SHOW_TEXT,{acceptNode(t){
-    const p=t.parentNode; if(!p||SKIP.test(p.nodeName)||(p.isContentEditable)) return 3;
-    RE.lastIndex=0; return RE.test(t.nodeValue)?1:3}});
-  const hit=[]; let t; while((t=w.nextNode())) hit.push(t);
-  hit.forEach(t=>{
-    const html=t.nodeValue.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(RE,(m,g)=>svg(M[g]));
-    const sp=document.createElement("span"); sp.style.display="contents"; sp.innerHTML=html; t.parentNode.replaceChild(sp,t);
-  });
-}
-let busy=false;
-const mo=new MutationObserver(ms=>{ if(busy) return; busy=true;
-  try{ ms.forEach(m=>{ if(m.type==="characterData") fix(m.target); else m.addedNodes.forEach(n=>{ if(n.nodeType===1||n.nodeType===3) fix(n) }) }) }finally{ busy=false } });
-function start(){ fix(document.body); mo.observe(document.body,{childList:true,subtree:true,characterData:true}) }
-if(document.body) start(); else document.addEventListener("DOMContentLoaded",start);
-})();
+/* icon engine now loads in <head> (see ql-icons) */
 </script>
 <script>
 /* ===== colour palettes ===== */
@@ -8767,6 +8858,7 @@ window.openSettings=function(){
 const st=document.createElement("style");
 st.textContent=".stile{flex:none;display:grid;place-items:center;width:2.6rem;height:2.6rem;border-radius:.85rem;background:color-mix(in oklab,var(--primary) 22%,var(--surface-2));color:var(--primary);font-size:1.25rem}.stab .label:first-child{margin-top:.2rem}";
 document.head.appendChild(st);
+if(/^#\/settings/.test(location.hash)) setTimeout(()=>{ try{ route(); }catch(_){} },0);
 })();
 </script>
 </body>
