@@ -2226,16 +2226,120 @@ function askFallback(status){
   });
 }
 
+// NEVER-TRANSLATE rule: attached to EVERY AI call (as system instruction and again at the end of the prompt).
+const NO_TRANSLATE_RULE = "LANGUAGE RULE (overrides everything else in this request): Whatever language the student's own notes, pages, documents, photos, answers or questions are written in, write EVERY word of your output in that SAME language. NEVER translate anything into English or into any other language, even though these instructions are written in English. If the material mixes languages, keep every term in the language it was written in and write the surrounding text in the main language of the material. Keep names, quotes, formulas and technical terms exactly as written. When transcribing, copy the text in its original language, never translate it. If you must return JSON, the keys, field names and fixed tokens stay exactly as the format specifies; only the human-readable text values follow the language of the student's material. The only exception: if the task names a specific output language and the student supplied no text of their own, use that named language.";
+// ===== COVERAGE HELPERS: used by course creation and mind maps to guarantee nothing in the notes is left out =====
+window.QLCov = (function(){
+  const STOP = new Set(("the and for with are was were been being that this these those into than then which who whom what when where why how can could should would may might will shall does did not yes else such also more most less very any all each other their there them they you your our about over under between among within without per via etc have has had from onto upon die van het een dat nie vir met wat sy hy ons julle hulle dit ook maar kan sal wil moet word deur aan om by na uit tot dan nog baie meer wanneer waar hoe wie waarom hierdie daardie hul jou haar wees").split(" "));
+  const WORD = /[\p{L}\p{N}][\p{L}\p{N}'’-]*/gu;
+  const TINY = /^(of|in|on|to|is|it|as|at|be|by|do|if|no|or|so|up|we|an|my|me|he|us|am)$/;
+  function tokens(t){
+    const out = new Set();
+    String(t||"").replace(/[^\p{L}\p{N}\s]/gu, " ").split(/\s+/).forEach(raw => {
+      if(!raw) return;
+      const w = raw.toLowerCase(); if(STOP.has(w) || TINY.test(w)) return;
+      // short acronyms / symbols (ATP, DNA, CO2, pH) count too, otherwise notes made of them are never checked
+      const short = raw.length >= 2 && raw.length <= 3 && /\p{Lu}/u.test(raw.slice(1));
+      if(/\d/.test(w) || w.length >= 4 || short) out.add(w.length > 5 && w.endsWith("s") ? w.slice(0,-1) : w);
+    });
+    return out;
+  }
+  // every sentence / heading of the source, plus short list items (terms, names, entries) grouped under the line that introduces them
+  function units(text){
+    const out = [], BUL = /^\s*(?:[-*•▪◦–—]|\d+[.)])\s+/;
+    let ctx = "", items = [], itemLine = 0;
+    const flush = () => {
+      if(!items.length) return;
+      const joined = items.join("; "), tk = tokens(joined);
+      if(tk.size) out.push({ text:(ctx ? ctx.replace(/[\s:.;,-]+$/, "") + ": " : "") + joined, tk, line:itemLine, strict:true });
+      items = [];
+    };
+    const lines = String(text||"").split(/\n+/);
+    lines.forEach((line, li) => {
+      const bullet = BUL.test(line);
+      line = line.replace(BUL, "").trim(); if(!line) return;
+      if(bullet && line.length < 25){
+        if(!items.length) itemLine = li;
+        items.push(line);
+        if(items.join("; ").length > 220) flush();
+        return;
+      }
+      flush();
+      if(!bullet) ctx = (line.length < 60 || /:$/.test(line)) ? line : "";
+      if(/:$/.test(line)){ const nx = lines.slice(li + 1).find(x => x.trim()); if(nx && BUL.test(nx)) return; }   // a lead-in to a list is carried by the list's own entry
+      line.replace(/([.!?;])\s+/g, "$1\u0001").split("\u0001").forEach(p => {
+        p = p.trim(); if(p.length < 10) return;
+        const tk = tokens(p); if(tk.size < 2) return;
+        out.push({ text:p, tk, line:li });
+      });
+    });
+    flush();
+    return out;
+  }
+  // units that no container (lesson / node) covers well enough.
+  // Short list items must ALL appear somewhere; sentences need most of their words in one container, and every number / date in that same container.
+  function missing(us, sets, ratio){
+    ratio = ratio || 0.5;
+    let all = null;
+    return us.filter(u => {
+      const arr = [...u.tk];
+      if(u.strict){
+        if(!all){ all = new Set(); sets.forEach(st => st.forEach(w => all.add(w))); }
+        return !arr.every(w => all.has(w));
+      }
+      const anchors = arr.filter(w => /\d/.test(w)), need = arr.length <= 3 ? arr.length : Math.ceil(arr.length * ratio);
+      return !sets.some(st => {
+        if(anchors.length && !anchors.every(w => st.has(w))) return false;
+        let h = 0; for(const w of arr){ if(st.has(w) && ++h >= need) return true; } return false;
+      });
+    });
+  }
+  // guaranteed (no AI) quiz question for one source sentence: fill-in-the-blank on its longest word
+  function localQuestion(u, pool){
+    const words = (u.text.match(WORD) || []).filter(w => w.length >= 4 && !STOP.has(w.toLowerCase())).sort((a,b) => b.length - a.length);
+    if(!words.length) return { t:"tf", q:u.text, a:true, e:u.text };
+    const key = words[0], i = u.text.indexOf(key), q = u.text.slice(0, i) + "____" + u.text.slice(i + key.length);
+    const low = u.text.toLowerCase(), d = [];
+    for(const w of pool){ if(d.length >= 2) break; if(w.toLowerCase() !== key.toLowerCase() && !low.includes(w.toLowerCase()) && !d.includes(w) && Math.abs(w.length - key.length) <= 4) d.push(w); }
+    if(!d.length) return { t:"tf", q:u.text, a:true, e:u.text };
+    const pos = (key.length + u.text.length) % (d.length + 1), opts = d.slice(); opts.splice(pos, 0, key);
+    return { t:"fb", q, o:opts, a:pos, e:u.text };
+  }
+  // Lessons added by the audits / sweeps (flagged x) are moved into the unit of their own section that fits them, in notes order.
+  function place(courseUnits, chunks){
+    const lt = l => tokens(l.title + " " + l.qs.map(q => q.q + " " + (q.o||[]).join(" ") + " " + (q.e||"")).join(" "));
+    chunks.forEach(src => {
+      const us = units(src), mine = courseUnits.filter(u => u._source === src); if(!us.length || !mine.length) return;
+      const posOf = tk => { let best = -1, bl = 0; us.forEach(u => { let h = 0; u.tk.forEach(w => { if(tk.has(w)) h++; }); const sc = h / u.tk.size; if(sc > best){ best = sc; bl = u.line; } }); return bl; };
+      const extras = [];
+      mine.forEach(u => { u.lessons = u.lessons.filter(l => { if(l.x){ extras.push(l); return false; } return true; }); });
+      if(!extras.length) return;
+      const hosts = mine.filter(u => u.lessons.length);
+      if(!hosts.length){ mine[0].lessons.push(...extras); return; }
+      const info = hosts.map(u => { const ps = u.lessons.map(l => posOf(lt(l))), prof = new Set(tokens(u.title)); u.lessons.forEach(l => lt(l).forEach(w => prof.add(w))); return { u, ps, lo:Math.min(...ps), hi:Math.max(...ps), prof }; });
+      extras.forEach(l => {
+        const tk = lt(l), p = posOf(tk); let best = null, bd = Infinity, bs = -1;
+        info.forEach(h => {
+          const d = p < h.lo ? h.lo - p : p > h.hi ? p - h.hi : 0; let sc = 0; tk.forEach(w => { if(h.prof.has(w)) sc++; }); sc /= Math.sqrt(h.prof.size || 1);
+          if(d < bd || (d === bd && sc > bs)){ best = h; bd = d; bs = sc; }
+        });
+        let i = best.ps.findIndex(x => x > p); if(i < 0) i = best.u.lessons.length;
+        best.u.lessons.splice(i, 0, l); best.ps.splice(i, 0, p);
+      });
+    });
+  }
+  return { tokens, units, missing, localQuestion, place, WORD };
+})();
 // files = [{ dataUrl }] (JPEG data URLs from filesToImages)
 async function gemini(prompt, files, options={}){
   const key = getKey();
   if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
   if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
-  const parts = [{text:prompt}];
+  const parts = [{text:String(prompt) + "\n\n" + NO_TRANSLATE_RULE}];
   if(files && files.length){
     files.slice(0,8).forEach(f => parts.push({ inline_data:{ mime_type:"image/jpeg", data:f.dataUrl.split(",")[1] } }));
   }
-  const body = JSON.stringify({ contents:[{ parts }] });
+  const body = JSON.stringify({ system_instruction:{ parts:[{ text:NO_TRANSLATE_RULE }] }, contents:[{ parts }] });
   let model = GEMINI_MODEL;
   while(true){
     let lastStatus = 0;
@@ -4348,7 +4452,7 @@ ${sourceChunks[ci]}`;
       const missing=parseArray(auditRaw,"missing");
       const target=related[0];
       if(missing.length){
-        const extras=missing.filter(l=>l&&typeof l.title==="string"&&l.title.trim()).map(l=>({title:l.title.trim(),focus:typeof l.focus==="string"?l.focus.trim():"Cover all source details identified in this coverage audit."}));
+        const extras=missing.filter(l=>l&&typeof l.title==="string"&&l.title.trim()).map(l=>({title:l.title.trim(),focus:typeof l.focus==="string"?l.focus.trim():"Cover all source details identified in this coverage audit.",x:1}));
         if(extras.length){
           if(target) target.lessons.push(...extras);
           else plan.push({title:`Additional details — section ${ci+1}`,lessons:extras,source:sourceChunks[ci]});
@@ -4385,15 +4489,15 @@ ${sourceChunks[ci]}`;
           let got=byTitle.get(wanted.title.toLowerCase())||ls.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase().includes(wanted.title.toLowerCase()))||null;
           if(!got||!Array.isArray(got.qs))continue;
           const qs=got.qs.filter(validCourseQuestion);
-          if(qs.length)good.push({title:wanted.title,qs});
+          if(qs.length)good.push({title:wanted.title,qs,x:wanted.x});
         }
         // One targeted repair request for any missing/invalid lesson in this batch.
         const missing=b.lessons.filter(w=>!good.some(g=>g.title===w.title));
         if(missing.length){
-          const rp=`Return ONLY valid JSON {"lessons":[{"title":"Exact lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C"],"a":0,"e":"Explanation"}]}]}. Repair and generate complete question sets for these missing lessons only. Include 5 distinct questions per lesson, all with visible q text; valid mc/tf/fb types and correct answer formats; fb q must contain ____. Use only these notes.\nMISSING LESSONS:\n${missing.map(l=>l.title+(l.focus?" — "+l.focus:"")).join("\n")}\nNOTES:\n${b.source}`;
+          const rp=`Return ONLY valid JSON {"lessons":[{"title":"Exact lesson title","qs":[{"t":"mc","q":"Visible question?","o":["A","B","C"],"a":0,"e":"Explanation"}]}]}. Repair and generate complete question sets for these missing lessons only. Include at least 8 distinct questions per lesson (more if the focus holds many facts), all with visible q text; valid mc/tf/fb types and correct answer formats; fb q must contain ____. Use only these notes.\nMISSING LESSONS:\n${missing.map(l=>l.title+(l.focus?" — "+l.focus:"")).join("\n")}\nNOTES:\n${b.source}`;
           try{
             const rr=parseArray(await askWithRetry(rp,`Repairing batch ${bi+1}`),"lessons");
-            for(const wanted of missing){const got=rr.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase()===wanted.title.toLowerCase());if(got&&Array.isArray(got.qs)){const qs=got.qs.filter(validCourseQuestion);if(qs.length)good.push({title:wanted.title,qs})}}
+            for(const wanted of missing){const got=rr.find(x=>x&&typeof x.title==="string"&&x.title.trim().toLowerCase()===wanted.title.toLowerCase());if(got&&Array.isArray(got.qs)){const qs=got.qs.filter(validCourseQuestion);if(qs.length)good.push({title:wanted.title,qs,x:wanted.x})}}
           }catch(re){if(stop)return;}
         }
         const ordered=b.lessons.map(w=>good.find(g=>g.title===w.title)).filter(Boolean);
@@ -4412,6 +4516,7 @@ ${sourceChunks[ci]}`;
     // Final audit checks generated lesson content (questions + explanations), not just the plan.
     // Missing details become supplemental lessons and are generated before the course is marked complete.
     const auditedGaps=new Set();
+    try{
     for(let round=0;round<20;round++){
       if(stop)return;
       let foundAny=false;
@@ -4453,26 +4558,69 @@ ${source}`;
             if(!got||!Array.isArray(got.qs))throw new Error(`Coverage repair failed for "${wanted.title}". The course is not complete yet.`);
             const qs=got.qs.filter(validCourseQuestion);
             if(!qs.length)throw new Error(`Coverage repair returned no valid questions for "${wanted.title}".`);
-            target.lessons.push({title:wanted.title.trim(),qs});
+            target.lessons.push({title:wanted.title.trim(),qs,x:1});
           }
         }
       }
       if(!foundAny)break;
     }
+    }catch(auditErr){ if(stop)return; }
     if(stop)return;
-    activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
+    let swept=false,checked=0;
+    // FINAL SWEEP (no AI needed to decide): every sentence, list item and heading of the notes must be taught or tested by some lesson.
+    // Anything not found is generated as extra lessons; whatever the AI still misses becomes a guaranteed fill-in-the-blank question.
+    try{
+      const lessonSets=()=>activeCourse.units.flatMap(u=>u.lessons).map(l=>window.QLCov.tokens(l.title+" "+l.qs.map(q=>q.q+" "+(q.o||[]).join(" ")+" "+(q.e||"")).join(" ")));
+      const firstWords=(t,n)=>String(t).split(/\s+/).slice(0,n).join(" ").replace(/[.,;:!?]+$/,"");
+      const usedTitles=new Set(activeCourse.units.flatMap(u=>u.lessons.map(l=>l.title.toLowerCase())));
+      const uniqueTitle=base=>{let t=base||"…",n=2;while(usedTitles.has(t.toLowerCase()))t=base+" ("+(n++)+")";usedTitles.add(t.toLowerCase());return t};
+      for(let ci=0;ci<sourceChunks.length;ci++){
+        if(stop)return;
+        const source=sourceChunks[ci],us=window.QLCov.units(source);checked+=us.length;
+        let miss=window.QLCov.missing(us,lessonSets(),0.5);
+        if(!miss.length)continue;
+        prog(`Final sweep · covering ${miss.length} remaining detail${miss.length===1?"":"s"} from section ${ci+1}…`,96);
+        let target=activeCourse.units.find(u=>u._source===source);
+        if(!target){target={title:"Additional source details",lessons:[],_source:source};activeCourse.units.push(target)}
+        const groups=[];for(let i=0;i<miss.length;i+=8)groups.push(miss.slice(i,i+8));
+        for(let gi=0;gi<groups.length;gi+=4){
+          const part=groups.slice(gi,gi+4).map(g=>({title:uniqueTitle(firstWords(g[0].text,6)),sents:g}));
+          const listTxt=part.map((x,i)=>`${i+1}. "${x.title}" must teach and test ALL of these exact source sentences:\n${x.sents.map(z=>"   - "+z.text).join("\n")}`).join("\n");
+          const sp=`You are a meticulous teacher. The exact source sentences below are not yet taught or tested by the course. Write complete quiz lessons that teach and test EVERY one of them. Return ONLY valid JSON: {"lessons":[{"title":"Exact requested title","qs":[{"t":"mc","q":"Question?","o":["A","B","C","D"],"a":0,"e":"Short explanation grounded in the notes"},{"t":"tf","q":"A statement to judge.","a":true,"e":"Short explanation"},{"t":"fb","q":"A sentence with ____ blank.","o":["word 1","word 2","word 3"],"a":1,"e":"Short explanation"}]}]}.\nRULES: at least one question per listed sentence, and two or more when a sentence holds several facts. Every number, name, date, term, definition and list item in each sentence must be tested. Mix mc, tf and fb. Every fb q must contain ____. mc/fb need 3-4 non-empty options and a zero-based answer index; tf a must be a boolean. Use only the notes, no outside facts. Return every lesson with its exact title.\nREQUESTED LESSONS:\n${listTxt}\nSOURCE CONTEXT:\n${source}`;
+          let got=[];
+          try{got=parseArray(await askWithRetry(sp,"Final sweep"),"lessons")}catch(e){if(stop)return;got=[]}
+          for(const x of part){
+            const g=got.find(y=>y&&typeof y.title==="string"&&y.title.trim().toLowerCase()===x.title.toLowerCase());
+            const qs=g&&Array.isArray(g.qs)?g.qs.filter(validCourseQuestion):[];
+            if(qs.length)target.lessons.push({title:x.title,qs,x:1});
+          }
+        }
+        miss=window.QLCov.missing(us,lessonSets(),0.5);
+        if(miss.length){
+          const pool=[...new Set((source.match(window.QLCov.WORD)||[]).filter(w=>w.length>=4))];
+          for(let i=0;i<miss.length;i+=10){
+            const grp=miss.slice(i,i+10),qs=grp.map(u=>window.QLCov.localQuestion(u,pool)).filter(validCourseQuestion);
+            if(qs.length)target.lessons.push({title:uniqueTitle(firstWords(grp[0].text,6)),qs,x:1});
+          }
+        }
+      }
+      failed=[];swept=true;   // anything a failed batch left out has now been covered by the sweep
+    }catch(sweepErr){ if(stop)return; }
+    if(stop)return;
+    try{window.QLCov.place(activeCourse.units,sourceChunks)}catch(placeErr){}   // put every extra lesson in the right section, in notes order
+    activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons:lessons.map(({title,qs})=>({title,qs}))}));
 
     const lessonCount=activeCourse.units.reduce((n,u)=>n+u.lessons.length,0);
     const questionCount=activeCourse.units.reduce((n,u)=>n+u.lessons.reduce((q,l)=>q+l.qs.length,0),0);
     if(!lessonCount||!questionCount)throw new Error("The AI couldn't generate valid lessons. Check your notes and try again.");
     (data.courses=data.courses||{})[id]=activeCourse;save();
     closeModal();haptic("complete");renderCourse(id);
-    toast(failed.length?`Course partly ready · ${lessonCount} lessons; ${failed.length} lesson(s) still need retry`:`Course generated · ${activeCourse.units.length} units, ${lessonCount} lessons. Source coverage audit completed.`);
+    toast(failed.length?`Course partly ready · ${lessonCount} lessons; ${failed.length} lesson(s) still need retry`:`Course generated · ${activeCourse.units.length} units, ${lessonCount} lessons.${swept?` All ${checked} parts of your notes are covered.`:""}`);
   }catch(e){
     if(stop)return;
     closeModal();
     if(activeCourse&&activeCourse.units.some(u=>u.lessons.length)){
-      activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons}));
+      activeCourse.units=activeCourse.units.filter(u=>u.lessons.length).map(({title,lessons})=>({title,lessons:lessons.map(({title,qs})=>({title,qs}))}));
       (data.courses=data.courses||{})[id]=activeCourse;save();renderCourse(id);
       toast("Saved the lessons generated so far. Rebuild to retry missing content.");
     }else toast(e.message||"Couldn't build the course");
@@ -7041,11 +7189,11 @@ const cid = x => String(x == null ? "" : x).replace(/[^\w-]/g, "");
 function sanitize(arr){
   if(!Array.isArray(arr)) return null;
   const ids = new Set(), out = [];
-  arr.slice(0, 22).forEach((n, i) => {
+  arr.slice(0, 5000).forEach((n, i) => {
     if(!n || !n.label) return;
     let id = cid(n.id) || "n"+(i+1); if(ids.has(id) || id === "root") id = "n"+(i+1)+"x"; ids.add(id);
-    out.push({ id, label:clip(n.label, 38), parent:cid(n.parent) || "root", summary:clip(n.summary || "", 140), explanation:clip(n.explanation || n.summary || "", 700),
-      examples:(Array.isArray(n.examples) ? n.examples : []).slice(0, 3).map(x => clip(x, 200)),
+    out.push({ id, label:clip(n.label, 38), parent:cid(n.parent) || "root", summary:clip(n.summary || "", 140), explanation:clip(n.explanation || n.summary || "", 6000),
+      examples:(Array.isArray(n.examples) ? n.examples : []).slice(0, 6).map(x => clip(x, 300)),
       keywords:(Array.isArray(n.keywords) ? n.keywords : []).slice(0, 8).map(x => String(x).toLowerCase()), related:(Array.isArray(n.related) ? n.related : []).map(cid).filter(Boolean), m:"" });
   });
   if(out.length < 2) return null;
@@ -7058,13 +7206,13 @@ function sanitize(arr){
 function localMap(deckId){
   const nodes = []; let k = 0;
   const mk = (label, parent) => { const n = { id:"n"+(++k), label:clip(label, 38), parent, summary:"", explanation:"", examples:[], keywords:toks(label).slice(0, 4), related:[], m:"" }; nodes.push(n); return n; };
-  const fill = (n, body) => { body = body.replace(/\s+/g, " ").trim(); if(!body) return; n.explanation = clip(body, 420); n.summary = clip(firstSentence(body), 110); n.keywords = [...new Set(toks(n.label).concat(topWords(body, 4)))].slice(0, 6); };
+  const fill = (n, body) => { body = body.replace(/\s+/g, " ").trim(); if(!body) return; n.explanation = clip(body, 6000); n.summary = clip(firstSentence(body), 110); n.keywords = [...new Set(toks(n.label).concat(topWords(body, 4)))].slice(0, 6); };
   deckNotes(deckId).forEach(note => {
     const lines = String(note.content || "").split(/\n/), stack = []; let cur = null, buf = [], found = false;
     const flush = () => { if(cur) fill(cur, buf.join(" ")); buf = []; };
     lines.forEach(line => {
       const m = line.match(/^(#{1,4})\s+(.+?)\s*#*$/);
-      if(m && nodes.length < 20){
+      if(m){
         flush(); found = true; const lvl = m[1].length;
         while(stack.length && stack[stack.length-1].lvl >= lvl) stack.pop();
         cur = mk(stripMd(m[2]) || "Topic", stack.length ? stack[stack.length-1].id : "root"); stack.push({ lvl, id:cur.id });
@@ -7072,8 +7220,7 @@ function localMap(deckId){
     });
     flush();
     if(!found){
-      stripMd(note.content || "").split(/\n+/).map(p => p.trim()).filter(p => p.length >= 25).slice(0, 12).forEach(p => {
-        if(nodes.length >= 20) return;
+      stripMd(note.content || "").split(/\n+/).map(p => p.trim()).filter(p => p.length >= 25).forEach(p => {
         const lab = p.split(/[.:;,\u2014\-]/)[0].split(/\s+/).slice(0, 5).join(" ");
         fill(mk(lab || "Idea", "root"), p);
       });
@@ -7083,24 +7230,76 @@ function localMap(deckId){
   return nodes.length >= 2 ? nodes : null;
 }
 const MM = { cur:null, busy:false };
+// Split the WHOLE notes into prompt-sized parts (paragraph by paragraph) so nothing is cut off.
+function mmChunks(text, max){
+  const chunks = []; let cur = "";
+  String(text||"").split(/\n\s*\n/).forEach(para => {
+    para = para.trim(); if(!para) return;
+    while(para.length > max){
+      if(cur){ chunks.push(cur); cur = ""; }
+      let cut = para.lastIndexOf(" ", max); if(cut < max*0.55) cut = max;
+      chunks.push(para.slice(0, cut)); para = para.slice(cut).trim();
+    }
+    if(cur && cur.length + para.length + 2 > max){ chunks.push(cur); cur = ""; }
+    cur += (cur ? "\n\n" : "") + para;
+  });
+  if(cur) chunks.push(cur);
+  return chunks;
+}
+// Completeness guard (no AI): any sentence of the notes the map does not represent is added as its own node, word for word.
+function mmGuard(nodes, full){
+  const us = window.QLCov.units(full); if(!us.length) return nodes;
+  const sets = nodes.map(n => window.QLCov.tokens([n.label, n.summary, n.explanation, (n.examples||[]).join(" "), (n.keywords||[]).join(" ")].join(" ")));
+  const miss = window.QLCov.missing(us, sets, 0.4); if(!miss.length) return nodes;
+  const groups = [];
+  miss.forEach(u => { const g = groups[groups.length-1];
+    if(g && u.line - g.last <= 1 && g.text.length + u.text.length < 900){ g.text += " " + u.text; g.last = u.line; u.tk.forEach(w => g.tk.add(w)); }
+    else groups.push({ text:u.text, last:u.line, tk:new Set(u.tk) }); });
+  const ids = new Set(nodes.map(n => n.id)), out = nodes.slice(); let k = 0;
+  groups.forEach(g => {
+    let best = null, bs = 0; sets.forEach((st, i) => { let sc = 0; g.tk.forEach(w => { if(st.has(w)) sc++; }); if(sc > bs){ bs = sc; best = nodes[i]; } });
+    let id; do{ id = "g" + (++k); }while(ids.has(id)); ids.add(id);
+    out.push({ id, label:clip(g.text.split(/\s+/).slice(0, 4).join(" ").replace(/[.,;:!?]+$/, ""), 38), parent:best ? best.id : "root",
+      summary:clip(firstSentence(g.text) || g.text, 140), explanation:clip(g.text, 3000), examples:[], keywords:[...g.tk].slice(0, 6), related:[], m:"" });
+  });
+  return out;
+}
 async function buildMap(deckId){
-  const text = notesText(deckId).slice(0, 14000), sig = hash(notesText(deckId)), old = data.mindmaps[deckId];
+  const full = notesText(deckId), sig = hash(full), old = data.mindmaps[deckId];
   let nodes = null, title = deckName(deckId), src = "ai";
   try{
     if(!getKey() || navigator.onLine === false) throw new Error("local");
-    const prompt = `You are building a mind map from a student's notes. Return ONLY JSON, no commentary:
-{"title":"main topic, max 5 words","nodes":[{"id":"n1","label":"concept, max 4 words","parent":"root or the id of another node","summary":"one short sentence","explanation":"2-4 clear sentences in simple language","examples":["a short concrete example"],"keywords":["3-6 lowercase words a flashcard about this concept would contain"],"related":["ids of other nodes this connects to"]}]}
-Rules: 8-16 nodes. Every distinct subject or heading in the notes gets its own node. At most 7 nodes may have parent "root"; put sub-ideas under their parent node. Use ids n1..nN. Stay faithful to the notes; if they lack an example, add a clear one. Plain text only.
-${demarcBlock(deckId)}NOTES:
-${text}`;
-    const raw = await gemini(prompt, undefined, { autoFallback:true });
-    const j = jparse(raw); nodes = sanitize(Array.isArray(j) ? j : j.nodes); if(j && j.title) title = clip(j.title, 40);
+    const chunks = mmChunks(full, 9000), raw = []; let gotTitle = "";
+    for(let ci = 0; ci < chunks.length; ci++){
+      mmLoading(chunks.length > 1 ? "Mapping part " + (ci+1) + " of " + chunks.length + "…" : "Building your mind map…");
+      const ctx = raw.length ? "THE MAP SO FAR (id | label | parent):\n" + raw.slice(0, 400).map(n => n.id + " | " + n.label + " | " + n.parent).join("\n") + "\nWhen a topic in this part belongs under an existing node, use that node's id as the parent; otherwise use root. Do not repeat nodes that already exist.\n" : "";
+      const prompt = `You are building a COMPLETE mind map from a student's notes. The goal is ZERO OMISSION: nothing in the notes may be left off the map. Return ONLY JSON, no commentary:
+{"title":"main topic, max 5 words","nodes":[{"id":"n1","label":"concept, max 4 words","parent":"root or the id of another node","summary":"one short sentence","explanation":"clear sentences that state EVERY fact the notes give about this concept","examples":["a short concrete example"],"keywords":["3-6 lowercase words a flashcard about this concept would contain"],"related":["ids of other nodes this connects to"]}]}
+Rules:
+- Make a node for EVERY heading, subheading, term, definition, classification, process step, list item, formula, rule, example, date, name and number in the notes. There is NO maximum number of nodes: use as many as the notes need. If a detail is too small for its own node, it MUST be stated in the explanation of its parent node. Never drop or skip anything, including facts at the very start or end.
+- Build a real hierarchy that follows the notes' own structure (heading -> subheading -> point). At most 10 nodes may have parent "root"; every other node sits under its most fitting parent, nested as deep as the notes go. Use ids n1..nN.
+- Each explanation states every fact the notes give for that concept in simple language. Copy numbers, names, dates, formulas and technical terms exactly as written. Do not invent facts; if the notes lack an example, you may add one clear example.
+${ctx}${demarcBlock(deckId)}NOTES (part ${ci+1} of ${chunks.length}):
+${chunks[ci]}`;
+      let j = null;
+      for(let attempt = 0; attempt < 3 && !j; attempt++){ try{ j = jparse(await gemini(prompt, undefined, { autoFallback:true })); }catch(e){ j = null; } }
+      const arr = j && (Array.isArray(j) ? j : j.nodes); if(!Array.isArray(arr)) continue;   // a failed part is filled in by the guard below
+      if(!gotTitle && j.title) gotTitle = clip(j.title, 40);
+      const mine = new Set(arr.map(n => n && cid(n.id)).filter(Boolean)), have = new Set(raw.map(n => n.id)), pre = "c" + ci + "_";
+      arr.forEach((n, i) => { if(!n || !n.label) return;
+        const par = cid(n.parent);
+        raw.push(Object.assign({}, n, { id:pre + (cid(n.id) || "n" + (i+1)), parent: par && par !== "root" ? (mine.has(par) ? pre + par : (have.has(par) ? par : "root")) : "root",
+          related:(Array.isArray(n.related) ? n.related : []).map(r => { r = cid(r); return mine.has(r) ? pre + r : r; }) }));
+      });
+    }
+    nodes = sanitize(raw); if(gotTitle) title = gotTitle;
     if(!nodes) throw new Error("shape");
   }catch(e){
     nodes = localMap(deckId); src = "local";
     if(!nodes) throw new Error("There isn't enough in these notes to build a map yet.");
     if(!/local/.test(String(e && e.message))) toast("The AI couldn't build the map, so I used your note headings instead.");
   }
+  nodes = mmGuard(nodes, full);   // guarantees every sentence of the notes appears on the map
   if(old && old.nodes) nodes.forEach(n => { const o = old.nodes.find(x => x.label.toLowerCase() === n.label.toLowerCase()); if(o) n.m = o.m || ""; });   // keep mini-lesson history
   data.mindmaps[deckId] = { sig, at:Date.now(), title, src, nodes }; save();
   return data.mindmaps[deckId];
@@ -7159,12 +7358,16 @@ function weakestNode(){
 function layout(map){
   const kids = {}; map.nodes.forEach(n => (kids[n.parent] = kids[n.parent] || []).push(n));
   const leaves = id => { const k = kids[id] || []; return k.length ? k.reduce((a,x) => a + leaves(x.id), 0) : 1; };
-  const pos = { root:{ x:0, y:0, r:38, depth:0 } }, R = [0, 130, 235, 325, 405];
+  // ring radii grow with the number of nodes per level so big maps never pile up
+  const cnt = {}; let maxD = 1;
+  (function walk(id, d){ (kids[id] || []).forEach(n => { cnt[d] = (cnt[d] || 0) + 1; if(d > maxD) maxD = d; walk(n.id, d + 1); }); })("root", 1);
+  const R = [0]; for(let d = 1; d <= maxD; d++){ const b = [0, 130, 235, 325, 405][Math.min(d, 4)] + Math.max(0, d - 4) * 80; R[d] = Math.max(b, (cnt[d] || 0) * 52 / (2*Math.PI), R[d-1] + (d === 1 ? 130 : 85)); }
+  const pos = { root:{ x:0, y:0, r:38, depth:0 } };
   (function place(id, a0, a1, depth){
     const k = kids[id] || []; if(!k.length) return;
     const tot = k.reduce((a,x) => a + leaves(x.id), 0); let a = a0;
     k.forEach(n => {
-      const span = (a1 - a0) * leaves(n.id)/tot, mid = a + span/2, rad = R[Math.min(depth, R.length-1)];
+      const span = (a1 - a0) * leaves(n.id)/tot, mid = a + span/2, rad = R[depth];
       pos[n.id] = { x:Math.cos(mid)*rad, y:Math.sin(mid)*rad, r: depth === 1 ? 26 : depth === 2 ? 21 : 18, depth };
       place(n.id, a, a + span, depth + 1); a += span;
     });
@@ -7229,8 +7432,8 @@ function attachPan(ext){
   const box = $("mm-box"), g = $("mm-g"); if(!box || !g) return;
   let k = 1, x = 0, y = 0; const pts = new Map(); let moved = 0, startNode = null, t0 = 0, pinch0 = 0, tapNode = null, tapT = 0;
   const apply = () => g.setAttribute("transform", `translate(${x.toFixed(1)},${y.toFixed(1)}) scale(${k.toFixed(3)})`);
-  const fit = () => { const r = box.getBoundingClientRect(); k = Math.max(0.35, Math.min(1.1, Math.min(r.width, r.height)/(2*ext))); x = r.width/2; y = r.height/2; apply(); };
-  const zoomAt = (px, py, f) => { const nk = Math.max(0.3, Math.min(3.2, k*f)), f2 = nk/k; x = px - (px - x)*f2; y = py - (py - y)*f2; k = nk; apply(); };
+  const fit = () => { const r = box.getBoundingClientRect(); k = Math.max(0.06, Math.min(1.1, Math.min(r.width, r.height)/(2*ext))); x = r.width/2; y = r.height/2; apply(); };
+  const zoomAt = (px, py, f) => { const nk = Math.max(0.05, Math.min(3.2, k*f)), f2 = nk/k; x = px - (px - x)*f2; y = py - (py - y)*f2; k = nk; apply(); };
   const dist = () => { const a = [...pts.values()]; return Math.hypot(a[0].x - a[1].x, a[0].y - a[1].y); };
   box.addEventListener("pointerdown", e => {
     try{ box.setPointerCapture(e.pointerId); }catch(_){}
