@@ -9190,6 +9190,33 @@ html:root .row2:not(.sel):not(.on):not([class*="sel"]){background:transparent;bo
 html:root .row2:not(.sel):not(.on):not([class*="sel"]):active{background:color-mix(in oklab,var(--sc-accent) 9%,transparent);transform:none}
 html[data-motion="reduced"] .kh.home::before,html[data-motion="reduced"] .kh.home .wm,html[data-motion="reduced"] .kh.home .qa{transform:none;opacity:1;will-change:auto}
 </style>
+<style id="sc-craft-global">
+/* scroll-craft, everywhere: shared components inherit the same type, edges and focus */
+h1,h2,h3{font-family:var(--sc-font-display);letter-spacing:-.02em}
+.lbl,.pt-lbl,.iq-lbl,.mx-eyes{text-transform:none;letter-spacing:.005em}
+html{scrollbar-width:thin;scrollbar-color:color-mix(in oklab,var(--sc-ink) 26%,transparent) transparent}
+::selection{background:color-mix(in oklab,var(--sc-accent) 38%,transparent)}
+.btn,.gate-btn{font-weight:650;letter-spacing:-.005em;border-radius:.9rem;transition:transform .15s,background-color .2s,box-shadow .2s}
+.btn:active,.gate-btn:active{transform:scale(.98)}
+.btn-primary{box-shadow:0 6px 12px -7px color-mix(in oklab,var(--sc-accent) 60%,#000)}
+.input{border-radius:.85rem}
+.input:focus,.input:focus-visible{outline:2px solid var(--sc-accent);outline-offset:1px}
+.panel,.pf-card,.method-card{box-shadow:none;border:1px solid var(--sc-line);border-radius:1rem}
+.iq-card,.report-metric{box-shadow:none}
+.chip2,.seg button{transition:background-color .2s,color .2s}
+/* PC: one readable column beside the sidebar, no stretched header, sidebar selection fixed */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine){
+ html:root .shell{max-width:960px;margin-left:auto;margin-right:auto}
+ html:root main{padding:0 1.5rem}
+ html:root header.top,html:root .kh.home{padding-left:1.5rem;padding-right:1.5rem}
+ html:root .kh.home .qa{justify-content:flex-start;gap:1.8rem}
+ nav.bottom .lens{display:none!important}
+ html:root nav.bottom{border-right:1px solid var(--sc-line)!important}
+ html:root .navitem.active{background:color-mix(in oklab,var(--sc-accent) 18%,transparent);color:var(--sc-accent)}
+ html:root .row2:not(.sel):not(.on):not([class*="sel"]):hover{background:color-mix(in oklab,var(--sc-accent) 7%,transparent)}
+ html:root .btn:hover{filter:brightness(1.06)}
+}
+</style>
 <script id="sc-craft-js">
 /* --sc-p: 0 to 1 over the first half screen of scroll. Static when motion is reduced. */
 (function(){var r=document.documentElement,last=-1,q=0;function f(){q=0;var p=r.getAttribute("data-motion")==="reduced"?0:Math.min(1,(window.scrollY||0)/Math.max(1,innerHeight*.5));p=Math.round(p*500)/500;if(p!==last){last=p;r.style.setProperty("--sc-p",p)}}
