@@ -9222,104 +9222,136 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in oklab,var(--sc-ink) 26%,t
 (function(){var r=document.documentElement,last=-1,q=0;function f(){q=0;var p=r.getAttribute("data-motion")==="reduced"?0:Math.min(1,(window.scrollY||0)/Math.max(1,innerHeight*.5));p=Math.round(p*500)/500;if(p!==last){last=p;r.style.setProperty("--sc-p",p)}}
 addEventListener("scroll",function(){if(!q){q=1;requestAnimationFrame(f)}},{passive:true});f()})();
 </script>
-<style id="ql-aurora">
-/* ===== Aurora layer (final): restraint, one ember light, grain, full-screen desktop ===== */
-:root{--au-ember:color-mix(in oklab,var(--primary) 100%,transparent);--au-ease:cubic-bezier(.22,1,.36,1)}
-/* 1. ambient ember light that drifts slowly behind everything */
-body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;
- background:radial-gradient(38% 42% at 78% 12%,color-mix(in oklab,var(--primary) 22%,transparent),transparent 70%),
- radial-gradient(34% 40% at 8% 88%,color-mix(in oklab,var(--primary) 14%,transparent),transparent 70%),
- radial-gradient(28% 30% at 50% 50%,color-mix(in oklab,var(--primary) 6%,transparent),transparent 70%);
- animation:auDrift 38s ease-in-out infinite alternate}
-@keyframes auDrift{to{transform:translate3d(-3%,2.5%,0) scale(1.08)}}
-html[data-theme="light"] body::before{opacity:.55}
-/* 2. film grain: makes flat dark surfaces feel printed, not rendered */
-html::after{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
- background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
-html[data-theme="light"]::after{opacity:.04;mix-blend-mode:multiply}
-/* 3. cursor light (desktop): a soft warm pool that follows the pointer */
-#au-glow{position:fixed;left:0;top:0;width:520px;height:520px;margin:-260px 0 0 -260px;z-index:9997;pointer-events:none;border-radius:50%;opacity:0;
- background:radial-gradient(closest-side,color-mix(in oklab,var(--primary) 26%,transparent),transparent);mix-blend-mode:screen;transition:opacity .6s var(--au-ease);will-change:transform}
-#au-glow.on{opacity:.55}
-html[data-theme="light"] #au-glow{mix-blend-mode:multiply;opacity:0!important}
-/* 4. calmer, more premium surfaces on every screen size */
-.qs-card,.qt-card,.hp-qa .c,.row2:not(.sel):not(.on){transition:transform .5s var(--au-ease),border-color .25s,box-shadow .35s}
-.qs-n,.qs-stats b{font-family:var(--sc-font-display,var(--font-display));font-feature-settings:"tnum"}
-@media (prefers-reduced-motion:reduce){body::before{animation:none}#au-glow{display:none}}
-html[data-motion="reduced"] body::before{animation:none}html[data-motion="reduced"] #au-glow{display:none}
+<style id="ql-unslop">
+/* ===== Unslop (final layer). Direction: a study desk at night. Graphite surfaces, one amber accent, quiet chrome ===== */
+html:root{--au-mono:ui-monospace,"SF Mono","JetBrains Mono",Menlo,Consolas,monospace;--sc-font-display:"DM Sans",ui-sans-serif,system-ui,sans-serif;--font-display:"DM Sans",ui-sans-serif,system-ui,sans-serif;--au-ease:cubic-bezier(.2,0,0,1);
+ --ob:#121213;--background:#121213;--s1:#1a1a1b;--s2:#232325;--surface:#1a1a1b;--surface-2:#232325;--accent:#232325;--bd:#2a2a2c;--border:#2a2a2c;--foreground:#ededee;--mut:#a0a0a4;--muted-fg:#a0a0a4;--sc-line:rgba(255,255,255,.08);--line:rgba(255,255,255,.08);--tile-bg:#1a1a1b}
+html[data-theme="light"]{--ob:#f6f6f5;--background:#f6f6f5;--s1:#fff;--s2:#efefed;--surface:#fff;--surface-2:#efefed;--accent:#efefed;--bd:#e4e4e1;--border:#e4e4e1;--foreground:#1b1b1c;--mut:#66666a;--muted-fg:#66666a;--sc-line:rgba(0,0,0,.08);--line:rgba(0,0,0,.08);--tile-bg:#fff}
+/* color: no washes, glows or hue gradients */
+body::before,html::after,.kh.home::before,#au-glow{display:none!important}
+html:root body{background:var(--background)}
+html:root body :is(.kh.home,header.top){background:transparent;border-color:var(--sc-line)}
+html:root body :is(.qs-card,.qt-card,.hero,.panel,.modal,.sp,.chip2,.hp-qa button,.hp-qa .c,.qs-stats>*,.input,.btn-secondary){background:var(--s1);border:1px solid var(--sc-line);box-shadow:none;color:var(--foreground)}
+html:root body .qs-card{background-image:none}
+html:root body .qs-stats>*{background:var(--s2);border:0}
+html:root body .chip2.on{background:var(--s2)}
+html:root body .btn-primary{background:var(--primary);color:var(--primary-fg);box-shadow:none;border:0}
+html:root body .qs-bar{background:var(--s2)}html:root body .qs-bar i{background:var(--primary)}
+html:root body .qa .c,html:root body .modal{box-shadow:none}
+html:root body .qs-wk i{background:var(--s2);color:var(--mut);border-radius:8px}
+html:root body .qs-wk i.on{background:var(--s2);color:var(--foreground)}
+html:root body .qs-wk i.td{outline:1px solid var(--primary);outline-offset:-1px}
+/* signature: a pencil tick on every studied day */
+html:root body .qs-wk i.on::after{content:"";width:12px;height:6px;margin-top:4px;border-left:1.5px solid var(--primary);border-bottom:1.5px solid var(--primary);transform:rotate(-45deg)}
+html:root body nav.bottom{background:var(--s1)!important;box-shadow:none;border-color:var(--sc-line)!important}
+html:root body .navitem.active{background:var(--s2);color:var(--foreground)}
+html:root body .navitem.active .ico{background:transparent}
+html:root body .plusbtn{background:var(--foreground);color:var(--background);box-shadow:none}
+/* icons: one set, 16px, 1.5 stroke, text-role colour */
+.au-i{width:16px;height:16px;flex:none;display:inline-block;vertical-align:-3px;margin-right:6px}
+.navitem .au-i{width:20px;height:20px;margin:0}
+.qs-fl{color:var(--mut)}.qs-fl .au-i{width:40px;height:40px;margin:0;stroke-width:1.25}
+.qs-s .au-i,.qs-stats .au-i{color:var(--mut)}
+/* type: DM Sans, weights 400 to 500, figures in mono with tabular numbers */
+html:root body :is(h1,h2,h3,.wm,.brand,.qs-n,.qs-stats b,.row2 .t b,.sh h2,.kh h1,main h1,main h2){font-weight:500;font-family:var(--sc-font-display)}
+html:root body :is(.qs-n,.qs-stats b,.kh .stats>*){font-family:var(--au-mono);font-variant-numeric:tabular-nums}
+html:root body .label,html:root body :is(.lbl,.pt-lbl,.iq-lbl,.mx-eyes){text-transform:none;letter-spacing:0}
+/* spacing on the 4px grid, equal things equal */
+html:root body .row2{padding:12px 16px;gap:12px;border-radius:12px}
+html:root body :is(.qs-card,.qt-card,.panel){padding:20px;border-radius:16px}
+html:root body .hp-mid{gap:16px}html:root body .hp-qa{gap:16px}html:root body .qs-wk{gap:4px}html:root body .chips{gap:8px}
+html:root body :is(.btn,.input,.sp){border-radius:10px}html:root body .chip2{border-radius:8px}
+html:root body .hp-qa .c{border-radius:12px;width:48px;height:48px}
+/* motion: nothing loops, nothing bounces, no layout properties */
+.hp-hint svg{animation:none!important}
+html:root body :is(.row2,.qs-card,.qt-card,.hp-qa button,.navitem,.chip2,.btn,.plusbtn){transition:background-color .15s var(--au-ease),border-color .15s var(--au-ease),color .15s var(--au-ease),transform .12s var(--au-ease)!important}
+html:root body .row2{animation:rise .24s var(--au-ease) both}
+@media (prefers-reduced-motion:reduce){html:root body *{animation:none!important;transition:none!important}}
+html[data-motion="reduced"] body *{animation:none!important}
 
-/* ===== Desktop: use the whole screen ===== */
+/* ===== Desktop: full width, equal space on both sides, dock on the left ===== */
 @media (min-width:1024px) and (hover:hover) and (pointer:fine){
  :root{--au-gutter:clamp(6.5rem,8vw,9rem)}
- /* equal space left and right: the dock floats in the left gutter, the right gutter mirrors it */
  html:root body{padding-left:var(--au-gutter);padding-right:var(--au-gutter)}
  html:root body:has(nav.bottom[style*="none"]){padding-left:0;padding-right:0}
  html:root body .shell{max-width:1480px;width:100%;margin:0 auto}
  html:root body main{padding:0 clamp(.5rem,1.5vw,1.5rem)}
  html:root body header.top,html:root body .kh.home{padding-left:clamp(.5rem,1.5vw,1.5rem);padding-right:clamp(.5rem,1.5vw,1.5rem)}
- /* the dock: a slim vertical glass pill, centred on the left edge (replaces the stray mid-screen bar) */
- html:root body nav.bottom{position:fixed;left:1.1rem;right:auto;top:0;bottom:0;margin:auto 0;width:4.4rem;height:fit-content;max-height:calc(100dvh - 2rem);
-  flex-direction:column;justify-content:center;align-items:center;gap:.5rem;padding:.7rem .4rem;border:1px solid var(--sc-line)!important;border-radius:2.2rem;
-  background:var(--glass-bg);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:var(--glass-edge),var(--lift)}
- html:root body nav.bottom .navitem{width:100%;height:3.2rem;flex:none}
- html:root body nav.bottom .plusbtn{margin:.2rem 0}
+ html:root body nav.bottom{position:fixed;left:16px;right:auto;top:0;bottom:0;margin:auto 0;width:64px;height:fit-content;max-height:calc(100dvh - 32px);
+  flex-direction:column;justify-content:center;align-items:center;gap:8px;padding:8px;border:1px solid var(--sc-line)!important;border-radius:20px;backdrop-filter:none;-webkit-backdrop-filter:none}
+ html:root body nav.bottom .navitem{width:100%;height:48px;flex:none;border-radius:12px}
+ html:root body nav.bottom .plusbtn{margin:4px 0;border-radius:12px}
  html:root body #qai{left:var(--au-gutter);right:var(--au-gutter);max-width:none;margin:0;padding-inline:max(0px,calc((100% - 1040px)/2))}
- html:root body #selbar,html:root body #selact{left:var(--au-gutter);right:var(--au-gutter);max-width:none;margin:0}
+ html:root body :is(#selbar,#selact){left:var(--au-gutter);right:var(--au-gutter);max-width:none;margin:0}
  html:root body .mxo-foot{max-width:none;margin:0 auto}
  html:root body #mpBar{max-width:none;left:var(--au-gutter);right:var(--au-gutter)}
-
- /* lists become a responsive card grid instead of one stretched column */
- html:root body main .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(22rem,1fr));gap:1rem;padding-inline:0;align-items:stretch}
- html:root body main .rows>.empty2,html:root body main .rows>.empty{grid-column:1/-1}
- html:root body main .row2:not(.sel):not(.on):not([class*="sel"]){margin:0;padding:1rem;border:1px solid var(--sc-line);border-radius:1.25rem;
-  background:color-mix(in oklab,var(--surface) 70%,transparent);backdrop-filter:blur(10px)}
- html:root body main .row2:not(.sel):not(.on):not([class*="sel"]):hover{transform:translateY(-4px);border-color:color-mix(in oklab,var(--primary) 55%,transparent);
-  box-shadow:0 18px 40px -18px color-mix(in oklab,var(--primary) 55%,transparent)}
+ html:root body main .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(22rem,1fr));gap:16px;padding-inline:0;align-items:stretch}
+ html:root body main .rows>:is(.empty2,.empty){grid-column:1/-1}
+ html:root body main .row2:not(.sel):not(.on):not([class*="sel"]){margin:0;padding:16px;border:1px solid var(--sc-line);border-radius:12px;background:var(--s1);backdrop-filter:none}
+ html:root body main .row2:not(.sel):not(.on):not([class*="sel"]):hover{background:var(--s2);border-color:color-mix(in oklab,var(--foreground) 18%,transparent);transform:none;box-shadow:none}
  html:root body main .chips{padding-inline:0}
-
- /* home: one composed screen — wordmark, search, actions on the left; streak on the right */
  html:root body .hp1{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr auto;
-  grid-template-areas:"kh kh" "sp mid" "qa mid" "hint hint";column-gap:clamp(1.5rem,3vw,3.5rem);row-gap:1.4rem;min-height:100dvh;padding:1rem 0 1.5rem}
+  grid-template-areas:"kh kh" "sp mid" "qa mid" "hint hint";column-gap:clamp(24px,3vw,56px);row-gap:24px;min-height:100dvh;padding:16px 0 24px}
  .hp1>:not(.kh){margin:0!important}
  .hp1>.kh{grid-area:kh}.hp1>.sp{grid-area:sp;align-self:end}.hp1>.hp-qa{grid-area:qa;align-self:start}.hp1>.hp-mid{grid-area:mid}.hp1>.hp-hint{grid-area:hint}
- html:root body .hp1 .kh.home{grid-template-areas:"wm st gr";grid-template-columns:1fr auto auto;row-gap:0;padding:clamp(1.5rem,5vh,3.5rem) 0 1rem;border-bottom:0}
+ html:root body .hp1 .kh.home{grid-template-areas:"wm st gr";grid-template-columns:1fr auto auto;row-gap:0;padding:clamp(24px,5vh,56px) 0 16px;border-bottom:0}
  html:root body .hp1 .kh.home .avatar{display:none}
- html:root body .hp1 .kh.home .wm{display:block;font-size:clamp(2.6rem,5.2vw,5.4rem);font-weight:700;letter-spacing:-.045em;line-height:.95;white-space:normal;transform:none}
- .hp1 .kh.home .wm b{font-weight:300;color:var(--primary);font-style:italic}
- html:root body .hp1 .sp{min-height:3.6rem;font-size:1.05rem;border-radius:1.1rem}
- html:root body .hp-qa{grid-template-columns:repeat(4,1fr);gap:.9rem}
- html:root body .hp-qa button{padding:1.1rem .4rem!important;border:1px solid var(--sc-line);border-radius:1.25rem;background:color-mix(in oklab,var(--surface) 60%,transparent);font-size:.82rem!important;transition:transform .5s var(--au-ease),border-color .25s,background-color .25s}
- html:root body .hp-qa button:hover{transform:translateY(-4px);border-color:color-mix(in oklab,var(--primary) 55%,transparent);background:color-mix(in oklab,var(--primary) 10%,transparent)}
- html:root body .hp-mid .qs-card{padding:clamp(1.4rem,2.4vw,2.2rem);border-radius:1.75rem}
- html:root body .hp-mid .qs-n{font-size:clamp(3.4rem,5vw,5.2rem);letter-spacing:-.04em}
- html:root body .hp-mid .qs-fl{font-size:clamp(3.4rem,5vw,5rem)}
- html:root body .hp-mid .qs-wk i{min-height:clamp(3.4rem,6vh,4.6rem)}
- html:root body .hp2{min-height:100dvh;padding:2.5rem 0 4rem}
- html:root body .hp2 .chips{padding-top:1rem}
- html:root body .hp2 .viewall{margin:1.5rem 0 0}
+ html:root body .hp1 .kh.home .wm{display:block;font-size:clamp(2.25rem,3.6vw,3.5rem);font-weight:500;letter-spacing:-.03em;line-height:1;white-space:normal;transform:none}
+ .hp1 .kh.home .wm b{font-weight:400;font-style:normal;color:var(--mut)}
+ html:root body .hp1 .sp{min-height:56px;font-size:1rem}
+ html:root body .hp-qa{grid-template-columns:repeat(4,1fr)}
+ html:root body .hp-qa button{padding:16px 8px!important;border-radius:16px;font-size:.8125rem!important}
+ html:root body .hp-qa button:hover{background:var(--s2)}
+ html:root body .hp-mid .qs-card{padding:24px;border-radius:16px}
+ html:root body .hp-mid .qs-n{font-size:clamp(2.5rem,3.6vw,3.5rem);letter-spacing:-.03em}
+ html:root body .hp-mid .qs-wk i{min-height:clamp(52px,6vh,68px)}
+ html:root body .hp2{min-height:100dvh;padding:40px 0 64px}
 }
 @media (min-width:1024px) and (max-width:1279px) and (hover:hover) and (pointer:fine){
  html:root body .hp1{grid-template-columns:1fr;grid-template-areas:"kh" "sp" "qa" "mid" "hint"}
 }
 </style>
-<script id="ql-aurora-js">
+<script id="ql-unslop-js">
 (function(){
- var fine=matchMedia("(hover:hover) and (pointer:fine)").matches;
- var still=function(){return matchMedia("(prefers-reduced-motion:reduce)").matches||document.documentElement.getAttribute("data-motion")==="reduced"};
- if(fine&&!still()){
-  var g=document.createElement("div");g.id="au-glow";document.body.appendChild(g);
-  var x=innerWidth/2,y=innerHeight/2,tx=x,ty=y,run=0;
-  function tick(){x+=(tx-x)*.14;y+=(ty-y)*.14;g.style.transform="translate3d("+x+"px,"+y+"px,0)";
-   if(Math.abs(tx-x)+Math.abs(ty-y)>.5)requestAnimationFrame(tick);else run=0}
-  addEventListener("pointermove",function(e){tx=e.clientX;ty=e.clientY;g.classList.add("on");if(!run){run=1;requestAnimationFrame(tick)}},{passive:true});
-  document.addEventListener("mouseleave",function(){g.classList.remove("on")});
+ var S=function(p){return '<svg class="au-i" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">'+p+'</svg>'};
+ var I={"🔥":S('<path d="M8.5 14.5A2.5 2.5 0 0 0 11 12c0-1.4-.5-2-1-3-1.1-2.1-.2-4 2-6 .5 2.5 2 4.9 4 6.5 2 1.6 3 3.5 3 5.5a7 7 0 1 1-14 0c0-1.2.4-2.3 1-3a2.5 2.5 0 0 0 2.5 2.5z"/>'),
+ "✅":S('<circle cx="12" cy="12" r="10"/><path d="m9 12 2 2 4-4"/>'),
+ "📅":S('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+ "🗓":S('<rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/>'),
+ "✨":S('<path d="M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z"/>'),
+ "🎙":S('<path d="M12 2a3 3 0 0 0-3 3v7a3 3 0 0 0 6 0V5a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2M12 19v3"/>'),
+ "⚡":S('<path d="M13 2 3 14h9l-1 8 10-12h-9l1-8z"/>'),
+ "🏆":S('<path d="M6 9H4.5a2.5 2.5 0 0 1 0-5H6M18 9h1.5a2.5 2.5 0 0 0 0-5H18M4 22h16M10 14.66V17c0 .55-.47.98-1.21 1.21C7.85 18.75 7 20.24 7 22M14 14.66V17c0 .55.47.98 1.21 1.21C16.15 18.75 17 20.24 17 22M18 2H6v7a6 6 0 0 0 12 0V2z"/>'),
+ "🎯":S('<circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="6"/><circle cx="12" cy="12" r="2"/>'),
+ "🔔":S('<path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.300 21a2 2 0 0 0 3.400 0"/>'),
+ "📚":S('<path d="M4 19.500A2.500 2.500 0 0 1 6.500 17H20M6.500 2H20v20H6.500A2.500 2.500 0 0 1 4 19.500v-15A2.500 2.500 0 0 1 6.500 2z"/>'),
+ "⭐":S('<path d="m12 2 3.100 6.300 6.900 1-5 4.900 1.200 6.900L12 17.800 5.800 21.100 7 14.200 2 9.300l6.900-1z"/>')};
+ var COPY={"Start your streak today":"No streak yet","Practice today to keep it alive":"Study today to keep your streak","Streak secured today":"Done for today","Search for anything":"Search","Plan my days →":"Plan my days","Nothing due today":"Nothing due today","Tap the + below to create your first deck.":"No decks yet. Create one with +"};
+ var RE=/(🔥|✅|📅|🗓|✨|🎙|⚡|🏆|🎯|🔔|📚|⭐|🎉)\uFE0F?/g;
+ var SKIP='textarea,input,script,style,[contenteditable],.row2,.flashcard,.au-i';
+ var TEST=/(🔥|✅|📅|🗓|✨|🎙|⚡|🏆|🎯|🔔|📚|⭐|🎉)/;
+ function fix(root){
+  var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT),n,list=[];
+  while((n=w.nextNode())){var p=n.parentElement;if(!p||p.closest(SKIP))continue;var v=n.nodeValue;if(TEST.test(v)||COPY[v.trim()])list.push(n)}
+  list.forEach(function(n){
+   var inWk=n.parentElement.closest(".qs-wk"),v=n.nodeValue,f=document.createDocumentFragment(),last=0,m,re=new RegExp(RE.source,"g");
+   function txt(x){if(!x)return;var t=x.trim();f.appendChild(document.createTextNode(COPY[t]?x.replace(t,COPY[t]):x))}
+   while((m=re.exec(v))){
+    txt(v.slice(last,m.index));
+    if(m[1]!=="🎉"&&!inWk&&I[m[1]]){var h=document.createElement("template");h.innerHTML=I[m[1]];f.appendChild(h.content.firstChild)}
+    last=re.lastIndex;
+   }
+   txt(v.slice(last));
+   n.parentNode.replaceChild(f,n);
+  });
  }
- /* "/" jumps to search, like the sites that feel good to use with a keyboard */
- addEventListener("keydown",function(e){
-  var t=e.target&&e.target.tagName;
-  if(e.key==="/"&&!e.metaKey&&!e.ctrlKey&&t!=="INPUT"&&t!=="TEXTAREA"&&!(e.target&&e.target.isContentEditable)){e.preventDefault();try{go("#/search")}catch(_){}}
- });
+ var q=0;function run(){q=0;try{fix(document.body)}catch(e){}}
+ new MutationObserver(function(){if(!q){q=1;requestAnimationFrame(run)}}).observe(document.body,{childList:true,subtree:true});
+ run();
+ addEventListener("keydown",function(e){var t=e.target&&e.target.tagName;
+  if(e.key==="/"&&!e.metaKey&&!e.ctrlKey&&t!=="INPUT"&&t!=="TEXTAREA"&&!(e.target&&e.target.isContentEditable)){e.preventDefault();try{go("#/search")}catch(_){}}});
 })();
 </script>
+
 </body>
 </html>
