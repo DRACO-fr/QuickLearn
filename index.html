@@ -57,7 +57,7 @@ window.addEventListener("load",()=>fix(document.body));
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>QuickLearn — Notes, AI Flashcards & Smart Revision</title>
+<title>QuickLearn: Notes, AI Flashcards & Smart Revision</title>
 <meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
 <meta name="theme-color" content="#130c08" />
 <meta name="mobile-web-app-capable" content="yes" />
@@ -9063,6 +9063,137 @@ st.textContent=".stile{flex:none;display:grid;place-items:center;width:2.6rem;he
 document.head.appendChild(st);
 if(/^#\/settings/.test(location.hash)) setTimeout(()=>{ try{ route(); }catch(_){} },0);
 })();
+</script>
+<style id="ql-apple">
+/* ===== Apple-design pass: materials, depth, type, spring motion (final layer) ===== */
+:root{--ql-font:-apple-system,BlinkMacSystemFont,"SF Pro Text","SF Pro Display",system-ui,"Segoe UI",Roboto,sans-serif;
+--r-s:.875rem;--r-m:1.25rem;--r-l:1.75rem;
+--glass-bg:color-mix(in oklab,var(--s1,var(--surface)) 64%,transparent);--glass-bg-thick:color-mix(in oklab,var(--s1,var(--surface)) 80%,transparent);
+--glass-blur:blur(24px) saturate(180%);--glass-hi:rgba(255,255,255,.14);--glass-hi-soft:rgba(255,255,255,.05);
+--glass-edge:inset 0 1px 0 rgba(255,255,255,.13),inset 0 0 0 1px rgba(255,255,255,.05);--lift:0 1px 2px rgba(0,0,0,.2),0 14px 34px -10px rgba(0,0,0,.5)}
+html[data-theme="light"]{--glass-hi:rgba(255,255,255,.85);--glass-hi-soft:rgba(255,255,255,.7);--glass-edge:inset 0 1px 0 rgba(255,255,255,.95),inset 0 0 0 1px rgba(0,0,0,.045);--lift:0 1px 2px rgba(70,45,20,.08),0 14px 34px -12px rgba(70,45,20,.24)}
+html:root body{font-family:var(--ql-font);font-optical-sizing:auto;text-rendering:optimizeLegibility}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(110% 55% at 50% -8%,color-mix(in oklab,var(--teal,var(--primary)) 13%,transparent),transparent 62%),radial-gradient(80% 40% at 100% 100%,color-mix(in oklab,var(--teal,var(--primary)) 7%,transparent),transparent 70%)}
+body::after{content:"";position:fixed;left:0;right:0;bottom:0;height:calc(6.4rem + env(safe-area-inset-bottom));z-index:29;pointer-events:none;background:linear-gradient(transparent,color-mix(in oklab,var(--background) 82%,transparent))}
+html[data-scrolled]:root body header.top::before{opacity:1}
+html:root body h1,html:root body h2,html:root body h3,html:root body h4,html:root body button,html:root body input,html:root body textarea,html:root body select,html:root body .brand{font-family:var(--ql-font)}
+html:root body .kh h1,html:root body .hero h1,html:root body .sh h2,html:root body .modal h2,html:root body .lvh2,html:root body .doc h1,html:root body .qs-n,html:root body .brand{letter-spacing:-.024em;line-height:1.08;font-optical-sizing:auto}
+html:root body .doc .md h3,html:root body .empty2 h3,html:root body .row2 .t b,html:root body .lc b{letter-spacing:-.011em}
+html:root body .label,html:root body .lbl,html:root body .chip,html:root body .navitem,html:root body .hp-qa button,html:root body .muted,html:root body .keybtn,html:root body .qs-s{letter-spacing:.012em}
+html:root body .brand{font-size:1.3rem;font-weight:700}
+html:root body .keybtn{background:color-mix(in oklab,var(--foreground) 8%,transparent);border:0;font-weight:600;color:var(--fg-2,var(--muted-fg))}
+html:root body header.top{background:none;backdrop-filter:none;-webkit-backdrop-filter:none;isolation:isolate;padding-bottom:.75rem}
+html:root body header.top::before{content:"";position:absolute;inset:0 0 -1.4rem;z-index:-1;pointer-events:none;opacity:0;transition:opacity .25s ease;background:linear-gradient(color-mix(in oklab,var(--background) 80%,transparent),transparent);backdrop-filter:blur(18px) saturate(170%);-webkit-backdrop-filter:blur(18px) saturate(170%);-webkit-mask-image:linear-gradient(#000 60%,transparent);mask-image:linear-gradient(#000 60%,transparent)}
+html:root body nav.bottom{left:0;right:0;margin:0 auto;width:min(calc(100% - 1.5rem),25rem);max-width:none;bottom:calc(.55rem + env(safe-area-inset-bottom));height:4.1rem;padding:.4rem;gap:.15rem;border:0!important;border-radius:2.1rem;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--lift);touch-action:none;user-select:none;-webkit-user-select:none}
+html:root body .navitem{position:relative;z-index:1;height:3.3rem;max-width:none;color:color-mix(in oklab,var(--foreground) 62%,transparent);font-weight:600;background:none!important;transition:color .2s ease,transform .5s var(--press)}
+html:root body .navitem.active{color:var(--foreground);background:none!important}
+html:root body .navitem.active .ico{background:none}
+html:root body .navitem:active{transform:scale(.94)}
+html:root body .plusbtn{position:relative;z-index:1;margin-top:0;width:3rem;height:3rem;border-radius:50%;box-shadow:inset 0 1px 0 rgba(255,255,255,.3),0 6px 16px -6px color-mix(in oklab,var(--teal,var(--primary)) 80%,transparent)!important}
+html:root body nav.bottom .lens{position:absolute;left:0;top:.4rem;bottom:.4rem;width:0;border-radius:1.7rem;pointer-events:none;opacity:0;will-change:transform;background:color-mix(in oklab,var(--foreground) 13%,transparent);box-shadow:inset 0 1px 0 var(--glass-hi),inset 0 0 0 1px rgba(255,255,255,.05);transition:scale .5s var(--press),opacity .2s}
+html:root body nav.bottom .lens.p{scale:1.1}
+html:root body .fab{bottom:calc(6.2rem + env(safe-area-inset-bottom))}
+html:root body #mpBar{bottom:calc(5.9rem + env(safe-area-inset-bottom));border:0;border-radius:1.5rem;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--lift)}
+html:root body .toast{bottom:calc(6.4rem + env(safe-area-inset-bottom));border:0;border-radius:1.25rem;background:var(--glass-bg);backdrop-filter:var(--glass-blur);-webkit-backdrop-filter:var(--glass-blur);box-shadow:var(--glass-edge),var(--lift);font-weight:600}
+html:root body .row2,html:root body .panel,html:root body .xcard,html:root body .deck-card,html:root body .lc,html:root body .sett,html:root body .ext{box-shadow:inset 0 1px 0 var(--glass-hi-soft)}
+html:root body .hero,html:root body .qs-card,html:root body .lvcard,html:root body .flashcard,html:root body .report-hero{box-shadow:var(--glass-edge),var(--lift)}
+html:root body .row2:active,html:root body .xcard:active,html:root body .deck-card:active,html:root body .lc:active{transform:scale(.985)}
+html:root body .btn{border-radius:var(--r-s);transition:transform .5s var(--press),filter .2s,background-color .2s}
+html:root body .btn-primary{background-image:linear-gradient(180deg,rgba(255,255,255,.2),transparent 55%);box-shadow:inset 0 1px 0 rgba(255,255,255,.34),0 8px 20px -8px color-mix(in oklab,var(--teal,var(--primary)) 75%,transparent)!important}
+html:root body .input{border-radius:var(--r-s)}
+html:root body .modal-bg{background:rgba(8,5,3,.42);backdrop-filter:blur(5px);-webkit-backdrop-filter:blur(5px)}
+html:root body .modal{background:var(--glass-bg-thick);backdrop-filter:blur(42px) saturate(180%);-webkit-backdrop-filter:blur(42px) saturate(180%);border:0;border-radius:2rem 2rem 0 0;box-shadow:var(--glass-edge),0 -24px 64px -16px rgba(0,0,0,.55)}
+@supports (corner-shape:squircle){html:root body .row2,html:root body .panel,html:root body .xcard,html:root body .deck-card,html:root body .lc,html:root body .lvcard,html:root body .qs-card,html:root body .hero,html:root body .flashcard,html:root body .btn,html:root body .input,html:root body .modal,html:root body .toast,html:root body nav.bottom,html:root body #mpBar,html:root body .lens{corner-shape:squircle}}
+html:root body header.top::before{}
+@media (prefers-reduced-transparency:reduce){html:root body header.top,html:root body nav.bottom,html:root body .modal,html:root body .toast,html:root body #mpBar{background:var(--s1,var(--surface));backdrop-filter:none;-webkit-backdrop-filter:none}html:root body header.top::before{display:none}html:root body .modal-bg{backdrop-filter:none;-webkit-backdrop-filter:none}body::after{display:none}}
+@media (prefers-contrast:more){html:root body header.top,html:root body nav.bottom,html:root body .modal,html:root body .toast,html:root body #mpBar{background:var(--s1,var(--surface));backdrop-filter:none;-webkit-backdrop-filter:none;border:1px solid var(--foreground)!important}html:root body header.top::before{display:none}html:root body nav.bottom .lens{background:var(--foreground);opacity:.2}}
+html[data-fps="120"]:root body header.top,html[data-fps="120"]:root body nav.bottom,html[data-fps="120"]:root body .modal,html[data-fps="120"]:root body .toast,html[data-fps="120"]:root body #mpBar{background:var(--s1,var(--surface));backdrop-filter:none;-webkit-backdrop-filter:none}
+html[data-fps="120"]:root body header.top::before{backdrop-filter:none;-webkit-backdrop-filter:none;background:var(--background)}
+html[data-motion="reduced"]:root body :is(nav.bottom .lens,.navitem,.plusbtn,.row2,.btn){transition:opacity .2s ease,color .2s ease}
+@media (prefers-reduced-motion:reduce){html:root body nav.bottom .lens{transition:opacity .2s}}
+</style>
+<script id="ql-apple-js">
+(()=>{"use strict";
+const d=document,R=d.documentElement,reduced=()=>R.dataset.motion==="reduced";
+d.addEventListener("touchstart",()=>{},{passive:true}); /* iOS: make :active fire on touch-down */
+let sc=false;const onS=()=>{const s=scrollY>6;if(s!==sc){sc=s;R.toggleAttribute("data-scrolled",s)}};
+addEventListener("scroll",onS,{passive:true});onS();
+/* spring: response (s) + damping ratio; retargeting keeps live position and velocity */
+function spring(set,response=.36,damping=1){
+ const k=(6.2832/response)**2,c=4*Math.PI*damping/response;let x=0,v=0,t=0,raf=0,last=0;
+ const tick=n=>{const dt=Math.min((n-last)/1e3,1/30);last=n;const m=Math.max(1,Math.ceil(dt/.004)),h=dt/m;
+  for(let i=0;i<m;i++){v+=(-k*(x-t)-c*v)*h;x+=v*h}
+  if(Math.abs(x-t)<.05&&Math.abs(v)<.5){x=t;v=0;raf=0}else raf=requestAnimationFrame(tick);set(x)};
+ return{get x(){return x},jump(a){cancelAnimationFrame(raf);raf=0;x=t=a;v=0;set(x)},
+  to(a,vel){t=a;if(vel!=null)v=vel;if(reduced())return this.jump(a);if(!raf){last=performance.now();raf=requestAnimationFrame(tick)}}}}
+const rub=(o,dim=64,c=.55)=>o*dim*c/(dim+c*Math.abs(o));            /* rubber-band at the edges */
+const proj=(v,r=.99)=>v/1e3*r/(1-r);                                 /* momentum projection */
+const nav=d.querySelector("nav.bottom");if(!nav)return;
+const lens=d.createElement("i");lens.className="lens";lens.setAttribute("aria-hidden","true");nav.prepend(lens);
+const items=()=>[...nav.querySelectorAll(".navitem")];
+const rect=el=>{const n=nav.getBoundingClientRect(),r=el.getBoundingClientRect();return{x:r.left-n.left,w:r.width}};
+const sp=spring(x=>{lens.style.transform="translate3d("+x+"px,0,0)"});
+let drag=null;
+function sync(){if(drag&&drag.go)return;const a=nav.querySelector(".navitem.active");if(!a){lens.style.opacity=0;return}
+ const r=rect(a);if(!r.w)return;lens.style.width=r.w+"px";lens.style.opacity=1;
+ if(lens.dataset.ready)sp.to(r.x);else{sp.jump(r.x);lens.dataset.ready=1}}
+new MutationObserver(()=>{if(!drag)sync()}).observe(nav,{subtree:true,attributes:true,attributeFilter:["class"]});
+addEventListener("resize",sync);addEventListener("load",sync);d.fonts&&d.fonts.ready.then(sync);requestAnimationFrame(sync);
+/* respond on pointer-down: the lens moves the instant a tab is touched */
+nav.addEventListener("pointerdown",e=>{const it=e.target.closest(".navitem");if(!it||e.button>0)return;
+ const r=rect(it);lens.style.width=r.w+"px";lens.style.opacity=1;lens.classList.add("p");sp.to(r.x);
+ drag={id:e.pointerId,sx:e.clientX,go:false,h:[],grab:0}},{passive:true});
+/* then track 1:1 once the finger has moved past 10px hysteresis */
+addEventListener("pointermove",e=>{if(!drag||e.pointerId!==drag.id)return;
+ if(!drag.go){if(Math.abs(e.clientX-drag.sx)<10)return;drag.go=true;nav.setPointerCapture(e.pointerId);
+  drag.grab=e.clientX-(nav.getBoundingClientRect().left+sp.x)}   /* respect where it was grabbed */
+ const n=nav.getBoundingClientRect(),rs=items().map(rect),lo=rs[0].x,hi=rs[rs.length-1].x;
+ let x=e.clientX-n.left-drag.grab;const o=x<lo?x-lo:x>hi?x-hi:0;if(o)x=(o<0?lo:hi)+rub(o);
+ drag.h.push([e.timeStamp,x]);if(drag.h.length>6)drag.h.shift();sp.jump(x)},{passive:true});
+const end=e=>{if(!drag||e.pointerId!==drag.id)return;const g=drag;drag=null;lens.classList.remove("p");
+ if(!g.go){sync();return}
+ const a=g.h[0],b=g.h[g.h.length-1],v=a&&b&&b[0]>a[0]?(b[1]-a[1])/(b[0]-a[0])*1e3:0;
+ const its=items(),rs=its.map(rect),p=sp.x+proj(v);let bi=0,bd=1e9;
+ rs.forEach((r,i)=>{const q=Math.abs(r.x-p);if(q<bd){bd=q;bi=i}});
+ lens.style.width=rs[bi].w+"px";sp.to(rs[bi].x,v);                /* hand release velocity to the spring */
+ if(!its[bi].classList.contains("active"))its[bi].click()};
+addEventListener("pointerup",end);
+addEventListener("pointercancel",e=>{if(drag&&e.pointerId===drag.id){drag=null;lens.classList.remove("p");sync()}});
+})();
+</script>
+<!-- scroll-craft layer: tokens, type, depth. Palette, light/dark and reduced-motion settings are respected. -->
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,600;12..96,700;12..96,800&display=swap">
+<style id="sc-craft">
+:root{--sc-canvas:var(--background);--sc-surface:var(--surface);--sc-ink:var(--foreground,#fff);--sc-ink-soft:var(--muted-fg,#b9a89b);--sc-accent:var(--primary);--sc-accent-ink:var(--primary-fg);--sc-line:color-mix(in oklab,var(--sc-ink) 11%,transparent);--sc-font-display:"Bricolage Grotesque","DM Sans",system-ui,sans-serif;--sc-font-text:"DM Sans",system-ui,sans-serif;--sc-p:0}
+/* type: one display voice for titles, DM Sans stays for reading */
+.wm,.kh h1,main h1,main h2,.hero h1,.sh h2,.empty2 h3{font-family:var(--sc-font-display);letter-spacing:-.02em;font-optical-sizing:auto}
+.kh h1,.sh h2{font-weight:650}
+.wm{font-weight:700;font-size:clamp(1.55rem,7vw,2.05rem);line-height:1}
+.row2 .t b{font-family:var(--sc-font-display);font-weight:600;letter-spacing:-.01em}
+/* quality floor */
+:focus-visible{outline:2px solid var(--sc-accent);outline-offset:2px}
+button,.row2,.navitem{-webkit-tap-highlight-color:transparent}
+/* home: header becomes a stage with three planes. Actions move above search */
+html:root .kh.home{position:relative;isolation:isolate;display:grid;grid-template-columns:auto 1fr auto auto;grid-template-areas:"av wm st gr" "qa qa qa qa" "sp sp sp sp";align-items:center;column-gap:.7rem;row-gap:.7rem;background:transparent;padding-bottom:1.1rem;border-bottom:1px solid var(--sc-line)}
+.kh.home>*{min-width:0}
+.kh.home>.avatar{grid-area:av}.kh.home>.wm{grid-area:wm}.kh.home>.stats{grid-area:st;margin:0}.kh.home>.gear{grid-area:gr}.kh.home>.qa{grid-area:qa}.kh.home>.sp{grid-area:sp}
+.kh.home>*:not(.avatar):not(.wm):not(.stats):not(.gear):not(.sp):not(.qa){grid-column:1/-1}
+/* plane 1, far: ember light that drifts up and dims with scroll */
+.kh.home::before{content:"";position:absolute;z-index:-1;inset:-40% -25% -10% -25%;pointer-events:none;background:radial-gradient(55% 60% at 82% 8%,color-mix(in oklab,var(--sc-accent) 30%,transparent),transparent 70%),radial-gradient(40% 45% at 8% 30%,color-mix(in oklab,var(--sc-accent) 12%,transparent),transparent 70%);transform:translate3d(0,calc(var(--sc-p,0)*-24%),0) scale(calc(1 + var(--sc-p,0)*.18));opacity:calc(1 - var(--sc-p,0)*.8);will-change:transform,opacity}
+/* plane 2, mid: wordmark condenses toward the corner */
+.kh.home .wm{transform-origin:left center;transform:translate3d(0,calc(var(--sc-p,0)*-5px),0) scale(calc(1 - var(--sc-p,0)*.16))}
+/* plane 3, near: actions rise faster and sit on an offset shadow */
+.kh.home .qa{padding:.2rem 0 0;transform:translate3d(0,calc(var(--sc-p,0)*-12px),0);will-change:transform}
+.qa .c{box-shadow:0 7px 12px -6px rgba(0,0,0,.5)}
+/* lists: hairline rows instead of identical cards. Selection states are left alone */
+html:root .row2:not(.sel):not(.on):not([class*="sel"]){background:transparent;box-shadow:none;border:0;border-bottom:1px solid var(--sc-line);border-radius:0;padding-left:.15rem;padding-right:.15rem;margin-bottom:0}
+html:root .row2:not(.sel):not(.on):not([class*="sel"]):active{background:color-mix(in oklab,var(--sc-accent) 9%,transparent);transform:none}
+html[data-motion="reduced"] .kh.home::before,html[data-motion="reduced"] .kh.home .wm,html[data-motion="reduced"] .kh.home .qa{transform:none;opacity:1;will-change:auto}
+</style>
+<script id="sc-craft-js">
+/* --sc-p: 0 to 1 over the first half screen of scroll. Static when motion is reduced. */
+(function(){var r=document.documentElement,last=-1,q=0;function f(){q=0;var p=r.getAttribute("data-motion")==="reduced"?0:Math.min(1,(window.scrollY||0)/Math.max(1,innerHeight*.5));p=Math.round(p*500)/500;if(p!==last){last=p;r.style.setProperty("--sc-p",p)}}
+addEventListener("scroll",function(){if(!q){q=1;requestAnimationFrame(f)}},{passive:true});f()})();
 </script>
 </body>
 </html>
