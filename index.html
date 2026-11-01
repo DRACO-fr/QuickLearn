@@ -9222,5 +9222,95 @@ html{scrollbar-width:thin;scrollbar-color:color-mix(in oklab,var(--sc-ink) 26%,t
 (function(){var r=document.documentElement,last=-1,q=0;function f(){q=0;var p=r.getAttribute("data-motion")==="reduced"?0:Math.min(1,(window.scrollY||0)/Math.max(1,innerHeight*.5));p=Math.round(p*500)/500;if(p!==last){last=p;r.style.setProperty("--sc-p",p)}}
 addEventListener("scroll",function(){if(!q){q=1;requestAnimationFrame(f)}},{passive:true});f()})();
 </script>
+<style id="ql-aurora">
+/* ===== Aurora layer (final): restraint, one ember light, grain, full-screen desktop ===== */
+:root{--au-ember:color-mix(in oklab,var(--primary) 100%,transparent);--au-ease:cubic-bezier(.22,1,.36,1)}
+/* 1. ambient ember light that drifts slowly behind everything */
+body::before{content:"";position:fixed;inset:-20%;z-index:-1;pointer-events:none;
+ background:radial-gradient(38% 42% at 78% 12%,color-mix(in oklab,var(--primary) 22%,transparent),transparent 70%),
+ radial-gradient(34% 40% at 8% 88%,color-mix(in oklab,var(--primary) 14%,transparent),transparent 70%),
+ radial-gradient(28% 30% at 50% 50%,color-mix(in oklab,var(--primary) 6%,transparent),transparent 70%);
+ animation:auDrift 38s ease-in-out infinite alternate}
+@keyframes auDrift{to{transform:translate3d(-3%,2.5%,0) scale(1.08)}}
+html[data-theme="light"] body::before{opacity:.55}
+/* 2. film grain: makes flat dark surfaces feel printed, not rendered */
+html::after{content:"";position:fixed;inset:0;z-index:9998;pointer-events:none;opacity:.055;mix-blend-mode:overlay;
+ background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='160' height='160'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>")}
+html[data-theme="light"]::after{opacity:.04;mix-blend-mode:multiply}
+/* 3. cursor light (desktop): a soft warm pool that follows the pointer */
+#au-glow{position:fixed;left:0;top:0;width:520px;height:520px;margin:-260px 0 0 -260px;z-index:9997;pointer-events:none;border-radius:50%;opacity:0;
+ background:radial-gradient(closest-side,color-mix(in oklab,var(--primary) 26%,transparent),transparent);mix-blend-mode:screen;transition:opacity .6s var(--au-ease);will-change:transform}
+#au-glow.on{opacity:.55}
+html[data-theme="light"] #au-glow{mix-blend-mode:multiply;opacity:0!important}
+/* 4. calmer, more premium surfaces on every screen size */
+.qs-card,.qt-card,.hp-qa .c,.row2:not(.sel):not(.on){transition:transform .5s var(--au-ease),border-color .25s,box-shadow .35s}
+.qs-n,.qs-stats b{font-family:var(--sc-font-display,var(--font-display));font-feature-settings:"tnum"}
+@media (prefers-reduced-motion:reduce){body::before{animation:none}#au-glow{display:none}}
+html[data-motion="reduced"] body::before{animation:none}html[data-motion="reduced"] #au-glow{display:none}
+
+/* ===== Desktop: use the whole screen ===== */
+@media (min-width:1024px) and (hover:hover) and (pointer:fine){
+ html:root body .shell{max-width:none;width:100%;margin:0}
+ html:root body main{padding:0 clamp(1.5rem,4vw,5rem)}
+ html:root body header.top,html:root body .kh.home{padding-left:clamp(1.5rem,4vw,5rem);padding-right:clamp(1.5rem,4vw,5rem)}
+ html:root body nav.bottom{backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
+ html:root body #qai{left:5.5rem;max-width:none;margin:0;padding-inline:max(0px,calc((100% - 1040px)/2))}
+ html:root body #selbar,html:root body #selact{left:5.5rem;max-width:none;margin:0}
+ html:root body .mxo-foot{max-width:none;padding-inline:clamp(1.5rem,4vw,5rem)}
+ html:root body #mpBar{max-width:none;left:calc(5.5rem + 2rem);right:2rem}
+
+ /* lists become a responsive card grid instead of one stretched column */
+ html:root body main .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(22rem,1fr));gap:1rem;padding-inline:0;align-items:stretch}
+ html:root body main .rows>.empty2,html:root body main .rows>.empty{grid-column:1/-1}
+ html:root body main .row2:not(.sel):not(.on):not([class*="sel"]){margin:0;padding:1rem;border:1px solid var(--sc-line);border-radius:1.25rem;
+  background:color-mix(in oklab,var(--surface) 70%,transparent);backdrop-filter:blur(10px)}
+ html:root body main .row2:not(.sel):not(.on):not([class*="sel"]):hover{transform:translateY(-4px);border-color:color-mix(in oklab,var(--primary) 55%,transparent);
+  box-shadow:0 18px 40px -18px color-mix(in oklab,var(--primary) 55%,transparent)}
+ html:root body main .chips{padding-inline:0}
+
+ /* home: one composed screen — wordmark, search, actions on the left; streak on the right */
+ html:root body .hp1{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);grid-template-rows:auto auto 1fr auto;
+  grid-template-areas:"kh kh" "sp mid" "qa mid" "hint hint";column-gap:clamp(1.5rem,3vw,3.5rem);row-gap:1.4rem;min-height:100dvh;padding:1rem 0 1.5rem}
+ .hp1>:not(.kh){margin:0!important}
+ .hp1>.kh{grid-area:kh}.hp1>.sp{grid-area:sp;align-self:end}.hp1>.hp-qa{grid-area:qa;align-self:start}.hp1>.hp-mid{grid-area:mid}.hp1>.hp-hint{grid-area:hint}
+ html:root body .hp1 .kh.home{grid-template-areas:"wm st gr";grid-template-columns:1fr auto auto;row-gap:0;padding:clamp(1.5rem,5vh,3.5rem) 0 1rem;border-bottom:0}
+ html:root body .hp1 .kh.home .avatar{display:none}
+ html:root body .hp1 .kh.home .wm{display:block;font-size:clamp(2.6rem,5.2vw,5.4rem);font-weight:700;letter-spacing:-.045em;line-height:.95;white-space:normal;transform:none}
+ .hp1 .kh.home .wm b{font-weight:300;color:var(--primary);font-style:italic}
+ html:root body .hp1 .sp{min-height:3.6rem;font-size:1.05rem;border-radius:1.1rem}
+ html:root body .hp-qa{grid-template-columns:repeat(4,1fr);gap:.9rem}
+ html:root body .hp-qa button{padding:1.1rem .4rem!important;border:1px solid var(--sc-line);border-radius:1.25rem;background:color-mix(in oklab,var(--surface) 60%,transparent);font-size:.82rem!important;transition:transform .5s var(--au-ease),border-color .25s,background-color .25s}
+ html:root body .hp-qa button:hover{transform:translateY(-4px);border-color:color-mix(in oklab,var(--primary) 55%,transparent);background:color-mix(in oklab,var(--primary) 10%,transparent)}
+ html:root body .hp-mid .qs-card{padding:clamp(1.4rem,2.4vw,2.2rem);border-radius:1.75rem}
+ html:root body .hp-mid .qs-n{font-size:clamp(3.4rem,5vw,5.2rem);letter-spacing:-.04em}
+ html:root body .hp-mid .qs-fl{font-size:clamp(3.4rem,5vw,5rem)}
+ html:root body .hp-mid .qs-wk i{min-height:clamp(3.4rem,6vh,4.6rem)}
+ html:root body .hp2{min-height:100dvh;padding:2.5rem 0 4rem}
+ html:root body .hp2 .chips{padding-top:1rem}
+ html:root body .hp2 .viewall{margin:1.5rem 0 0}
+}
+@media (min-width:1024px) and (max-width:1279px) and (hover:hover) and (pointer:fine){
+ html:root body .hp1{grid-template-columns:1fr;grid-template-areas:"kh" "sp" "qa" "mid" "hint"}
+}
+</style>
+<script id="ql-aurora-js">
+(function(){
+ var fine=matchMedia("(hover:hover) and (pointer:fine)").matches;
+ var still=function(){return matchMedia("(prefers-reduced-motion:reduce)").matches||document.documentElement.getAttribute("data-motion")==="reduced"};
+ if(fine&&!still()){
+  var g=document.createElement("div");g.id="au-glow";document.body.appendChild(g);
+  var x=innerWidth/2,y=innerHeight/2,tx=x,ty=y,run=0;
+  function tick(){x+=(tx-x)*.14;y+=(ty-y)*.14;g.style.transform="translate3d("+x+"px,"+y+"px,0)";
+   if(Math.abs(tx-x)+Math.abs(ty-y)>.5)requestAnimationFrame(tick);else run=0}
+  addEventListener("pointermove",function(e){tx=e.clientX;ty=e.clientY;g.classList.add("on");if(!run){run=1;requestAnimationFrame(tick)}},{passive:true});
+  document.addEventListener("mouseleave",function(){g.classList.remove("on")});
+ }
+ /* "/" jumps to search, like the sites that feel good to use with a keyboard */
+ addEventListener("keydown",function(e){
+  var t=e.target&&e.target.tagName;
+  if(e.key==="/"&&!e.metaKey&&!e.ctrlKey&&t!=="INPUT"&&t!=="TEXTAREA"&&!(e.target&&e.target.isContentEditable)){e.preventDefault();try{go("#/search")}catch(_){}}
+ });
+})();
+</script>
 </body>
 </html>
