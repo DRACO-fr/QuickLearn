@@ -9250,14 +9250,23 @@ html[data-motion="reduced"] body::before{animation:none}html[data-motion="reduce
 
 /* ===== Desktop: use the whole screen ===== */
 @media (min-width:1024px) and (hover:hover) and (pointer:fine){
- html:root body .shell{max-width:none;width:100%;margin:0}
- html:root body main{padding:0 clamp(1.5rem,4vw,5rem)}
- html:root body header.top,html:root body .kh.home{padding-left:clamp(1.5rem,4vw,5rem);padding-right:clamp(1.5rem,4vw,5rem)}
- html:root body nav.bottom{backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%)}
- html:root body #qai{left:5.5rem;max-width:none;margin:0;padding-inline:max(0px,calc((100% - 1040px)/2))}
- html:root body #selbar,html:root body #selact{left:5.5rem;max-width:none;margin:0}
- html:root body .mxo-foot{max-width:none;padding-inline:clamp(1.5rem,4vw,5rem)}
- html:root body #mpBar{max-width:none;left:calc(5.5rem + 2rem);right:2rem}
+ :root{--au-gutter:clamp(6.5rem,8vw,9rem)}
+ /* equal space left and right: the dock floats in the left gutter, the right gutter mirrors it */
+ html:root body{padding-left:var(--au-gutter);padding-right:var(--au-gutter)}
+ html:root body:has(nav.bottom[style*="none"]){padding-left:0;padding-right:0}
+ html:root body .shell{max-width:1480px;width:100%;margin:0 auto}
+ html:root body main{padding:0 clamp(.5rem,1.5vw,1.5rem)}
+ html:root body header.top,html:root body .kh.home{padding-left:clamp(.5rem,1.5vw,1.5rem);padding-right:clamp(.5rem,1.5vw,1.5rem)}
+ /* the dock: a slim vertical glass pill, centred on the left edge (replaces the stray mid-screen bar) */
+ html:root body nav.bottom{position:fixed;left:1.1rem;right:auto;top:0;bottom:0;margin:auto 0;width:4.4rem;height:fit-content;max-height:calc(100dvh - 2rem);
+  flex-direction:column;justify-content:center;align-items:center;gap:.5rem;padding:.7rem .4rem;border:1px solid var(--sc-line)!important;border-radius:2.2rem;
+  background:var(--glass-bg);backdrop-filter:blur(24px) saturate(160%);-webkit-backdrop-filter:blur(24px) saturate(160%);box-shadow:var(--glass-edge),var(--lift)}
+ html:root body nav.bottom .navitem{width:100%;height:3.2rem;flex:none}
+ html:root body nav.bottom .plusbtn{margin:.2rem 0}
+ html:root body #qai{left:var(--au-gutter);right:var(--au-gutter);max-width:none;margin:0;padding-inline:max(0px,calc((100% - 1040px)/2))}
+ html:root body #selbar,html:root body #selact{left:var(--au-gutter);right:var(--au-gutter);max-width:none;margin:0}
+ html:root body .mxo-foot{max-width:none;margin:0 auto}
+ html:root body #mpBar{max-width:none;left:var(--au-gutter);right:var(--au-gutter)}
 
  /* lists become a responsive card grid instead of one stretched column */
  html:root body main .rows{display:grid;grid-template-columns:repeat(auto-fill,minmax(22rem,1fr));gap:1rem;padding-inline:0;align-items:stretch}
