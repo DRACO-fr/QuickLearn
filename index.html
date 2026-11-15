@@ -9949,5 +9949,123 @@ if(typeof rs2==="function")window.renderSettingsPage=function(h){
 })();
 </script>
 
+<style id="ql-brain-css">
+html body .gz-qa .c{background:color-mix(in oklab,var(--primary) 16%,var(--card,#1c1c1c))!important;color:var(--primary)!important;box-shadow:inset 0 0 0 1.5px color-mix(in oklab,var(--primary) 40%,transparent)!important}
+html body .gz-input{background:color-mix(in oklab,var(--primary) 8%,var(--card,#1c1c1c))!important;border-color:color-mix(in oklab,var(--primary) 36%,transparent)!important}
+html body .gz-input svg{color:var(--primary)!important}
+html body .gz-mascot{cursor:pointer;-webkit-tap-highlight-color:transparent}
+#ql-startup-buffer .ql-stage svg{display:block;width:100%;height:100%;overflow:visible;animation:qlReveal 1.15s ease both}
+.mx-empty{display:grid;place-items:center;margin:0 0 .5rem}
+</style>
+<script id="ql-brain">
+(function(){"use strict";
+var LN="#4A1D16",EY="#3A1030",ML="#C2243F",BD="#C9415D",FONT="DM Sans,system-ui,sans-serif";
+function ln(d,w,c){return '<path d="'+d+'" fill="none" stroke="'+(c||LN)+'" stroke-width="'+(w||5)+'" stroke-linecap="round" stroke-linejoin="round"/>'}
+function fist(x,y){return '<circle cx="'+x+'" cy="'+y+'" r="8.5" fill="'+LN+'"/>'}
+function eyes(o){o=o||{};var dy=o.dy||0,rx=o.rx||13,ry=o.ry||15,s="";[78,122].forEach(function(x){
+ s+='<ellipse cx="'+x+'" cy="'+(98+dy)+'" rx="'+rx+'" ry="'+ry+'" fill="'+EY+'"/>'+(o.star?'<g transform="translate('+x+' 96)"><path class="mx-sp" d="M0 -9 L2.4 -2.4 9 0 2.4 2.4 0 9 -2.4 2.4 -9 0 -2.4 -2.4Z" fill="#fff"/></g>':'<circle cx="'+(x-5)+'" cy="'+(92+dy)+'" r="5" fill="#fff"/><circle cx="'+(x+5)+'" cy="'+(105+dy)+'" r="2.4" fill="#fff"/>')});
+ return '<g class="mx-eyes"><g class="mb-look">'+s+'</g></g>'}
+var arcUp=ln("M65 100 Q78 84 91 100",5.5,EY)+ln("M109 100 Q122 84 135 100",5.5,EY),
+ arcDn=ln("M65 98 Q78 108 91 98",5,EY)+ln("M109 98 Q122 108 135 98",5,EY),
+ cheeks='<ellipse cx="55" cy="114" rx="8" ry="5" fill="#FF9DB0" opacity=".65"/><ellipse cx="145" cy="114" rx="8" ry="5" fill="#FF9DB0" opacity=".65"/>';
+function mouth(w,h){return '<path d="M'+(100-w)+' 118 Q100 '+(118+h*2)+' '+(100+w)+' 118Z" fill="'+ML+'" stroke="'+LN+'" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="100" cy="'+(118+h*1.15)+'" rx="'+(w*.5)+'" ry="'+(h*.28)+'" fill="#FF8FA3"/>'}
+function brow(d){return ln(d,4.5)}
+function heart(x,y,d){return '<g transform="translate('+x+' '+y+')"><path class="mx-heart" style="animation-delay:'+d+'s" d="M0 -3 C-5 -11 -15 -3 0 9 C15 -3 5 -11 0 -3Z" fill="#FF3D6E"/></g>'}
+function spark(x,y,d){return '<g transform="translate('+x+' '+y+')"><path class="mx-sp" style="animation-delay:'+d+'s" d="M0 -9 L2.2 -2.2 9 0 2.2 2.2 0 9 -2.2 2.2 -9 0 -2.2 -2.2Z" fill="#FFD166"/></g>'}
+function zz(x,y,t,d,s){return '<text class="mx-z" style="animation-delay:'+d+'s" x="'+x+'" y="'+y+'" font-size="'+s+'" font-weight="800" fill="#FFB347" font-family="'+FONT+'">'+t+'</text>'}
+var BULB='<g transform="translate(100 22)"><g class="mb-bulb"><path d="M0 -14 C-10 -14 -14 -5 -10 2 C-7 6 -6 8 -6 12 L6 12 C6 8 7 6 10 2 C14 -5 10 -14 0 -14Z" fill="#FFE04A" stroke="#E8B923" stroke-width="2"/><rect x="-5" y="12" width="10" height="5" rx="2" fill="#6B3B22"/><path d="M-21 -13 L-15 -9 M21 -13 L15 -9 M0 -25 L0 -19" stroke="#FFD34A" stroke-width="3" stroke-linecap="round"/></g></g>';
+var BRAIN='<path d="M100 46 C92 32 70 32 62 44 C46 44 36 58 40 72 C28 80 28 100 40 108 C38 124 52 138 68 136 C74 148 92 150 100 142 C108 150 126 148 132 136 C148 138 162 124 160 108 C172 100 172 80 160 72 C164 58 154 44 138 44 C130 32 108 32 100 46Z" fill="#F0687E" stroke="#B93752" stroke-width="3" stroke-linejoin="round"/>'
+ +'<g fill="none" stroke="'+BD+'" stroke-width="3.5" stroke-linecap="round"><path d="M100 46 C95 60 105 70 100 84"/><path d="M62 44 C66 54 58 62 50 62"/><path d="M40 72 C50 76 54 84 50 92"/><path d="M40 108 C48 104 56 108 58 116"/><path d="M68 136 C70 128 78 126 84 130"/><path d="M138 44 C134 54 142 62 150 62"/><path d="M160 72 C150 76 146 84 150 92"/><path d="M160 108 C152 104 144 108 142 116"/><path d="M132 136 C130 128 122 126 116 130"/><path d="M78 52 C84 58 82 66 76 68"/><path d="M122 52 C116 58 118 66 124 68"/></g>';
+function brain(mood,o){
+ o=o||{};var size=o.size||120,W=(data.mascot&&data.mascot.worn)||{},ho=MX_OUTFITS[W.hat],fo=MX_OUTFITS[W.face],
+  hat=ho&&ho.slot==="hat"?ho.svg:"",fc=fo&&fo.slot==="face"?fo.svg:"",f,top=hat?"":BULB,up=0,down=0,wave=0,cape="";
+ switch(mood){
+  case "cheer":f=eyes({star:1})+cheeks+mouth(16,15);up=1;top=heart(34,44,0)+heart(166,40,.5)+heart(100,20,1)+spark(22,118,.2)+spark(178,118,.6);break;
+  case "wave":f=arcUp+cheeks+mouth(12,10);wave=1;top='<g transform="translate(136 4)"><rect width="52" height="30" rx="15" fill="#35B6E8"/><path d="M12 28 L8 38 L24 29Z" fill="#35B6E8"/><text x="26" y="21" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="'+FONT+'">Hi!</text></g>';break;
+  case "sad":f=brow("M62 80 L90 88")+brow("M110 88 L138 80")+eyes({rx:11,ry:13,dy:2})+ln("M66 114 Q78 121 90 114",4,"#8E5BC9")+ln("M110 114 Q122 121 134 114",4,"#8E5BC9")+ln("M90 128 Q100 117 110 128",4.5)+'<path class="mx-tear" d="M62 106 q-6 10 0 14 q6 -4 0 -14z" fill="#9BE7FF"/>';down=1;top='<path d="M92 44 q-4 -14 -20 -14 q0 12 20 14z" fill="#7CC24E"/><path d="M108 44 q4 -14 20 -14 q0 12 -20 14z" fill="#7CC24E"/>';break;
+  case "wow":f=brow("M62 74 Q78 64 92 76")+brow("M108 76 Q122 64 138 74")+eyes()+'<ellipse cx="100" cy="128" rx="7" ry="9" fill="'+ML+'" stroke="'+LN+'" stroke-width="2.5"/><path class="mx-tear" d="M152 62 q-8 12 0 16 q8 -4 0 -16z" fill="#9BE7FF"/>';break;
+  case "think":f=brow("M108 76 Q124 66 138 74")+eyes({dy:-3})+ln("M90 127 Q100 122 112 128",4.5);top=zz(146,44,"?",0,28);break;
+  case "sleep":f=arcDn+cheeks+ln("M92 124 Q100 130 108 124",4);top=zz(142,46,"z",0,22)+zz(158,28,"z",1.1,16);break;
+  case "angry":f=brow("M60 76 L92 90")+brow("M108 90 L140 76")+eyes({rx:11,ry:12,dy:3})+ln("M88 130 Q100 118 112 130",5)+cheeks;top='<path d="M26 34 l12 -16 l-2 14 l11 -2 l-14 20z" fill="#FFD21F"/><path d="M174 34 l-12 -16 l2 14 l-11 -2 l14 20z" fill="#FFD21F"/>';break;
+  case "hero":cape='<g class="mb-cape"><path d="M52 114 Q26 158 20 196 L180 196 Q174 158 148 114Z" fill="#E5405E"/><path d="M52 114 Q40 150 36 180 M148 114 Q160 150 164 180" fill="none" stroke="#FF8FA3" stroke-width="3" stroke-linecap="round"/></g>';
+   f='<ellipse cx="78" cy="98" rx="19" ry="14" fill="#35B6E8" stroke="#1E7FB0" stroke-width="3"/><ellipse cx="122" cy="98" rx="19" ry="14" fill="#35B6E8" stroke="#1E7FB0" stroke-width="3"/><path d="M68 92 Q74 89 80 92" fill="none" stroke="#fff" stroke-width="3" stroke-linecap="round" opacity=".7"/>'+cheeks+ln("M86 120 Q100 132 114 120",4.5);up=1;top='<path d="M104 6 l-14 22 h10 l-6 18 l18 -26 h-11z" fill="#FFD21F" stroke="#E8A800" stroke-width="2" stroke-linejoin="round"/>';break;
+  default:f=eyes()+cheeks+mouth(12,11)+spark(28,60,0)+spark(174,72,.5);
+ }
+ var L,R;
+ if(up){L='<g class="mx-armL">'+ln("M42 106 Q22 98 26 66",8)+fist(26,60)+'</g>';R='<g class="mx-armR">'+ln("M158 106 Q178 98 174 66",8)+fist(174,60)+'</g>'}
+ else if(down){L=ln("M40 116 Q28 134 31 152",8)+fist(31,156);R=ln("M160 116 Q172 134 169 152",8)+fist(169,156)}
+ else{L='<g class="mb-armL">'+ln("M42 114 Q20 120 20 96",8)+fist(20,90)+'</g>';R=wave?'<g class="mx-wave">'+ln("M158 110 Q184 104 180 74",8)+fist(180,68)+'</g>':'<g class="mb-armR">'+ln("M158 114 Q180 120 180 96",8)+fist(180,90)+'</g>'}
+ var legs='<g class="mb-legL">'+ln("M82 138 L79 176",9)+'<ellipse cx="73" cy="183" rx="13" ry="6" fill="'+LN+'"/></g><g class="mb-legR">'+ln("M118 138 L121 176",9)+'<ellipse cx="127" cy="183" rx="13" ry="6" fill="'+LN+'"/></g>';
+ return '<div class="mxw '+(o.cls||"")+'" data-mood="'+esc(mood||"idle")+'" style="--s:'+size+'px"><svg class="mx" viewBox="0 0 200 200" role="img" aria-label="'+esc(mxName())+', your study buddy" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="192" rx="52" ry="5" fill="#000" opacity=".16"/>'+cape+legs+L+R+'<g class="mb-body">'+BRAIN+f+'</g>'+top+fc+hat+'</svg></div>';
+}
+window.mascot=function(mood,o){if(typeof settings!=="undefined"&&settings.mascotVisible===false)return "";return brain(mood,o)};
+/* ---- home header: brain says hi, and chats back when tapped ---- */
+var Q=["Let’s learn something!","One more card?","Your brain is a muscle. Flex it!","Small steps win.","Ready when you are!"],qi=0,rh=window.renderHome;
+window.renderHome=function(){var r=rh.apply(this,arguments);try{var m=document.querySelector(".gz-mascot");if(m){var d=0;try{d=dueCards().length}catch(e){}
+ m.innerHTML=mascot(d?"happy":"wave",{size:92,cls:"idle"});m.onclick=function(){var k=["cheer","happy","wow","hero"][qi%4];m.innerHTML=mascot(k,{size:92,cls:"cheer"});toast(Q[qi++%Q.length])}}}catch(e){}return r};
+/* ---- brain in every toast ---- */
+var tt=window.toast;
+window.toast=function(msg,kind){var r=tt.apply(this,arguments);try{var rt=document.getElementById("toast-root"),t=rt&&rt.lastElementChild;
+ if(t&&!t.querySelector(".mxw")){var k=t.classList.contains("error")?"sad":t.classList.contains("success")?"cheer":t.classList.contains("warn")?"wow":"happy",h=mascot(k,{size:34});if(h)t.insertAdjacentHTML("afterbegin",h)}}catch(e){}return r};
+/* ---- brain on results screens and empty states ---- */
+var busy=0;function sweep(){if(busy)return;busy=1;requestAnimationFrame(function(){busy=0;try{
+ document.querySelectorAll(".report-emoji:not([data-mx])").forEach(function(e){e.setAttribute("data-mx","1");var t=e.textContent,h=mascot(/🎉/.test(t)?"cheer":/👏/.test(t)?"happy":"think",{size:130,cls:"idle"});if(h)e.innerHTML=h});
+ document.querySelectorAll(".empty2:not([data-mx]),.gz-empty:not([data-mx])").forEach(function(e){e.setAttribute("data-mx","1");var h=mascot(/🎉/.test(e.textContent)?"cheer":"think",{size:84,cls:"idle"});if(h)e.insertAdjacentHTML("afterbegin",'<div class="mx-empty">'+h+'</div>')})}catch(e){}})}
+new MutationObserver(sweep).observe(document.body,{childList:true,subtree:true});sweep();
+/* ---- launch splash ---- */
+try{var st=document.querySelector("#ql-startup-buffer .ql-stage");if(st){var h=brain("happy",{size:200}).replace(/^<div[^>]*>/,"").replace(/<\/div>$/,"");st.innerHTML=h}}catch(e){}
+})();
+</script>
+
+<style id="ql-brain-life-css">
+.mxw svg{transform-origin:50% 96%;animation:mbLife 3.8s ease-in-out infinite}
+@keyframes mbLife{0%,100%{transform:rotate(-1.6deg) scale(1,1)}50%{transform:rotate(1.6deg) scale(1.02,.98)}}
+.mb-body{transform-box:fill-box;transform-origin:50% 100%;animation:mbBreathe 2.6s ease-in-out infinite}
+@keyframes mbBreathe{0%,100%{transform:scale(1,1)}50%{transform:scale(1.035,.965)}}
+.mb-legL,.mb-legR{transform-box:fill-box;transform-origin:50% 0;animation:mbStep 1.8s ease-in-out infinite}
+.mb-legR{animation-delay:.9s}
+@keyframes mbStep{0%,55%,100%{transform:translateY(0)}25%{transform:translateY(-3px) rotate(3deg)}}
+.mb-armL,.mb-armR{transform-box:fill-box}
+.mb-armL{transform-origin:100% 100%;animation:mbFlexL 3s ease-in-out infinite}
+.mb-armR{transform-origin:0 100%;animation:mbFlexR 3s ease-in-out .4s infinite}
+@keyframes mbFlexL{0%,60%,100%{transform:rotate(0) scale(1)}78%{transform:rotate(-10deg) scale(1.1)}}
+@keyframes mbFlexR{0%,60%,100%{transform:rotate(0) scale(1)}78%{transform:rotate(10deg) scale(1.1)}}
+.mb-bulb{transform-box:fill-box;transform-origin:50% 90%;animation:mbBulb 2.2s ease-in-out infinite}
+@keyframes mbBulb{0%,100%{opacity:.82;transform:scale(1) rotate(-4deg)}50%{opacity:1;transform:scale(1.12) rotate(4deg);filter:drop-shadow(0 0 6px #ffe04a)}}
+.mb-cape{transform-box:fill-box;transform-origin:50% 0;animation:mbCape 1.1s ease-in-out infinite alternate}
+@keyframes mbCape{from{transform:skewX(-4deg) scaleY(1)}to{transform:skewX(5deg) scaleY(1.05)}}
+.mb-look{transition:transform .25s ease-out;transform:translate(calc(var(--lx,0)*3.5px),calc(var(--ly,0)*3px))}
+.mxw[data-mood=cheer] svg,.mxw[data-mood=hero] svg{animation:mbJump 1s ease-in-out infinite}
+@keyframes mbJump{0%,100%{transform:translateY(0) scale(1.04,.94)}45%{transform:translateY(-9%) scale(.96,1.05)}}
+.mxw[data-mood=sad] svg{animation-duration:7s}.mxw[data-mood=sad] .mb-body{animation-duration:5s}
+.mxw[data-mood=sleep] svg{animation-duration:6s}.mxw[data-mood=sleep] .mb-body{animation-duration:4.4s}
+.mxw[data-mood=angry] svg{animation:mbTremble .22s linear infinite}
+@keyframes mbTremble{0%,100%{transform:translateX(-1%)}50%{transform:translateX(1%)}}
+.mxw[data-mood=wow] svg{animation:mbShiver .5s ease-in-out infinite}
+@keyframes mbShiver{0%,100%{transform:rotate(-2.5deg)}50%{transform:rotate(2.5deg)}}
+.mxw.mb-spin svg{animation:mbSpin .9s cubic-bezier(.3,1.3,.4,1) both}
+@keyframes mbSpin{0%{transform:translateY(0) rotate(0)}40%{transform:translateY(-16%) rotate(180deg)}100%{transform:translateY(0) rotate(360deg)}}
+.mxw.mb-wiggle svg{animation:mbWiggle .9s ease-in-out both}
+@keyframes mbWiggle{0%,100%{transform:none}15%{transform:rotate(-9deg) scale(1.05)}35%{transform:rotate(8deg)}55%{transform:rotate(-6deg)}75%{transform:rotate(4deg)}}
+</style>
+<script id="ql-brain-life">
+(function(){"use strict";
+var root=document.documentElement,raf=0;
+function live(){try{return animOn()}catch(e){return false}}
+function look(x,y){if(raf)return;raf=requestAnimationFrame(function(){raf=0;if(!live())return;root.style.setProperty("--lx",(x/innerWidth*2-1).toFixed(2));root.style.setProperty("--ly",(y/innerHeight*2-1).toFixed(2))})}
+addEventListener("pointermove",function(e){look(e.clientX,e.clientY)},{passive:true});
+addEventListener("pointerdown",function(e){look(e.clientX,e.clientY)},{passive:true});
+function play(el,c,ms){el.classList.remove(c);void el.offsetWidth;el.classList.add(c);setTimeout(function(){el.classList.remove(c)},ms)}
+function seen(el){var r=el.getBoundingClientRect();return r.width>60&&r.bottom>0&&r.top<innerHeight}
+setInterval(function(){if(!live()||document.hidden)return;var l=[].filter.call(document.querySelectorAll(".mxw"),seen);if(!l.length)return;
+ var el=l[Math.floor(Math.random()*l.length)],t=["hop","mb-spin","mb-wiggle"][Math.floor(Math.random()*3)];play(el,t,t==="hop"?750:900)},4500);
+document.addEventListener("click",function(e){var el=e.target.closest&&e.target.closest(".mxw");
+ if(!el||!live()||el.closest(".toast")||el.closest(".gz-mascot"))return;
+ var m=el.getAttribute("data-mood")||"happy",c=el.className.replace(/\bmxw\b|\bhop\b|\bmb-\S+/g,"").trim(),s=parseFloat(el.style.getPropertyValue("--s"))||120,d=document.createElement("div");
+ d.innerHTML=mascot("cheer",{size:s,cls:c});var n=d.firstChild;if(!n)return;el.replaceWith(n);play(n,"hop",750);
+ setTimeout(function(){if(!n.isConnected)return;var b=document.createElement("div");b.innerHTML=mascot(m,{size:s,cls:c});if(b.firstChild)n.replaceWith(b.firstChild)},1500)});
+})();
+</script>
+
 </body>
 </html>
