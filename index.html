@@ -9897,7 +9897,7 @@ window.renderHome=function(){
 var THEMES=[
  ["classic","Classic","The original look",["#130c08","#261a12","#e29a2d"]],
  ["nb","Notebook","Colourful school desk, light and dark",["#ffd23f","#6be3a5","#2b44ff"]],
- ["glass","Glass","Frosted, iOS-style translucency",["#3b2d8f","#7aa8ff","#ff7ac0"]],
+ ["glass","Glass","Frosted glass, vivid colour, orange accents",["#2a0a5e","#d22f86","#ff8a1f"]],
  ["cartoon","Cartoon","Bold outlines and bouncy buttons",["#bfe9ff","#ffffff","#ff5c8a"]],
  ["simple","Simple","Clean, minimal, no distractions",["#ffffff","#e6e6e9","#111111"]],
  ["soft","Soft","Pastel, rounded and gentle",["#f1ecfa","#ffffff","#8b6cf0"]],
@@ -10236,5 +10236,55 @@ if(typeof of==="function")window.fetch=function(u){var url=typeof u==="string"?u
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",lampStart);else lampStart();
 })();
 </script>
+<style id="ql-glass2">
+/* ===== Glass 2: vivid frosted-glass look (orange accent) ===== */
+html[data-ui="glass"]{--background:#2a0a5e;--ob:#2a0a5e;--surface:rgba(255,255,255,.13);--s1:rgba(255,255,255,.13);--surface-2:rgba(255,255,255,.2);--s2:rgba(255,255,255,.2);--foreground:#fff;--mut:rgba(255,255,255,.72);--muted-fg:rgba(255,255,255,.72);--fg-2:rgba(255,255,255,.82);--primary:#ff8a1f;--teal:#ff8a1f;--ql-mint:#ff8a1f;--primary-fg:#2b1300;--ql-ink:#2b1300;--line:rgba(255,255,255,.3);--bd:rgba(255,255,255,.3);--border:rgba(255,255,255,.3);--tile-bg:rgba(255,255,255,.16);--th-out:rgba(255,255,255,.3);--g-glass:rgba(255,255,255,.13);--g-hi:rgba(255,255,255,.55);--g-sheet:rgba(58,18,110,.86);--g-shadow:rgba(30,6,70,.5)}
+html[data-ui="glass"][data-theme="light"]{--background:#f6e6fb;--ob:#f6e6fb;--surface:rgba(255,255,255,.55);--s1:rgba(255,255,255,.55);--surface-2:rgba(255,255,255,.75);--s2:rgba(255,255,255,.75);--foreground:#2e1a52;--mut:#6f5a93;--muted-fg:#6f5a93;--fg-2:#4a3573;--primary:#f27300;--teal:#f27300;--ql-mint:#f27300;--primary-fg:#fff;--ql-ink:#fff;--line:rgba(255,255,255,.9);--bd:rgba(255,255,255,.9);--border:rgba(255,255,255,.9);--tile-bg:rgba(255,255,255,.7);--th-out:rgba(255,255,255,.9);--g-glass:rgba(255,255,255,.55);--g-hi:#fff;--g-sheet:rgba(255,255,255,.88);--g-shadow:rgba(150,90,200,.35)}
+html[data-ui="glass"]:root body{background:radial-gradient(circle 9rem at 88% 9%,#ffc36b,#ff8a3d 68%,transparent 69%),radial-gradient(circle 12rem at -6% 30%,rgba(130,90,255,.9),rgba(190,60,220,.55) 68%,transparent 69%),radial-gradient(circle 8rem at 96% 62%,rgba(255,100,170,.75),rgba(255,138,31,.35) 68%,transparent 69%),radial-gradient(circle 14rem at 20% 104%,rgba(255,138,31,.55),rgba(255,70,150,.35) 70%,transparent 71%),linear-gradient(165deg,#2a0a5e 0%,#7b1fa2 48%,#d22f86 100%) fixed!important;background-attachment:fixed!important}
+html[data-ui="glass"][data-theme="light"]:root body{background:radial-gradient(circle 9rem at 88% 9%,#ffd9a8,#ffb067 68%,transparent 69%),radial-gradient(circle 12rem at -6% 30%,rgba(185,160,255,.85),rgba(225,150,255,.5) 68%,transparent 69%),radial-gradient(circle 8rem at 96% 62%,rgba(255,170,205,.8),rgba(255,190,120,.4) 68%,transparent 69%),radial-gradient(circle 14rem at 20% 104%,rgba(255,176,103,.55),rgba(255,150,200,.4) 70%,transparent 71%),linear-gradient(165deg,#fbe3f6 0%,#e6d6ff 50%,#ffd9ec 100%) fixed!important}
+/* frosted cards with a bright rim */
+html[data-ui="glass"]:root body :is(.row2,.gz-input,.gz-lang,.gz-empty,.setrow,.lvcard,.qs-card,.qt-card,.empty2,.thm,.lc,.sett,.xm,.xcard,.cprog,.ql-study-menu){background:linear-gradient(145deg,color-mix(in oklab,var(--g-glass) 100%,transparent),color-mix(in oklab,var(--g-glass) 55%,transparent))!important;border:1px solid var(--line)!important;border-top-color:var(--g-hi)!important;border-left-color:var(--g-hi)!important;border-radius:1.5rem;backdrop-filter:blur(26px) saturate(170%);-webkit-backdrop-filter:blur(26px) saturate(170%);box-shadow:0 18px 40px -18px var(--g-shadow),inset 0 1px 0 var(--g-hi)!important}
+html[data-ui="glass"]:root body .row2{border-radius:1.4rem}
+html[data-ui="glass"]:root body :is(.modal,.panel,.sh,.modal-bg .modal){background:var(--g-sheet)!important;border:1px solid var(--line)!important;border-top-color:var(--g-hi)!important;box-shadow:0 30px 70px -20px var(--g-shadow)}
+/* featured card + primary actions: vivid orange */
+html[data-ui="glass"]:root body .gz-due{background:linear-gradient(135deg,#ffb454,#ff7a1a)!important;color:#2b1300!important;border-color:rgba(255,255,255,.55)!important}
+html[data-ui="glass"]:root body .gz-due small,html[data-ui="glass"]:root body .gz-due b{color:#2b1300!important}
+html[data-ui="glass"]:root body .gz-due .gz-cta{background:#2b1300!important;color:#fff!important}
+html[data-ui="glass"]:root body :is(.gz-cta,.gz-go,.btn-primary,.ql-study-btn,.gz-avatar){background:linear-gradient(135deg,#ffb454,#ff7a1a)!important;color:#2b1300!important;box-shadow:0 10px 26px -8px rgba(255,122,26,.75),inset 0 1px 0 rgba(255,255,255,.55)!important;border:1px solid rgba(255,255,255,.45)!important}
+html[data-ui="glass"]:root body :is(.chip2,.gz-chip,.gz-stat,.keybtn){background:var(--g-glass)!important;border:1px solid var(--line)!important;border-top-color:var(--g-hi)!important;color:var(--foreground)!important;backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px)}
+html[data-ui="glass"]:root body :is(.chip2.on,.gz-chip.on){background:linear-gradient(135deg,#ffb454,#ff7a1a)!important;color:#2b1300!important;border-color:rgba(255,255,255,.55)!important;box-shadow:0 6px 18px -6px rgba(255,122,26,.7)}
+html[data-ui="glass"]:root body :is(.input,input,textarea,select){background:var(--s2)!important;border:1px solid var(--line)!important;color:var(--foreground)!important;border-radius:1.1rem;backdrop-filter:blur(14px)}
+html[data-ui="glass"]:root body :is(input,textarea)::placeholder{color:var(--muted-fg)}
+/* icon tiles: frosted rounded squares, orange glyph */
+html[data-ui="glass"]:root body :is(.tile,.sr .tile,.row2 .tile,.ec,.gz-qa .c,.qa .c){background:var(--tile-bg)!important;color:var(--primary)!important;border-radius:1rem;border:1px solid var(--line);box-shadow:inset 0 1px 0 var(--g-hi)}
+html[data-ui="glass"]:root body .ql-study-menu button{border-bottom-color:var(--line)}
+html[data-ui="glass"]:root body .ql-newfolder{background:var(--g-glass);border-color:var(--primary);color:var(--primary);backdrop-filter:blur(18px)}
+/* nav: frosted pill, raised glowing centre button, orange lamp */
+html[data-ui="glass"]:root body nav.bottom{background:var(--g-glass)!important;border:1px solid var(--line)!important;border-top-color:var(--g-hi)!important;backdrop-filter:blur(30px) saturate(170%)!important;-webkit-backdrop-filter:blur(30px) saturate(170%);box-shadow:0 18px 44px -14px var(--g-shadow),inset 0 1px 0 var(--g-hi)!important}
+html[data-ui="glass"]:root body nav.bottom .navitem{color:var(--muted-fg)!important}
+html[data-ui="glass"]:root body nav.bottom .navitem.active{color:var(--primary)!important;background:none!important}
+html[data-ui="glass"]:root body nav.bottom .plusbtn{width:3.5rem!important;height:3.5rem!important;margin-top:-1.3rem!important;background:linear-gradient(145deg,#ffc069,#ff7a1a)!important;color:#2b1300!important;border:3px solid rgba(255,255,255,.55)!important;box-shadow:0 12px 30px -6px rgba(255,122,26,.85),inset 0 2px 0 rgba(255,255,255,.6)!important}
+html[data-ui="glass"]:root body .ql-lamp::before{background:var(--primary);box-shadow:0 0 14px 2px var(--primary)}
+/* progress rings and bars follow the accent */
+html[data-ui="glass"]:root body .rg{stroke:var(--primary)}
+html[data-ui="glass"]:root body .rt{stroke:var(--line)}
+html[data-ui="glass"]:root body :is(h1,h2,h3,.kh h1,.gz-hello h1){color:var(--foreground);text-shadow:none}
+
+</style>
+<style id="ql-nav-fix">
+/* shorter bar; the active tab is lit by the lamp only (no box behind it) */
+html:root body nav.bottom{height:3.75rem!important;min-height:3.75rem!important;padding-top:0!important;padding-bottom:0!important;align-items:center!important}
+html:root body nav.bottom .navitem{height:3.2rem!important;padding:.2rem .15rem!important;gap:.1rem!important}
+html:root body nav.bottom .navitem svg{width:1.35rem!important;height:1.35rem!important}
+html:root body nav.bottom .navitem .ql-lbl{font-size:.64rem}
+html:root body nav.bottom .navitem.active,html:root body nav.bottom .navitem.active .ico,html:root body nav.bottom .navitem:active,html:root body nav.bottom .navitem:focus{background:none!important;box-shadow:none!important;outline:0!important;border-color:transparent!important}
+html:root body nav.bottom .navitem.active::before,html:root body nav.bottom .navitem.active::after,html:root body nav.bottom .navitem .ico::before,html:root body nav.bottom .navitem .ico::after{content:none!important;display:none!important}
+html:root body nav.bottom .plusbtn{width:2.9rem!important;height:2.9rem!important;margin:0!important;border-width:2px!important}
+html[data-ui="glass"]:root body nav.bottom .plusbtn{width:3.1rem!important;height:3.1rem!important;margin-top:-.9rem!important}
+.ql-lamp::before{left:18%;right:18%;height:3px}
+.ql-lamp::after{top:3px;left:-2%;right:-2%;height:92%;background:linear-gradient(to bottom,color-mix(in oklab,var(--qa) 46%,transparent) 0%,color-mix(in oklab,var(--qa) 14%,transparent) 55%,transparent 100%);clip-path:polygon(20% 0,80% 0,100% 100%,0 100%);filter:blur(5px)}
+#view{padding-bottom:calc(6.2rem + env(safe-area-inset-bottom))}
+#qaiFab{bottom:calc(6.2rem + env(safe-area-inset-bottom))!important}
+</style>
 </body>
 </html>
