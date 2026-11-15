@@ -6482,7 +6482,7 @@ window.papersBody=function(){
   const tot=pc.papers.length,dn=pc.papers.filter(x=>x.done).length,pct=tot?Math.round(dn/tot*100):0;
   return `<button class="row2 pp-subj" onclick="openPaperCourse('${pc.id}')"><span class="tile" style="background:#3b290f">${pc.emoji}</span><span class="t"><b>${E(pc.name)}</b><small>${tot?plural(tot,"paper")+" · "+dn+" done":"No papers yet · tap to add"}</small>${tot?`<span class="pp-bar"><i style="width:${pct}%"></i></span>`:""}</span><span class="pp-chev">›</span></button>`;
  }).join("");
- return `<div class="pp-sum"><div><b>${E(c.flag||"")} ${E(gLabel(c,p.grade))}</b><small>${E(c.name)} · ${E(LANGS[p.lang]||"")}</small></div><button class="pp-edit" onclick="qlStartOnboarding()">Edit</button></div>${tip}<div style="padding:0 1.1rem .8rem"><button class="btn btn-primary" style="width:100%" onclick="openAddPaper()">＋ Add a paper</button><p class="muted" style="text-align:center;margin:.45rem 0 0">${t?plural(t,"paper")+" · "+d+" done":"Nothing added yet"}</p></div><div class="lbl">Your subjects</div><div class="rows" style="padding-top:0">${rows}</div>`;
+ return `<div class="pp-sum"><div><b>${E(c.flag||"")} ${E(gLabel(c,p.grade))}</b><small>${E(c.name)} · ${E(LANGS[p.lang]||"")}</small></div><button class="pp-edit" onclick="qlStartOnboarding()">Edit</button></div>${tip}<div style="padding:0 1.1rem .8rem"><button class="btn btn-primary" style="width:100%" onclick="openPaperSearch()">🔎 Find practice tests online</button><button class="btn btn-secondary" style="width:100%;margin-top:.5rem" onclick="openAddPaper()">＋ Add a paper</button><p class="muted" style="text-align:center;margin:.45rem 0 0">${t?plural(t,"paper")+" · "+d+" done":"Nothing added yet"}</p></div><div class="lbl">Your subjects</div><div class="rows" style="padding-top:0">${rows}</div>`;
 };
 const fileIds=p=>[p.fileId,p.memoFileId].filter(Boolean);
 function lnk(label,url,fid,alt){
@@ -6593,6 +6593,96 @@ window.togglePaper=function(cid,pid){
  const pc=(data.paperCourses||[]).find(x=>x.id===cid),p=pc&&pc.papers.find(x=>x.id===pid);if(!p)return;
  p.done=!p.done;save();openPaperCourse(cid);
  try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}
+};
+
+/* ---------- Find practice tests: search the web, then download the PDFs onto this device ---------- */
+const PS={stop:false,run:false};
+const psPx=()=>{let c="";try{c=(localStorage.getItem("ql-paper-proxy")||"").trim()}catch(_){}const l=[u=>u];if(/\{url\}/.test(c))l.push(u=>c.replace("{url}",encodeURIComponent(u)));
+ return l.concat([u=>"https://api.allorigins.win/raw?url="+encodeURIComponent(u),u=>"https://corsproxy.io/?url="+encodeURIComponent(u),u=>"https://api.codetabs.com/v1/proxy?quest="+encodeURIComponent(u)])};
+async function psGet(url){
+ for(const f of psPx()){
+  try{
+   const ac=new AbortController(),tm=setTimeout(()=>ac.abort(),25000);
+   const r=await fetch(f(url),{signal:ac.signal});clearTimeout(tm);
+   if(!r.ok)continue;
+   const b=await r.blob();if(b.size>30*1048576)continue;
+   const h=await b.slice(0,5).text();
+   if(h==="%PDF-"&&b.size>2000)return{pdf:b};
+   if(/^\s*</.test(h)||/html/.test(b.type))return{html:await b.text()};
+  }catch(_){}
+ }
+ return null;
+}
+async function psAsk(prompt){
+ const key=getKey();if(!key)throw new Error("Add your Gemini API key first (AI key button, top right).");
+ const cfgs=[[{google_search:{}},{url_context:{}}],[{google_search:{}}]];
+ for(const tools of cfgs)for(const model of [GEMINI_MODEL,GEMINI_FALLBACK_MODEL])for(let a=0;a<3;a++){
+  let r=null;
+  try{r=await fetch("https://generativelanguage.googleapis.com/v1beta/models/"+model+":generateContent?key="+encodeURIComponent(key),{method:"POST",headers:{"Content-Type":"application/json"},body:JSON.stringify({contents:[{parts:[{text:prompt}]}],tools})})}catch(_){}
+  if(r&&r.ok){const j=await r.json(),c=(j.candidates&&j.candidates[0])||{};
+   return{text:((c.content&&c.content.parts)||[]).map(p=>p.text||"").join(""),sites:((c.groundingMetadata&&c.groundingMetadata.groundingChunks)||[]).map(g=>((g.web&&g.web.title)||"").toLowerCase()).filter(Boolean)}}
+  if(r&&r.status===403)throw new Error("API key rejected. Check it in the AI key dialog.");
+  if(r&&r.status===400)break;
+  await new Promise(s=>setTimeout(s,1500*(a+1)));
+ }
+ return{text:"",sites:[]};
+}
+function psAngles(q){
+ const core=q.replace(/\b(graad|grade|gr)\s*\d+\b/ig,"").replace(/\b(eindeksamen|final exam|exam|eksamen|test|toets|practice|oefen)\b/ig,"").replace(/\s+/g," ").trim()||q;
+ return [q,q+" question paper pdf",q+" memorandum pdf",q+" past papers download","site:stanmorephysics.com "+q,"site:education.gov.za "+q,"site:ecexams.co.za "+q,q+" vraestel memorandum",q+" november exam paper",q+" june exam paper",q+" 2024 2023 2022",
+  "site:examsnetwork.co.za "+q,"site:wcedeportal.co.za "+q,"free "+core+" past exam papers South Africa pdf",core+" vraestelle graad 9 10 11 12 pdf",core+" exam papers and memos"];
+}
+const psTerm=s=>{s=String(s).toLowerCase();let m=s.match(/(?:term|kwartaal|t)[\s_-]*([1-4])\b/);if(m)return Number(m[1]);
+ if(/june|junie|mid-?year|midjaar/.test(s))return 2;if(/sept/.test(s))return 3;if(/nov|eind|final|oct/.test(s))return 4;if(/mar(ch|ch)?\b|maart/.test(s))return 1;return curTerm()};
+function psName(u){try{return decodeURIComponent(new URL(u).pathname.split("/").pop()).replace(/\.pdf$/i,"").replace(/[-_+]+/g," ").trim()}catch(_){return"Paper"}}
+window.openPaperSearch=function(){
+ const cs=data.paperCourses||[];if(!cs.length){toast("Set up your subjects first");return}
+ let px="";try{px=localStorage.getItem("ql-paper-proxy")||""}catch(_){}
+ modal(`<div class="sh"><h2>🔎 Find practice tests</h2><p class="muted" style="margin:.2rem 0 .7rem">Type the test you want. The AI searches the web round after round and downloads every matching paper it can find.</p>
+ <input class="input" id="psQ" placeholder="e.g. Biologie graad 9 eindeksamen" maxlength="120" onkeydown="if(event.key==='Enter')psRun()">
+ <label class="ap-l" for="psSub">Save into</label><select class="input" id="psSub">${cs.map(c=>`<option value="${E(c.id)}">${c.emoji} ${E(c.name)}</option>`).join("")}</select>
+ <button class="btn btn-primary" id="psGo" style="width:100%;margin-top:.8rem" onclick="psRun()">Search &amp; download</button>
+ <p class="muted" id="psSt" style="margin:.6rem 0 .3rem"></p><div id="psList"></div>
+ <details style="margin-top:.8rem"><summary class="muted">Downloads blocked? Add your own proxy</summary><p class="muted" style="margin:.4rem 0">Browsers block most sites from being downloaded directly, so the app tries free public proxies. For best results paste your own Cloudflare Worker or Netlify function link with {url} where the paper link goes, e.g. https://my-proxy.workers.dev/?u={url}</p><input class="input" id="psPx" placeholder="https://…{url}" value="${E(px)}" onchange="try{localStorage.setItem('ql-paper-proxy',this.value.trim())}catch(_){}"></details></div>`);
+ const q=$("psQ");if(q)setTimeout(()=>q.focus(),60);
+};
+window.psRun=async function(){
+ if(PS.run){PS.stop=true;return}
+ const q=(($("psQ")||{}).value||"").trim();if(!q){toast("Type the test you want to find");return}
+ const pc=(data.paperCourses||[]).find(c=>c.id===($("psSub")||{}).value)||data.paperCourses[0];
+ const go=$("psGo"),st=m=>{const e=$("psSt");if(e)e.textContent=m},ls=$("psList");
+ PS.run=true;PS.stop=false;if(go)go.textContent="Stop searching";if(ls)ls.innerHTML="";
+ const seen=new Set();(data.paperCourses||[]).forEach(c=>c.papers.forEach(p=>{if(p.url)seen.add(p.url)}));
+ let dl=0,lk=0,tried=0;const target=40,toks=q.toLowerCase().split(/\s+/).filter(w=>w.length>3&&!/^(graad|grade|eindeksamen|exam|test)$/.test(w));
+ const add=(p,ok)=>{pc.papers.push(p);pc.papers.sort((a,b)=>a.term-b.term||a.title.localeCompare(b.title));save();ok?dl++:lk++;
+  const l=$("psList");if(l)l.insertAdjacentHTML("beforeend",`<div class="pp-card"><div class="pp-ct"><b>${ok?"✓":"🔗"} ${E(p.title)}</b></div><div class="muted">Term ${p.term} · ${ok?"downloaded to this device":"link saved (couldn’t download)"}</div></div>`)};
+ async function take(c,sites,depth){
+  let u=String(c.url||"").trim();if(!okUrl(u)||seen.has(u)||PS.stop)return;seen.add(u);
+  const res=await psGet(u),id="p"+Math.random().toString(36).slice(2,9);
+  let title=String(c.title||"").trim()||psName(u);if(c.year&&!title.includes(c.year))title+=" "+c.year;if(/memo/i.test(c.kind||"")&&!/memo/i.test(title))title+=" (Memo)";
+  const base={id,key:"search|"+id,term:Number(c.term)>=1&&Number(c.term)<=4?Number(c.term):psTerm(title+" "+u),title:title.slice(0,90),url:"",memo:"",done:false,custom:true};
+  if(res&&res.pdf){try{base.fileId="f"+id;base.fileName=psName(u)+".pdf";await idbPut(base.fileId,{blob:res.pdf,name:base.fileName,type:"application/pdf"});add(base,true)}catch(_){}}
+  else if(res&&res.html&&depth<1){
+   try{const doc=new DOMParser().parseFromString(res.html,"text/html"),out=[];
+    doc.querySelectorAll("a[href]").forEach(a=>{try{const h=new URL(a.getAttribute("href"),u).href;if(/\.pdf(\?|#|$)/i.test(h)){const t=(a.textContent||"").trim(),hay=(t+" "+h).toLowerCase();out.push({url:h,title:t.length>4?t:psName(h),ok:!toks.length||toks.some(w=>hay.includes(w))})}}catch(_){}});
+    const pick=out.filter(x=>x.ok);for(const x of (pick.length?pick:out.slice(0,25)).slice(0,30)){if(PS.stop||dl+lk>=target)break;await take(x,sites,1)}}catch(_){}}
+  else if(!res&&/\.pdf(\?|#|$)/i.test(u)){let h="";try{h=new URL(u).hostname.replace(/^www\./,"")}catch(_){}if(sites.some(s=>s.includes(h)||h.includes(s))){base.url=u;add(base,false)}}
+ }
+ try{
+  let angles=psAngles(q),i=0;
+  while(i<angles.length&&!PS.stop&&dl+lk<target){
+   st(`Searching… round ${i+1} of ${angles.length} · ${dl} downloaded${lk?` · ${lk} links`:""}`);
+   const prompt=`Search the web for FREE past exam papers / practice tests (PDF) for a student. Search: ${angles[i]}\nGoal: "${q}". Find as many REAL, directly downloadable PDF links as possible: question papers AND memorandums, from many different sites and years. If a result is a page that lists many papers, open it and list the PDF links on it.\nAlready found (do not repeat): ${[...seen].slice(-40).join(" , ")||"none"}\nReturn ONLY a JSON array, no other text: [{"title":"...","url":"https://...","year":2023,"term":1,"kind":"paper"}] where term is 1-4 or 0 if unknown and kind is "paper" or "memo". Only use URLs you actually saw in search results or pages. Never invent a URL.`;
+   let r;try{r=await psAsk(prompt)}catch(e){st(e.message);break}
+   let arr=[];try{const a=r.text.indexOf("["),b=r.text.lastIndexOf("]");if(a>=0&&b>a)arr=JSON.parse(r.text.slice(a,b+1))}catch(_){}
+   for(const c of arr.slice(0,30)){if(PS.stop||dl+lk>=target)break;tried++;await take(c||{},r.sites,0);st(`Round ${i+1} of ${angles.length} · ${dl} downloaded${lk?` · ${lk} links`:""}`)}
+   i++;
+   if(i===angles.length&&dl+lk===0&&angles.length<40){angles=angles.concat([q+" pdf","past papers "+q.split(/\s+/)[0]+" South Africa","free exam papers "+q+" download memo"])}
+  }
+ }catch(e){st(e.message||"Something went wrong")}
+ PS.run=false;const g=$("psGo");if(g)g.textContent="Search & download";
+ st(PS.stop?`Stopped · ${dl} downloaded${lk?`, ${lk} links`:""}`:dl+lk?`Done · ${dl} downloaded${lk?`, ${lk} saved as links`:""}. Find them under ${pc.name}.`:"No papers found for that search. Try different words, or add your own proxy below.");
+ if(dl+lk){PT[pc.id]=curTerm();try{if(exTab==="papers"&&location.hash.startsWith("#/study"))renderStudy()}catch(_){}}
 };
 
 /* ---------- past-paper courses: teach the student how to do well in their papers ---------- */
