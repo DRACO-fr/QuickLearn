@@ -10067,5 +10067,89 @@ document.addEventListener("click",function(e){var el=e.target.closest&&e.target.
 })();
 </script>
 
+<style id="ql-clarity">
+/* QuickLearn clarity layer: every colour comes from the active theme's accent (--primary), so all 7 styles, light and dark, match */
+:root{--qa:var(--primary,#f0b365);--qa-soft:color-mix(in oklab,var(--qa) 16%,transparent);--qa-line:color-mix(in oklab,var(--qa) 40%,transparent);--qa-on:var(--primary-fg,#111)}
+:focus-visible{outline:2px solid var(--qa);outline-offset:2px}
+#view{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom))}
+/* icons: one accent, no per-icon rainbow */
+body .qa .c,body .gz-qa .c,body .tile,body .sr .tile,body .row2 .tile,body .ec{background:var(--qa-soft)!important;color:var(--qa)!important}
+body .tile svg [fill]:not([fill="none"]){fill:var(--qa)!important}
+body .tile svg [stroke="#fff"]{stroke:var(--qa)!important}
+body .qi{stroke:currentColor}
+body .gz-stat span,body .stats span{color:inherit!important}
+/* bottom nav: labelled, accent-coloured, roomy */
+nav.bottom{height:auto!important;min-height:4.6rem;padding-top:.35rem!important;align-items:flex-end!important;gap:.25rem!important}
+nav.bottom .navitem{--pl:var(--qa-soft)!important;--pi:var(--qa)!important;height:auto!important;min-width:0;max-width:none!important;display:flex!important;flex-direction:column;align-items:center;justify-content:center;gap:.2rem;padding:.4rem .2rem!important;background:none!important;color:var(--muted-fg,#999)!important;border-radius:1rem}
+nav.bottom .navitem.active{color:var(--qa)!important;background:var(--qa-soft)!important}
+nav.bottom .navitem svg{width:1.45rem;height:1.45rem;stroke:currentColor}
+nav.bottom .plusbtn{background:var(--qa)!important;color:var(--qa-on)!important}
+.ql-lbl{font-size:.68rem;font-weight:600;line-height:1;letter-spacing:0;text-transform:none;white-space:nowrap}
+#qaiFab{background:var(--qa)!important;color:var(--qa-on)!important;bottom:calc(6rem + env(safe-area-inset-bottom))!important}
+body .fab[onclick*="openPlusMenu"]{display:none!important}
+/* hierarchy: page title > section heading > body > hint */
+body .kh h1,body .gz-hello h1,body .lvh2{font-size:1.65rem!important;font-weight:700!important;color:var(--foreground)}
+body .lbl,body .label{font-size:1rem!important;font-weight:700!important;text-transform:none!important;letter-spacing:0!important;color:var(--foreground)!important;margin:1.5rem 0 .5rem!important}
+body .row2 .t b{color:var(--foreground)}
+body small,body .muted{color:var(--muted-fg)}
+/* nothing crosses over: rows truncate, chips scroll sideways */
+body .row2{min-width:0}body .row2 .t{min-width:0;flex:1}
+body .row2 .t b,body .row2 .t small{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+body .chips,body .gz-chips{overflow-x:auto;flex-wrap:nowrap;scrollbar-width:none}
+body .chip2,body .gz-chip{flex:none;white-space:nowrap}
+body .chip2.on,body .gz-chip.on{background:var(--qa)!important;color:var(--qa-on)!important;border-color:var(--qa)!important}
+body .gz-cta,body .btn-primary{background:var(--qa)!important;color:var(--qa-on)!important}
+/* one Study button */
+.ql-study{width:100%;margin:.25rem 0 1rem;box-sizing:border-box}
+.ql-study-btn{width:100%;display:flex;align-items:center;gap:.75rem;padding:.9rem 1rem;border-radius:1rem;border:0;background:var(--qa);color:var(--qa-on);font:inherit;font-size:1.05rem;font-weight:700;text-align:left;cursor:pointer}
+.ql-study-btn small{display:block;font-size:.78rem;font-weight:500;opacity:.8;color:inherit}
+.ql-study-btn .qi{width:1.4rem;height:1.4rem;stroke:currentColor;flex:none}
+.ql-study-btn .ql-chev{margin-left:auto;display:flex;transition:transform .25s cubic-bezier(.3,1.3,.4,1)}
+.ql-study.open .ql-chev{transform:rotate(180deg)}
+.ql-study-menu{display:none;margin-top:.5rem;border-radius:1rem;background:var(--s1,var(--surface,#222));border:1px solid var(--qa-line);overflow:hidden}
+.ql-study.open .ql-study-menu{display:block}
+.ql-study-menu button{display:flex;width:100%;align-items:center;gap:.75rem;padding:.8rem 1rem;background:none;border:0;border-bottom:1px solid color-mix(in oklab,var(--foreground) 8%,transparent);color:var(--foreground);font:inherit;font-size:.95rem;font-weight:600;text-align:left;cursor:pointer}
+.ql-study-menu button:last-child{border-bottom:0}
+.ql-study-menu .qi{width:1.25rem;height:1.25rem;color:var(--qa);stroke:currentColor;flex:none}
+.ql-study-menu small{display:block;font-weight:400;color:var(--muted-fg);font-size:.78rem}
+/* folder creation is a first-class action */
+.ql-newfolder{display:flex;align-items:center;gap:.75rem;width:calc(100% - 2*var(--gutter,1rem));box-sizing:border-box;margin:.5rem var(--gutter,1rem) .75rem;padding:.85rem 1rem;border-radius:1rem;border:1.5px dashed var(--qa-line);background:var(--qa-soft);color:var(--qa);font:inherit;font-weight:700;font-size:1rem;cursor:pointer}
+.ql-newfolder .qi{width:1.3rem;height:1.3rem;stroke:currentColor}
+</style>
+<script id="ql-clarity-js">
+(function(){"use strict";
+var LBL={"#/":"Home","#/study":"Study","#/library":"Library","#/progress":"Progress"};
+function addLbl(b,t){if(!t||b.querySelector(".ql-lbl"))return;var s=document.createElement("span");s.className="ql-lbl";s.textContent=t;b.appendChild(s)}
+function nav(){var n=document.querySelector("nav.bottom");if(!n)return;
+ n.querySelectorAll(".navitem").forEach(function(b){
+  var t=LBL[b.dataset.nav];if(!t&&/assistant/i.test(b.getAttribute("aria-label")||""))t="Ask AI";addLbl(b,t)})}
+var ITEMS=[
+ ["🃏","Review due cards","Flashcards that are ready now","try{gzStudy()}catch(e){go('#/study')}"],
+ ["📈","Predict exam & study plan","See what to focus on first","go('#/study')"],
+ ["🏫","Exam courses","Lessons for each exam subject","try{exTab='prep'}catch(e){};go('#/study')"],
+ ["📄","Past papers","Practice with real papers","try{exTab='papers'}catch(e){};go('#/study')"],
+ ["🔥","Hard cards","The ones you keep missing","try{startHardSession('#/')}catch(e){go('#/study')}"]];
+window.qlStudyToggle=function(b){var c=b.closest(".ql-study"),o=c.classList.toggle("open");b.setAttribute("aria-expanded",o)};
+function home(){var v=document.getElementById("view");if(!v||v.querySelector(".ql-study"))return;
+ var q=v.querySelector(".gz-qa")||v.querySelector(".qa");if(!q)return;
+ var c=document.createElement("div");c.className="ql-study";
+ c.innerHTML='<button class="ql-study-btn" aria-expanded="false" onclick="qlStudyToggle(this)">📖<span>Study<small>Cards, exams and practice</small></span><span class="ql-chev">▾</span></button><div class="ql-study-menu">'
+  +ITEMS.map(function(i){return '<button onclick="'+i[3].replace(/"/g,"&quot;")+'">'+i[0]+'<span>'+i[1].replace(/&/g,"&amp;")+'<small>'+i[2]+'</small></span></button>'}).join("")+'</div>';
+ q.style.display="none";q.insertAdjacentElement("afterend",c)}
+function lib(){var v=document.getElementById("view");if(!v||!/^#\/library/.test(location.hash)||v.querySelector(".ql-newfolder"))return;
+ var r=v.querySelector(".rows");if(!r)return;
+ var b=document.createElement("button");b.className="ql-newfolder";b.innerHTML='📁<span>New folder</span>';b.onclick=function(){try{newFolderSheet()}catch(e){}};
+ r.insertAdjacentElement("beforebegin",b)}
+function menu(){var h=document.querySelector("#modal-root .sh h2");if(!h||h.textContent.trim()!=="Create"||h.dataset.ql)return;h.dataset.ql=1;
+ var f=[].filter.call(h.parentNode.querySelectorAll("button.sr"),function(b){return /Create Folder/i.test(b.textContent)})[0];
+ if(f){f.querySelector("span:last-child")||0;h.insertAdjacentElement("afterend",f)}}
+function all(){try{nav();home();lib();menu()}catch(e){}}
+var t;function soon(){clearTimeout(t);t=setTimeout(all,60)}
+function start(){all();var v=document.getElementById("view"),n=document.querySelector("nav.bottom"),m=document.getElementById("modal-root");
+ [v,n,m].forEach(function(x){if(x)new MutationObserver(function(){all();soon()}).observe(x,{childList:true})});
+ addEventListener("hashchange",soon);setTimeout(all,400);setTimeout(all,1500)}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
+})();
+</script>
 </body>
 </html>
