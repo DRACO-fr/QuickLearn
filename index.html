@@ -1055,6 +1055,61 @@ html[data-motion="reduced"] #ql-startup-buffer.out{transform:none;opacity:0;tran
 @media(prefers-reduced-motion:reduce){#ql-startup-buffer.out{transform:none;opacity:0;transition:opacity .2s ease}}
 </style>
 <script>window.__qlStartupAt=Date.now();window.__qlStartupMinDone=false;setTimeout(function(){window.__qlStartupMinDone=true;if(window.__qlAuthReady&&window.__qlFinishStartup)window.__qlFinishStartup()},2000);window.__qlAuthReady=false;(function(){var m=document.querySelector('meta[name="theme-color"]');if(m){window.__qlThemeColor=m.getAttribute("content");m.setAttribute("content","#F8A14C")}})()</script>
+
+<style id="ql-rte">
+/* rich note editor */
+html.rte-open,html.rte-open body{overflow:hidden}
+#rte{position:fixed;left:0;right:0;top:0;height:100dvh;z-index:3000;display:flex;flex-direction:column;background:var(--background);color:var(--foreground);--kb:0px}
+.rte-top{display:flex;align-items:center;gap:.5rem;padding:calc(.55rem + env(safe-area-inset-top)) .8rem .55rem;border-bottom:1px solid var(--border,#3a2c22);background:var(--background)}
+.rte-top button{background:none;border:0;color:var(--foreground);font:inherit;cursor:pointer}
+.rte-x{display:grid;place-items:center;width:2.4rem;height:2.4rem;border-radius:.8rem}
+.rte-x svg{width:1.4rem;height:1.4rem}
+.rte-t{flex:1;font-weight:700;font-size:1.05rem;min-width:0;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rte-d{color:#ff6b6b!important;font-weight:600;padding:.5rem .6rem}
+.rte-s{background:var(--primary,#e29a2d)!important;color:var(--primary-fg,#111)!important;font-weight:700;padding:.5rem 1.1rem;border-radius:999px}
+.rte-wrap{flex:1;overflow:auto;-webkit-overflow-scrolling:touch;overscroll-behavior:contain}
+.rte-ed{min-height:100%;box-sizing:border-box;padding:1rem 1.15rem 40vh;outline:none;font-size:1.02rem;line-height:1.6;caret-color:var(--primary,#e29a2d);-webkit-user-select:text;user-select:text;word-break:break-word}
+.rte-ed:empty:before{content:attr(data-ph);color:var(--muted-fg,#999);pointer-events:none}
+.rte-bar{display:flex;align-items:center;gap:.15rem;overflow-x:auto;padding:.4rem .5rem calc(.4rem + env(safe-area-inset-bottom));border-top:1px solid var(--border,#3a2c22);background:var(--surface-2,#2a2019);scrollbar-width:none;-webkit-overflow-scrolling:touch}
+.rte-bar::-webkit-scrollbar{display:none}
+.rb{flex:0 0 auto;min-width:2.5rem;height:2.5rem;padding:0 .5rem;display:inline-flex;align-items:center;justify-content:center;gap:.15rem;border:0;border-radius:.7rem;background:none;color:var(--foreground);font:inherit;font-size:1.05rem;cursor:pointer;touch-action:manipulation}
+.rb svg{width:1.35rem;height:1.35rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+.rb small{font-size:.6rem;opacity:.7}
+.rb.on,.rb.open{background:color-mix(in oklab,var(--primary,#e29a2d) 28%,transparent);color:var(--primary,#e29a2d)}
+.rb:active{transform:scale(.94)}
+.rsep{flex:0 0 1px;height:1.4rem;background:var(--border,#4d3627);margin:0 .25rem}
+.rcol{display:flex;flex-direction:column;align-items:center;line-height:1;gap:2px}
+.rcol b{font-size:1.1rem}.rcol svg{width:1.15rem;height:1.15rem}
+.rcol em{display:block;width:1.15rem;height:.2rem;border-radius:2px;background:currentColor}
+.rsz{font-weight:600}
+.rte-pop{position:absolute;left:.6rem;right:.6rem;bottom:calc(var(--kb,0px) + 3.7rem + env(safe-area-inset-bottom));background:var(--surface-2,#2a2019);border:1px solid var(--border,#4d3627);border-radius:1rem;padding:.7rem;box-shadow:0 10px 30px rgba(0,0,0,.45);z-index:2}
+.rte-pop[hidden]{display:none}
+#rte{--pb:0px}
+.pp-t{font-size:.75rem;opacity:.7;margin:0 0 .5rem .1rem;font-weight:600;letter-spacing:.02em}
+.pp-g{display:flex;flex-wrap:wrap;gap:.55rem;align-items:center}
+.pp-g .sw{width:2.1rem;height:2.1rem;border-radius:50%;border:2px solid rgba(255,255,255,.35);padding:0;cursor:pointer;position:relative;overflow:hidden}
+.pp-g .sw.cu{background:conic-gradient(#f55,#fb4,#6d6,#4cf,#a6f,#f55);border-style:dashed}
+.pp-g .sw.cu input{position:absolute;inset:-8px;width:200%;height:200%;opacity:0;cursor:pointer}
+.pp-r{margin-left:auto;background:none;border:1px solid var(--border,#4d3627);color:var(--foreground);border-radius:999px;padding:.4rem .8rem;font:inherit;font-size:.85rem;cursor:pointer}
+.pp-l{display:flex;flex-direction:column}
+.pp-l.row{flex-direction:row;gap:.4rem}
+.pp-l button{display:flex;justify-content:space-between;align-items:center;background:none;border:0;color:var(--foreground);font:inherit;padding:.55rem .6rem;border-radius:.7rem;cursor:pointer;text-align:left}
+.pp-l button:active,.pp-l button:hover{background:color-mix(in oklab,var(--primary,#e29a2d) 20%,transparent)}
+.pp-l button small{opacity:.55;font-size:.75rem}
+.pp-l.row button{flex:1;justify-content:center}.pp-l.row svg{width:1.5rem;height:1.5rem;fill:none;stroke:currentColor;stroke-width:1.8;stroke-linecap:round}
+/* shared formatting look for editor + reader */
+.md.rich mark,.rte-ed mark{background:#fff176;color:#111;border-radius:.2em;padding:0 .08em}
+.md.rich u,.rte-ed u{text-underline-offset:.15em}
+.md.rich ul,.md.rich ol,.rte-ed ul,.rte-ed ol{padding-left:1.4rem;margin:.35rem 0}
+.md.rich h3,.rte-ed h3{font-size:1.25rem;margin:.9rem 0 .3rem}
+.md.rich hr,.rte-ed hr{border:0;border-top:1px solid var(--border,#4d3627);margin:1rem 0}
+.rte-ed div,.md.rich div{min-height:1.2em}
+ul.chk{list-style:none;padding-left:.2rem!important}
+ul.chk > li{position:relative;padding-left:2rem;min-height:1.5rem;margin:.15rem 0}
+ul.chk > li:before{content:"";position:absolute;left:0;top:.2rem;width:1.2rem;height:1.2rem;border:2px solid var(--muted-fg,#999);border-radius:.35rem;box-sizing:border-box;cursor:pointer}
+ul.chk > li[data-chk="1"]:before{background:var(--primary,#e29a2d);border-color:var(--primary,#e29a2d);background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%23111' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M5 12.5l4.5 4.5L19 7'/%3E%3C/svg%3E");background-size:100%}
+ul.chk > li[data-chk="1"]{opacity:.65;text-decoration:line-through}
+</style>
 </head>
 <body>
 <div id="ql-startup-buffer" role="status" aria-label="QuickLearn is loading">
@@ -1805,12 +1860,16 @@ const xe = s => String(s ?? "").replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F
 const DOCX_W = 9638; // text width in twips: A4 page with 2 cm side margins
 function docxRuns(text, base){
   base = base || {};
-  const one = part => part.split(/(\*\*[^*]+?\*\*|__[^_]+?__|`[^`]+`|\*[^*\s][^*]*?\*)/).filter(Boolean).map(tok => {
-    let t = tok, b = !!base.b, i = false, code = false;
+  const one = part => part.split(/(\+\+[^+]+?\+\+|~~[^~]+?~~|==[^=]+?==|\*\*[^*]+?\*\*|__[^_]+?__|`[^`]+`|\*[^*\s][^*]*?\*)/).filter(Boolean).map(tok => {
+    let t = tok, b = !!base.b, i = false, code = false, u = false, st = false, hl = false;
+    if(/^\+\+[^+]+\+\+$/.test(tok)){ t = tok.slice(2,-2); u = true; }
+    else if(/^~~[^~]+~~$/.test(tok)){ t = tok.slice(2,-2); st = true; }
+    else if(/^==[^=]+==$/.test(tok)){ t = tok.slice(2,-2); hl = true; }
+    else
     if(/^\*\*[^*]+\*\*$/.test(tok) || /^__[^_]+__$/.test(tok)){ t = tok.slice(2,-2); b = true; }
     else if(/^`[^`]+`$/.test(tok)){ t = tok.slice(1,-1); code = true; }
     else if(/^\*[^*\s][^*]*\*$/.test(tok)){ t = tok.slice(1,-1); i = true; }
-    const rpr = (code ? '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>' : "") + (b ? "<w:b/>" : "") + (i ? "<w:i/>" : "") + (base.color ? `<w:color w:val="${base.color}"/>` : "") + (code ? '<w:shd w:val="clear" w:color="auto" w:fill="EDEDED"/>' : "");
+    const rpr = (code ? '<w:rFonts w:ascii="Consolas" w:hAnsi="Consolas" w:cs="Consolas"/>' : "") + (b ? "<w:b/>" : "") + (i ? "<w:i/>" : "") + (st ? "<w:strike/>" : "") + (u ? '<w:u w:val="single"/>' : "") + (hl ? '<w:highlight w:val="yellow"/>' : "") + (base.color ? `<w:color w:val="${base.color}"/>` : "") + (code ? '<w:shd w:val="clear" w:color="auto" w:fill="EDEDED"/>' : "");
     return `<w:r>${rpr ? `<w:rPr>${rpr}</w:rPr>` : ""}<w:t xml:space="preserve">${xe(t)}</w:t></w:r>`;
   }).join("");
   return String(text).split(/<br\s*\/?>/i).map(one).join("<w:r><w:br/></w:r>");
@@ -2470,6 +2529,10 @@ function stripMd(t){
     .replace(/^\s{0,3}#{1,6}\s*/gm, "")
     .replace(/^(\s*)[*-]\s+/gm, "$1• ")
     .replace(/\*\*([\s\S]*?)\*\*/g, "$1")
+    .replace(/\+\+([^+\n]+?)\+\+/g, "$1")
+    .replace(/~~([^~\n]+?)~~/g, "$1")
+    .replace(/==([^=\n]+?)==/g, "$1")
+    .replace(/^(\s*)[-*•] \[( |x)\]\s+/gim, (m,s,c)=>s+(c===" "?"☐ ":"☑ "))
     .replace(/\*([^*\n]+)\*/g, "$1")
     .replace(/__([^_]+)__/g, "$1")
     .replace(/`([^`]+)`/g, "$1")
@@ -2480,6 +2543,9 @@ function stripMd(t){
 function inlineMd(h){ // h is already HTML-escaped
   return h
     .replace(/`([^`]+)`/g, "<code>$1</code>")
+    .replace(/\+\+([^+\n]+?)\+\+/g, "<u>$1</u>")
+    .replace(/~~([^~\n]+?)~~/g, "<s>$1</s>")
+    .replace(/==([^=\n]+?)==/g, "<mark>$1</mark>")
     .replace(/\*\*([^*]+?)\*\*/g, "<strong>$1</strong>")
     .replace(/__([^_]+?)__/g, "<strong>$1</strong>")
     .replace(/(^|[^*\w])\*([^*\s][^*]*?)\*(?!\*)/g, "$1<em>$2</em>");
@@ -2503,7 +2569,9 @@ function md(text){
     if((m = raw.match(/^(\s*)[-*•]\s+(.*)$/))){
       flushPara(); openList("ul");
       const depth = Math.min(Math.floor(m[1].length / 2), 3);
-      html += "<li" + (depth ? ` style="margin-left:${depth * 1.1}rem"` : "") + ">" + inlineMd(esc(m[2])) + "</li>";
+      let _t = m[2], _c = "";
+      const _ck = _t.match(/^\[( |x)\]\s+/i); if(_ck){ _c = _ck[1] === " " ? "☐ " : "☑ "; _t = _t.slice(_ck[0].length); }
+      html += "<li" + (depth ? ` style="margin-left:${depth * 1.1}rem"` : "") + ">" + _c + inlineMd(esc(_t)) + "</li>";
       continue;
     }
     if((m = raw.match(/^(\s*)(\d+)[.)]\s+(.*)$/))){
@@ -3412,7 +3480,7 @@ const IC = {
   card: sv('<rect x="7" y="4" width="11" height="15" rx="2" fill="#f5c67f" stroke="none"/><rect x="5" y="6" width="11" height="15" rx="2" fill="#b87614" stroke="none"/>'),
   doc: sv('<rect x="6" y="3" width="12" height="18" rx="2" fill="#d6502f" stroke="none"/><path d="M9 8h6M9 11h6M9 14h6" stroke="#fff" stroke-width="1.4"/>'),
   map: sv('<path d="M3 6l6-2 6 2 6-2v14l-6 2-6-2-6 2zM9 4v14M15 6v14" stroke="#f59a23"/>'),
-  folder: c => sv(`<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="${c}" stroke="none"/>`, 'width="22" height="22"'),
+  folder: c => sv(`<path d="M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" fill="${c}" stroke="none"/>`, `width="22" height="22" class="fold" style="--fc:${c}"`),
   word: sv('<rect x="5" y="3" width="14" height="18" rx="2" fill="#d6502f" stroke="none"/><path d="M8.5 9l1.3 6 2.2-5 2.2 5 1.3-6" stroke="#fff" stroke-width="1.4"/>')
 };
 const FCOL = ["#e29a2d","#ff7c5b","#ffb547","#ff6b9a","#ff957a","#e5c364"];
@@ -3836,7 +3904,7 @@ function renderDeck(id){
   const title=`<div class="doc" style="padding-bottom:0"><h1>${esc(d.title)}</h1><div class="muted" style="margin:-.3rem 0 .6rem">${[subjectName(d)&&subjectName(d)!=="General"?esc(subjectName(d)):"",cards.length+(cards.length===1?" card":" cards"),due.length?due.length+" due":""].filter(Boolean).join(" · ")}</div>${demarcChip(id)}${undoChip(id)}</div><div id="aiOut" class="rows" style="padding-top:0"></div>`;
   let main;
   if(cv) main=`<div class="rows"><div class="panel" style="margin-bottom:.7rem"><input class="input" id="cardQ" placeholder="Question"><input class="input" id="cardA" placeholder="Answer" style="margin-top:.5rem"><button class="btn btn-primary" style="width:100%;margin-top:.75rem" onclick="addManualCard('${id}')">Add card</button></div>${cards.map(c=>`<div class="row2" style="cursor:default"><span class="t"><b style="white-space:normal">${esc(c.question)}</b><small>${esc(c.answer)}</small></span><span class="more flg${isHard(c)?" on":""}" onclick="event.stopPropagation();toggleHard('${c.id}');renderDeck('${id}')" aria-label="Mark as hard">${IC.flag}</span><span class="more" onclick="data.cards=data.cards.filter(x=>x.id!=='${c.id}');save();route()">✕</span></div>`).join("")}</div>${cards.length?"":empty2(EMPTYI,"No cards yet","Add some above, or open AI tools to make them from your notes.")}<div style="height:6rem"></div>`;
-  else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md">${md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
+  else main=notes.length?`<div class="doc" style="padding-top:0">${notes.map(n=>`<div class="md${richOK(n)?' rich':''}" data-nid="${n.id}">${richOK(n)?n.html:md(n.content)}</div>`).join('<hr class="nsep">')}</div>`:empty2(EMPTYI,"No materials yet","Tap the pencil to write a note, or scan a photo or PDF from the menu.");
   const bar=`<div class="bar"><button class="rf" style="flex:1;min-width:0" onclick="refineSheet('${id}')">${IC.crown} Refine this note</button><button class="brain" aria-label="Study methods" title="Study methods" onclick="studyMethodsSheet('${id}')">🧠</button><button class="ai" onclick="learnSheet('${id}')">${IC.tool} AI tools</button></div>`;
   view.innerHTML=head+title+main+bar;
   document.getElementById("imgInput").onchange=e=>scanImage(id,e.target.files);
@@ -4134,14 +4202,232 @@ function notePick(id){
   const ns=deckNotes(id); if(!ns.length){newNote(id);return;}
   modal(`<div class="sh"><h2>Notes</h2>${ns.map(n=>sheetRow("#4a1d12",IC.doc,esc(stripMd(n.content).slice(0,34))+"…",`editNote('${n.id}')`)).join("")}${sheetRow("#37261b",IC.plus,"New note",`newNote('${id}')`)}</div>`);
 }
+/* ===== RICH NOTE EDITOR (bold, italic, underline, highlight, colour, size, lists, checklist, align, indent) ===== */
+const richOK = n => !!(n && n.html && n.htmlSrc === n.content);
+const RTE_COLORS = ["#ffffff","#9aa0a6","#111111","#ff5f56","#ff9f1c","#ffd23f","#3ddc84","#2ec4e6","#4c7dff","#b565ff","#ff6fb5","#e29a2d"];
+const RTE_HL = ["#fff176","#ffcc80","#ef9a9a","#f48fb1","#ce93d8","#90caf9","#80deea","#a5d6a7","#e6ee9c","#bcaaa4"];
+const RTE_SIZES = [[12,"Small"],[15,"Normal"],[18,"Large"],[22,"Heading"],[28,"Huge"]];
+function rteClean(html){
+  const tpl=document.createElement("template"); tpl.innerHTML=String(html||"");
+  const OK=/^(B|STRONG|I|EM|U|S|STRIKE|DEL|MARK|SPAN|UL|OL|LI|DIV|P|BR|H3|H4|BLOCKQUOTE)$/;
+  const walk=(node)=>{
+    [...node.childNodes].forEach(c=>{
+      if(c.nodeType===3) return;
+      if(c.nodeType!==1){ c.remove(); return; }
+      if(c.nodeName==="FONT"){ const s=document.createElement("span"); const sz=c.getAttribute("size"), col=c.getAttribute("color");
+        if(col) s.style.color=col; while(c.firstChild) s.appendChild(c.firstChild); c.replaceWith(s); walk(s); return; }
+      if(!OK.test(c.nodeName)){ walk(c); while(c.firstChild) c.parentNode.insertBefore(c.firstChild,c); c.remove(); return; }
+      const st=c.getAttribute("style")||"", keep=[], chk=c.getAttribute("data-chk"), cls=c.getAttribute("class")||"";
+      let m;
+      if((m=st.match(/(?:^|;)\s*color:\s*([^;]+)/i)) && /^(#[0-9a-f]{3,8}|rgba?\([\d\s,.%]+\)|[a-z]+)$/i.test(m[1].trim())) keep.push("color:"+m[1].trim());
+      if((m=st.match(/background(?:-color)?:\s*([^;]+)/i)) && /^(#[0-9a-f]{3,8}|rgba?\([\d\s,.%]+\)|[a-z]+)$/i.test(m[1].trim()) && !/^(transparent|initial|inherit)$/i.test(m[1].trim())) keep.push("background-color:"+m[1].trim());
+      if((m=st.match(/font-size:\s*(\d{1,3}(?:\.\d+)?)px/i))) keep.push("font-size:"+m[1]+"px");
+      if((m=st.match(/text-align:\s*(left|center|right|justify)/i))) keep.push("text-align:"+m[1].toLowerCase());
+      if((m=st.match(/margin-left:\s*(\d{1,3}(?:\.\d+)?)(px|rem|em)/i))) keep.push("margin-left:"+m[1]+m[2]);
+      [...c.attributes].forEach(a=>c.removeAttribute(a.name));
+      if(keep.length) c.setAttribute("style",keep.join(";"));
+      if(c.nodeName==="LI"&&chk!==null) c.setAttribute("data-chk",chk==="1"?"1":"0");
+      if(c.nodeName==="UL"&&/\bchk\b/.test(cls)) c.setAttribute("class","chk");
+      walk(c);
+    });
+  };
+  walk(tpl.content);
+  return tpl.innerHTML;
+}
+// rich HTML -> Markdown-ish text (used by AI tools, flashcards, search, copy, Word export)
+function rteToText(html){
+  const root=document.createElement("div"); root.innerHTML=html;
+  const inl=(n)=>{
+    if(n.nodeType===3) return n.nodeValue.replace(/\u00a0/g," ");
+    if(n.nodeType!==1) return "";
+    if(n.nodeName==="BR") return "\n";
+    let s=[...n.childNodes].map(inl).join(""); if(!s.trim()) return s;
+    const w=(m,x)=>{ const lead=x.match(/^\s*/)[0], tail=x.match(/\s*$/)[0]; return lead+m+x.trim()+m+tail; };
+    const st=n.getAttribute&&n.getAttribute("style")||"";
+    const tn=n.nodeName;
+    if(tn==="B"||tn==="STRONG") s=w("**",s);
+    if(tn==="I"||tn==="EM") s=w("*",s);
+    if(tn==="U") s=w("++",s);
+    if(tn==="S"||tn==="STRIKE"||tn==="DEL") s=w("~~",s);
+    if(tn==="MARK"||/background-color/.test(st)) s=w("==",s);
+    return s;
+  };
+  const out=[];
+  const blocks=(parent,depth,listType,counter)=>{
+    let buf="";
+    const flush=()=>{ const t=buf.replace(/\n+$/,""); if(t.trim()) out.push(t); buf=""; };
+    [...parent.childNodes].forEach(n=>{
+      if(n.nodeType===1&&/^(UL|OL)$/.test(n.nodeName)){ flush(); const isChk=n.classList.contains("chk"); let k=0;
+        [...n.children].forEach(li=>{ if(li.nodeName!=="LI") return; k++;
+          const nested=[...li.children].filter(x=>/^(UL|OL)$/.test(x.nodeName));
+          const own=[...li.childNodes].filter(x=>!(x.nodeType===1&&/^(UL|OL)$/.test(x.nodeName))).map(inl).join("").replace(/\n+/g," ").trim();
+          const pad="  ".repeat(depth);
+          const mark=isChk?(li.getAttribute("data-chk")==="1"?"- [x] ":"- [ ] "):(n.nodeName==="OL"?k+". ":"- ");
+          out.push(pad+mark+own);
+          nested.forEach(nn=>blocks({childNodes:[nn]},depth+1));
+        }); return; }
+      if(n.nodeType===1&&/^(DIV|P|H3|H4|BLOCKQUOTE)$/.test(n.nodeName)){ flush();
+        if(n.querySelector&&n.querySelector("ul,ol")){ blocks(n,depth); return; }
+        const t=inl(n).replace(/\n+$/,""); const h=n.nodeName==="H3"?"## ":n.nodeName==="H4"?"### ":"";
+        out.push(t.trim()?h+t:""); return; }
+      buf+=inl(n);
+    });
+    flush();
+  };
+  blocks(root,0);
+  return out.join("\n").replace(/\n{3,}/g,"\n\n").trim();
+}
+let _rte=null;
+function openNoteEditor(opts){
+  closeNoteEditor(true);
+  const root=document.createElement("div"); root.id="rte";
+  const html=opts.html||(opts.text?md(opts.text):"");
+  const BTN=(cmd,label,title,extra="")=>`<button type="button" class="rb" data-cmd="${cmd}" title="${title}" aria-label="${title}" ${extra}>${label}</button>`;
+  root.innerHTML=`
+  <div class="rte-top">
+    <button type="button" class="rte-x" id="rteBack" aria-label="Back">${IC.back}</button>
+    <div class="rte-t">${esc(opts.title||"Note")}</div>
+    ${opts.onDelete?`<button type="button" class="rte-d" id="rteDel" aria-label="Delete note">Delete</button>`:""}
+    <button type="button" class="rte-s" id="rteSave">Save</button>
+  </div>
+  <div class="rte-wrap"><div id="rteEd" class="rte-ed md rich" contenteditable="true" spellcheck="true" role="textbox" aria-multiline="true" data-ph="Start typing your notes…">${rteClean(html)}</div></div>
+  <div class="rte-pop" id="rtePop" hidden></div>
+  <div class="rte-bar" id="rteBar" role="toolbar">
+    ${BTN("undo",'<svg viewBox="0 0 24 24"><path d="M9 6L4 11l5 5M4 11h10a5 5 0 0 1 0 10h-3"/></svg>',"Undo")}
+    ${BTN("redo",'<svg viewBox="0 0 24 24"><path d="M15 6l5 5-5 5M20 11H10a5 5 0 0 0 0 10h3"/></svg>',"Redo")}
+    <i class="rsep"></i>
+    ${BTN("bold","<b>B</b>","Bold")}
+    ${BTN("italic","<i>I</i>","Italic")}
+    ${BTN("underline","<u>U</u>","Underline")}
+    ${BTN("strikeThrough","<s>S</s>","Strikethrough")}
+    <i class="rsep"></i>
+    ${BTN("pop:color",'<span class="rcol"><b>A</b><em id="rteColInd"></em></span>',"Text colour")}
+    ${BTN("pop:hl",'<span class="rcol"><svg viewBox="0 0 24 24"><path d="M4 20h6M14 5l5 5-8 8H7v-4z"/></svg><em id="rteHlInd" style="background:#fff176"></em></span>',"Highlight")}
+    ${BTN("pop:size",'<span class="rsz">Aa<small>▾</small></span>',"Text size")}
+    <i class="rsep"></i>
+    ${BTN("ul",'<svg viewBox="0 0 24 24"><circle cx="5" cy="7" r="1.2" fill="currentColor"/><circle cx="5" cy="12" r="1.2" fill="currentColor"/><circle cx="5" cy="17" r="1.2" fill="currentColor"/><path d="M10 7h10M10 12h10M10 17h10"/></svg>',"Bullet list")}
+    ${BTN("ol",'<svg viewBox="0 0 24 24"><path d="M10 7h10M10 12h10M10 17h10"/><text x="2" y="9" font-size="7" fill="currentColor" stroke="none">1</text><text x="2" y="14" font-size="7" fill="currentColor" stroke="none">2</text><text x="2" y="19" font-size="7" fill="currentColor" stroke="none">3</text></svg>',"Numbered list")}
+    ${BTN("chk",'<svg viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="3"/><path d="M8 12.5l3 3 5-6"/></svg>',"Checklist")}
+    <i class="rsep"></i>
+    ${BTN("pop:align",'<svg viewBox="0 0 24 24"><path d="M4 7h16M4 12h10M4 17h14"/></svg><small>▾</small>',"Align")}
+    ${BTN("outdent",'<svg viewBox="0 0 24 24"><path d="M20 6H10M20 12h-6M20 18H10M8 8l-4 4 4 4"/></svg>',"Decrease indent")}
+    ${BTN("indent",'<svg viewBox="0 0 24 24"><path d="M20 6H10M20 12h-6M20 18H10M4 8l4 4-4 4"/></svg>',"Increase indent")}
+    <i class="rsep"></i>
+    ${BTN("h",'<b style="font-size:.95rem">H</b>',"Heading")}
+    ${BTN("hr",'<svg viewBox="0 0 24 24"><path d="M4 12h16"/></svg>',"Divider")}
+    ${BTN("clear",'<svg viewBox="0 0 24 24"><path d="M5 5h14M12 5v6M8 19l8-8M14 19h5"/></svg>',"Clear formatting")}
+  </div>`;
+  document.body.appendChild(root);
+  document.documentElement.classList.add("rte-open");
+  const ed=root.querySelector("#rteEd"), pop=root.querySelector("#rtePop"), bar=root.querySelector("#rteBar");
+  const st={color:null,hl:"#fff176"}; _rte={root,ed,opts,dirty:false};
+  const ex=(c,v)=>{ ed.focus(); try{document.execCommand(c,false,v)}catch(_){} };
+  try{ document.execCommand("styleWithCSS",false,true); document.execCommand("defaultParagraphSeparator",false,"div"); }catch(_){}
+  const upd=()=>{ // reflect formatting at the cursor
+    const q=c=>{try{return document.queryCommandState(c)}catch(_){return false}};
+    bar.querySelectorAll("[data-cmd]").forEach(b=>{ const c=b.dataset.cmd;
+      const on = c==="bold"||c==="italic"||c==="underline"||c==="strikeThrough" ? q(c)
+               : c==="ul" ? q("insertUnorderedList")&&!inChk() : c==="ol" ? q("insertOrderedList") : c==="chk" ? inChk() : false;
+      b.classList.toggle("on",!!on); });
+  };
+  const inChk=()=>{ const s=getSelection(); if(!s.rangeCount) return false; let n=s.anchorNode; while(n&&n!==ed){ if(n.nodeName==="UL"&&n.classList&&n.classList.contains("chk")) return true; n=n.parentNode; } return false; };
+  const closePop=()=>{ pop.hidden=true; pop.innerHTML=""; bar.querySelectorAll(".open").forEach(b=>b.classList.remove("open")); };
+  const openPop=(kind,btn)=>{
+    if(!pop.hidden&&pop.dataset.k===kind){ closePop(); return; }
+    closePop(); pop.dataset.k=kind; btn.classList.add("open");
+    if(kind==="color") pop.innerHTML=`<div class="pp-t">Text colour</div><div class="pp-g">${RTE_COLORS.map(c=>`<button type="button" class="sw" data-v="${c}" style="background:${c}" aria-label="${c}"></button>`).join("")}<label class="sw cu" title="Custom"><input type="color" id="rteCu" value="#e29a2d"></label><button type="button" class="pp-r" data-v="">Default</button></div>`;
+    if(kind==="hl") pop.innerHTML=`<div class="pp-t">Highlight</div><div class="pp-g">${RTE_HL.map(c=>`<button type="button" class="sw" data-v="${c}" style="background:${c}" aria-label="${c}"></button>`).join("")}<label class="sw cu" title="Custom"><input type="color" id="rteCu" value="#fff176"></label><button type="button" class="pp-r" data-v="">None</button></div>`;
+    if(kind==="size") pop.innerHTML=`<div class="pp-t">Text size</div><div class="pp-l">${RTE_SIZES.map(([px,l])=>`<button type="button" data-v="${px}" style="font-size:${Math.min(px,24)}px">${l}<small>${px}</small></button>`).join("")}</div>`;
+    if(kind==="align") pop.innerHTML=`<div class="pp-t">Alignment</div><div class="pp-l row">${[["justifyLeft","M4 7h16M4 12h10M4 17h14","Left"],["justifyCenter","M4 7h16M7 12h10M5 17h14","Centre"],["justifyRight","M4 7h16M10 12h10M6 17h14","Right"],["justifyFull","M4 7h16M4 12h16M4 17h16","Justify"]].map(([c,d,l])=>`<button type="button" data-v="${c}" aria-label="${l}"><svg viewBox="0 0 24 24"><path d="${d}"/></svg></button>`).join("")}</div>`;
+    pop.hidden=false;
+    const cu=pop.querySelector("#rteCu");
+    if(cu) cu.oninput=()=>apply(kind,cu.value,true);
+  };
+  const apply=(kind,v,keepOpen)=>{
+    if(kind==="color"){ if(v) ex("foreColor",v); else ex("removeFormat"); st.color=v||null; root.querySelector("#rteColInd").style.background=v||"currentColor"; }
+    else if(kind==="hl"){ if(v){ ex("hiliteColor",v); root.querySelector("#rteHlInd").style.background=v; } else { ex("hiliteColor","transparent"); } }
+    else if(kind==="size"){ ex("fontSize","7"); ed.querySelectorAll('font[size="7"]').forEach(f=>{ const s=document.createElement("span"); s.style.fontSize=v+"px"; while(f.firstChild) s.appendChild(f.firstChild); f.replaceWith(s); });
+      ed.querySelectorAll("span[style*='font-size']").forEach(s=>{ if(/xxx-large|-webkit-xxx-large/.test(s.style.fontSize)) s.style.fontSize=v+"px"; }); }
+    else if(kind==="align") ex(v);
+    if(!keepOpen) closePop(); mark(); upd();
+  };
+  const mark=()=>{ _rte.dirty=true; };
+  const toggleChk=()=>{
+    if(inChk()){ ex("insertUnorderedList"); const s=getSelection(); let n=s.anchorNode; while(n&&n!==ed&&n.nodeName!=="UL") n=n.parentNode; if(n&&n.nodeName==="UL") n.classList.remove("chk"); return; }
+    if(!document.queryCommandState("insertUnorderedList")) ex("insertUnorderedList");
+    const s=getSelection(); let n=s.anchorNode; while(n&&n!==ed&&n.nodeName!=="UL") n=n.parentNode;
+    if(n&&n.nodeName==="UL"){ n.classList.add("chk"); n.querySelectorAll(":scope > li").forEach(li=>{ if(!li.hasAttribute("data-chk")) li.setAttribute("data-chk","0"); }); }
+  };
+  const act=(c,btn)=>{
+    if(c.startsWith("pop:")){ openPop(c.slice(4),btn); return; }
+    closePop();
+    if(c==="ul") ex("insertUnorderedList");
+    else if(c==="ol") ex("insertOrderedList");
+    else if(c==="chk") toggleChk();
+    else if(c==="h"){ const s=getSelection(); let n=s.anchorNode, isH=false; while(n&&n!==ed){ if(n.nodeName==="H3"){isH=true;break;} n=n.parentNode; } ex("formatBlock",isH?"div":"h3"); }
+    else if(c==="hr") ex("insertHorizontalRule");
+    else if(c==="clear"){ ex("removeFormat"); ex("formatBlock","div"); }
+    else ex(c);
+    mark(); upd();
+  };
+  // keep the keyboard & selection: toolbar must never steal focus
+  bar.addEventListener("pointerdown",e=>{ if(e.target.closest("button")) e.preventDefault(); });
+  pop.addEventListener("pointerdown",e=>{ if(!e.target.closest("input")) e.preventDefault(); });
+  bar.addEventListener("click",e=>{ const b=e.target.closest("[data-cmd]"); if(b) act(b.dataset.cmd,b); });
+  pop.addEventListener("click",e=>{ const b=e.target.closest("button[data-v]"); if(b) apply(pop.dataset.k,b.dataset.v); });
+  ed.addEventListener("input",()=>{ mark(); });
+  document.addEventListener("selectionchange",_rte.sc=()=>{ if(document.activeElement===ed) upd(); });
+  // tap the box of a checklist item to tick it
+  ed.addEventListener("click",e=>{ const li=e.target.closest("ul.chk > li"); if(!li||!ed.contains(li)) return;
+    const r=li.getBoundingClientRect(); if(e.clientX-r.left<30){ li.setAttribute("data-chk",li.getAttribute("data-chk")==="1"?"0":"1"); mark(); } });
+  // Enter on a new empty checklist line should start unticked
+  ed.addEventListener("keyup",e=>{ if(e.key==="Enter") ed.querySelectorAll("ul.chk > li:not([data-chk])").forEach(li=>li.setAttribute("data-chk","0")); });
+  ed.addEventListener("keydown",e=>{ const k=e.key.toLowerCase();
+    if((e.ctrlKey||e.metaKey)&&["b","i","u"].includes(k)){ e.preventDefault(); ex({b:"bold",i:"italic",u:"underline"}[k]); mark(); upd(); }
+    if(e.key==="Tab"){ e.preventDefault(); ex(e.shiftKey?"outdent":"indent"); mark(); } });
+  ed.addEventListener("paste",e=>{ e.preventDefault(); const t=(e.clipboardData||window.clipboardData).getData("text/plain"); ex("insertText",t); });
+  // lift toolbar above the on-screen keyboard
+  const vv=window.visualViewport;
+  const fit=()=>{ if(!vv) return; const kb=Math.max(0,window.innerHeight-vv.height-vv.offsetTop); root.style.setProperty("--kb",kb+"px"); root.style.height=vv.height+"px"; root.style.top=vv.offsetTop+"px"; };
+  if(vv){ vv.addEventListener("resize",_rte.fit=fit); vv.addEventListener("scroll",fit); fit(); }
+  const finish=async(save)=>{
+    if(save){
+      const h=rteClean(ed.innerHTML), text=rteToText(h);
+      if(!text.trim()){ toast("Write something first"); return; }
+      opts.onSave(h,text);
+    } else if(_rte.dirty){ const ok=await askConfirm("Discard changes?","Your edits to this note won't be saved.","Discard",true); if(!ok) return; }
+    closeNoteEditor();
+  };
+  root.querySelector("#rteSave").onclick=()=>finish(true);
+  root.querySelector("#rteBack").onclick=()=>finish(false);
+  const del=root.querySelector("#rteDel"); if(del) del.onclick=async()=>{ const ok=await askConfirm("Delete this note?","This can't be undone.","Delete",true); if(ok){ opts.onDelete(); closeNoteEditor(); } };
+  setTimeout(()=>{ ed.focus(); const r=document.createRange(); r.selectNodeContents(ed); r.collapse(false); const s=getSelection(); s.removeAllRanges(); s.addRange(r); upd(); },60);
+}
+function closeNoteEditor(quiet){
+  if(!_rte) return;
+  try{ document.removeEventListener("selectionchange",_rte.sc); const vv=window.visualViewport; if(vv&&_rte.fit){ vv.removeEventListener("resize",_rte.fit); vv.removeEventListener("scroll",_rte.fit); } }catch(_){}
+  _rte.root.remove(); _rte=null; document.documentElement.classList.remove("rte-open");
+}
 function newNote(id){
-  modal(`<h2>New note</h2><textarea class="input" id="noteText" placeholder="Paste or type your notes here…" style="min-height:40vh"></textarea><div class="row" style="justify-content:flex-end;margin-top:1rem"><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveNote('${id}')">Save note</button></div>`);
+  openNoteEditor({title:"New note",onSave:(h,t)=>{
+    data.notes.unshift({ id:uid(), deckId:id, content:t, html:h, htmlSrc:t, createdAt: todayISO() });
+    save(); deckTab="note"; route(); toast("Note saved");
+  }});
 }
 function editNote(id){
-  const n=data.notes.find(x=>x.id===id); if(!n) return;
-  modal(`<h2>Edit note</h2><textarea class="input" id="editNoteField" style="min-height:40vh">${esc(n.content)}</textarea><div class="row" style="margin-top:1rem"><button class="btn btn-ghost" style="margin-right:auto;color:#ff7b7b" onclick="data.notes=data.notes.filter(x=>x.id!=='${id}');save();closeModal();route()">Delete</button><button class="btn btn-secondary" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="saveEdit('${id}')">Save</button></div>`);
+  const n=data.notes.find(x=>x.id===id); if(!n) return; closeModal();
+  openNoteEditor({title:"Edit note",html:richOK(n)?n.html:"",text:richOK(n)?"":n.content,
+    onSave:(h,t)=>{ n.content=t; n.html=h; n.htmlSrc=t; save(); route(); toast("Note saved"); },
+    onDelete:()=>{ data.notes=data.notes.filter(x=>x.id!==id); save(); route(); }});
 }
-function saveEdit(id){const n=data.notes.find(x=>x.id===id);if(n){n.content=document.getElementById("editNoteField").value;save();}closeModal();route();}
+// tick checklist items straight from the note page
+document.addEventListener("click",e=>{
+  const li=e.target.closest(".md.rich ul.chk > li"); if(!li||e.target.closest("#rte")) return;
+  const box=li.closest(".md.rich"), n=data.notes.find(x=>x.id===box.dataset.nid); if(!n) return;
+  const r=li.getBoundingClientRect(); if(e.clientX-r.left>34) return;
+  li.setAttribute("data-chk",li.getAttribute("data-chk")==="1"?"0":"1");
+  n.html=rteClean(box.innerHTML); n.content=rteToText(n.html); n.htmlSrc=n.content; save();
+});
 function refineSheet(id){
   if(!deckNotes(id).length){toast("Add a note first");return;}
   modal(`<div class="sh"><h2>Refine this note</h2><input class="input" id="refineTxt" placeholder="e.g. make it shorter, add examples" style="width:100%"><button class="btn btn-primary" style="width:100%;margin-top:.8rem" onclick="aiRefine('${id}')">Refine</button></div>`);
@@ -10064,6 +10350,9 @@ document.addEventListener("click",function(e){var el=e.target.closest&&e.target.
 body .qa .c,body .gz-qa .c,body .tile,body .sr .tile,body .row2 .tile,body .ec{background:var(--qa-soft)!important;color:var(--qa)!important}
 body .tile svg [fill]:not([fill="none"]){fill:var(--qa)!important}
 body .tile svg [stroke="#fff"]{stroke:var(--qa)!important}
+/* folders keep the colour the user picked (not forced to the accent) */
+body .tile svg.fold [fill]:not([fill="none"]){fill:var(--fc)!important}
+html:root:root body .row2 .tile[style*="background:none"]{background:none!important;border:0!important;box-shadow:none!important}
 body .qi{stroke:currentColor}
 body .gz-stat span,body .stats span{color:inherit!important}
 /* bottom nav: labelled, accent-coloured, roomy */
