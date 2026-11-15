@@ -9458,5 +9458,267 @@ html[data-ui="nb"]:root body :is(.btn,.hp-qa button,.chip2,.sp,.plusbtn):active{
   return '<div class="nbpick"><div class="nbpick-t">Interface style</div><div class="nbpick-r">'+b("nb","Notebook","Colourful school desk, light and dark")+b("classic","Classic","The original look")+'</div></div>'};
 })();
 </script>
+<style id="ql-gz-css">
+/* ===== Classic UI · simple "Gizmo-style" home, calmer nav, language picker ===== */
+html:not([data-ui="nb"]){--gz-line:color-mix(in oklab,var(--foreground) 11%,transparent);--gz-shadow:0 2px 10px color-mix(in oklab,var(--foreground) 9%,transparent)}
+html:not([data-ui="nb"]) body .gz{padding:calc(env(safe-area-inset-top) + .9rem) 1rem 6.5rem;max-width:720px;margin:0 auto;display:flex;flex-direction:column;gap:1rem}
+html:not([data-ui="nb"]) body .gz *{box-sizing:border-box}
+html:not([data-ui="nb"]) body .gz-top{display:flex;align-items:center;gap:.5rem}
+html:not([data-ui="nb"]) body .gz-sp{flex:1}
+html:not([data-ui="nb"]) body .gz-circle,html:not([data-ui="nb"]) body .gz-pill,html:not([data-ui="nb"]) body .gz-act,html:not([data-ui="nb"]) body .gz-cta{background:var(--s1);color:var(--foreground);border:1px solid var(--gz-line);box-shadow:var(--gz-shadow);cursor:pointer;font:inherit;transition:transform .12s}
+html:not([data-ui="nb"]) body .gz-circle:active,html:not([data-ui="nb"]) body .gz-pill:active,html:not([data-ui="nb"]) body .gz-act:active,html:not([data-ui="nb"]) body .gz-cta:active{transform:scale(.96)}
+html:not([data-ui="nb"]) body .gz-circle{width:3rem;height:3rem;border-radius:50%;display:grid;place-items:center;flex:none;padding:0}
+html:not([data-ui="nb"]) body .gz-circle svg{width:1.4rem;height:1.4rem}
+html:not([data-ui="nb"]) body .gz-pill{height:3rem;border-radius:999px;padding:0 1rem;display:inline-flex;align-items:center;gap:.45rem;font-weight:700;font-size:1.05rem}
+html:not([data-ui="nb"]) body .gz-pill svg{width:1.25rem;height:1.25rem}
+html:not([data-ui="nb"]) body .gz-hero{display:flex;align-items:center;gap:.5rem;min-height:11rem}
+html:not([data-ui="nb"]) body .gz-mascot{flex:none;width:44%;max-width:11rem}
+html:not([data-ui="nb"]) body .gz-mascot svg{width:100%;height:auto;display:block;overflow:visible}
+html:not([data-ui="nb"]) body .gz-mascot .gz-bob{animation:gzBob 3.2s ease-in-out infinite}
+html:not([data-ui="nb"]) body .gz-mascot .gz-shad{animation:gzShad 3.2s ease-in-out infinite;transform-origin:80px 140px}
+html[data-motion="reduced"] body .gz-mascot .gz-bob,html[data-motion="reduced"] body .gz-mascot .gz-shad{animation:none}
+@keyframes gzBob{50%{transform:translateY(-7px)}}
+@keyframes gzShad{50%{transform:scaleX(.82);opacity:.5}}
+html:not([data-ui="nb"]) body .gz-hello small{display:block;font-size:1.15rem;font-weight:700;color:var(--fg-2,var(--mut))}
+html:not([data-ui="nb"]) body .gz-hello h1{margin:0;font-size:clamp(2.3rem,12vw,3.6rem);line-height:1.05;font-weight:800;letter-spacing:-.02em;color:var(--foreground)}
+html:not([data-ui="nb"]) body .gz-ask{display:flex;gap:.6rem;align-items:center}
+html:not([data-ui="nb"]) body .gz-ask .gz-circle{width:3.4rem;height:3.4rem}
+html:not([data-ui="nb"]) body .gz-input{flex:1;min-width:0;height:3.4rem;border-radius:999px;border:1px solid var(--gz-line);background:var(--s1);box-shadow:var(--gz-shadow);display:flex;align-items:center;padding:0 .4rem 0 1.2rem}
+html:not([data-ui="nb"]) body .gz-input input{flex:1;min-width:0;border:0;outline:0;background:none;color:var(--foreground);font:inherit;font-size:1.05rem;padding:0;box-shadow:none}
+html:not([data-ui="nb"]) body .gz-input input::placeholder{color:var(--mut)}
+html:not([data-ui="nb"]) body .gz-go{width:2.6rem;height:2.6rem;border-radius:50%;border:0;background:var(--primary);color:var(--primary-fg);display:none;place-items:center;cursor:pointer;flex:none;padding:0}
+html:not([data-ui="nb"]) body .gz-input.has .gz-go{display:grid}
+html:not([data-ui="nb"]) body .gz-go svg{width:1.2rem;height:1.2rem}
+html:not([data-ui="nb"]) body .gz-acts{display:grid;grid-template-columns:repeat(3,1fr);gap:.6rem}
+html:not([data-ui="nb"]) body .gz-act{height:3.3rem;border-radius:999px;display:flex;align-items:center;justify-content:center;gap:.5rem;font-weight:700;font-size:1.05rem;padding:0 .5rem}
+html:not([data-ui="nb"]) body .gz-act svg{width:1.3rem;height:1.3rem;flex:none}
+html:not([data-ui="nb"]) body .gz h2{margin:.8rem 0 0;font-size:1.45rem;font-weight:800;letter-spacing:-.01em}
+html:not([data-ui="nb"]) body .gz-card{background:var(--s1);border:1px solid var(--gz-line);box-shadow:var(--gz-shadow);border-radius:1.6rem;padding:1.1rem;display:flex;flex-direction:column;gap:.9rem}
+html:not([data-ui="nb"]) body .gz-card-h{display:flex;align-items:center;gap:.9rem}
+html:not([data-ui="nb"]) body .gz-ico{width:3.4rem;height:3.4rem;border-radius:1.1rem;display:grid;place-items:center;font-size:1.7rem;background:color-mix(in oklab,var(--primary) 20%,var(--s1));flex:none}
+html:not([data-ui="nb"]) body .gz-card-h b{display:block;font-size:1.25rem;font-weight:800}
+html:not([data-ui="nb"]) body .gz-card-h small{display:flex;align-items:center;gap:.45rem;font-size:1rem;color:var(--fg-2,var(--mut));margin-top:.15rem}
+html:not([data-ui="nb"]) body .gz-dot{width:.7rem;height:.7rem;border-radius:50%;background:#22a559;flex:none}
+html:not([data-ui="nb"]) body .gz-cta{height:3.2rem;border-radius:999px;width:100%;font-weight:800;font-size:1.05rem}
+html:not([data-ui="nb"]) body .gz .rows{padding:0;display:flex;flex-direction:column;gap:.6rem}
+html:not([data-ui="nb"]) body .gz .row2{margin:0;border-radius:1.4rem;background:var(--s1);border:1px solid var(--gz-line);box-shadow:var(--gz-shadow);padding:.8rem}
+html:not([data-ui="nb"]) body .gz-empty{text-align:center;color:var(--mut);padding:1.6rem 1rem;background:var(--s1);border:1px dashed var(--gz-line);border-radius:1.4rem}
+html:not([data-ui="nb"]) body .gz-all{align-self:center;background:none;border:0;color:var(--primary);font:inherit;font-weight:700;cursor:pointer;padding:.4rem .8rem}
+/* calmer bottom navigation */
+html:not([data-ui="nb"]) body nav.bottom{background:var(--s1)!important;border-top:1px solid var(--gz-line)!important;box-shadow:0 -8px 24px color-mix(in oklab,var(--foreground) 7%,transparent)}
+html:not([data-ui="nb"]) body .navitem{color:var(--mut)!important;background:none}
+html:not([data-ui="nb"]) body .navitem.active{background:color-mix(in oklab,var(--primary) 18%,var(--s1))!important;color:var(--primary)!important}
+html:not([data-ui="nb"]) body .plusbtn{width:3.2rem;height:3.2rem;box-shadow:var(--gz-shadow)!important}
+/* softer cards across the other pages */
+html:not([data-ui="nb"]) body .row2{border-radius:1.3rem}
+html:not([data-ui="nb"]) body .kh h1{font-weight:800}
+/* language sheet */
+.gz-lang-opt{display:flex;align-items:center;gap:.9rem;width:100%;padding:.9rem 1rem;margin-bottom:.5rem;border-radius:1.1rem;border:2px solid var(--gz-line,#8884);background:var(--s1);color:var(--foreground);font:inherit;font-weight:700;font-size:1.05rem;cursor:pointer;text-align:left}
+.gz-lang-opt.on{border-color:var(--primary);background:color-mix(in oklab,var(--primary) 14%,var(--s1))}
+.gz-lang-opt small{display:block;font-weight:500;color:var(--mut)}
+.gz-lang-opt .fl{font-size:1.6rem}
+</style>
+<script id="ql-i18n-gz">
+(function(){
+"use strict";
+var KEY="ql-lang",lang="en";
+try{lang=localStorage.getItem(KEY)==="af"?"af":"en"}catch(e){}
+document.documentElement.setAttribute("lang",lang==="af"?"af":"en");
+
+/* ---------- English -> Afrikaans dictionary (exact text) ---------- */
+var AF={
+"Home":"Tuis","Search":"Soek","Library":"Biblioteek","Study":"Studeer","Settings":"Instellings","Back":"Terug",
+"Cancel":"Kanselleer","Done":"Klaar","Create":"Skep","Delete":"Vee uit","Save":"Stoor","Close":"Maak toe","Edit":"Wysig","Move":"Skuif","Rename":"Hernoem","Continue":"Gaan voort","Next":"Volgende","Yes":"Ja","No":"Nee","OK":"OK",
+"Sign in":"Teken in","Sign out":"Teken uit","Account":"Rekening","AI key":"KI-sleutel","Needed for the AI features":"Nodig vir die KI-funksies",
+"Search for anything":"Soek enigiets","Free study resources":"Gratis studiebronne",
+"Create a deck":"Skep 'n stel","Create Folder":"Skep vouer","Folder name":"Vouernaam","Folder":"Vouer","Edit folder":"Wysig vouer","Delete folder":"Vee vouer uit","Move to folder":"Skuif na vouer","No folder":"Geen vouer",
+"Library ":"Biblioteek","My materials":"My materiaal","No materials yet":"Nog geen materiaal nie",
+"Create your own notes and flashcards by clicking on the + below.":"Skep jou eie notas en flitskaarte deur onder op die + te klik.",
+"Select all":"Kies almal","Select none":"Kies geen",
+"Create Notes":"Skep notas","Create Flashcards":"Skep flitskaarte","Record Lecture":"Neem les op",
+"Predict exam & study plan":"Voorspel eksamen en studieplan","Summarize File & Pictures":"Som lêer en foto's op","Make Word doc from notes":"Maak Word-dokument van notas",
+"Notes":"Notas","Choose how to create your notes":"Kies hoe jy jou notas wil skep","Upload file from device":"Laai lêer vanaf toestel op","Choose Photo":"Kies foto","Take Photo":"Neem foto","Create from live recording":"Skep vanaf regstreekse opname","Create manually":"Skep met die hand",
+"Predict Exam":"Voorspel eksamen","Summarize":"Som op","Live Record":"Regstreekse opname","Record a lesson":"Neem 'n les op","Recent Files":"Onlangse lêers","Due Today":"Vandag verskuldig",
+"Focus & sound":"Fokus en klank","Focus mode and sound effects":"Fokusmodus en klankeffekte",
+"Voice & listening":"Stem en luister","Reading aloud, voice commands, language":"Voorlees, stemopdragte, taal",
+"Display & comfort":"Vertoon en gemak","Theme, text size, motion":"Tema, teksgrootte, beweging",
+"Feedback":"Terugvoer","Vibrations and haptics":"Vibrasies en haptiese terugvoer",
+"Study buddy":"Studiemaat","Mascot, name and animations":"Maskot, naam en animasies",
+"Account & AI":"Rekening en KI","Sign in and your AI key":"Teken in en jou KI-sleutel",
+"Your data":"Jou data","Backup, restore and tips":"Rugsteun, herstel en wenke",
+"Study music":"Studiemusiek","Import songs and playlists from your device":"Voer liedjies en snitlyste vanaf jou toestel in",
+"Interface style":"Koppelvlakstyl","Notebook":"Notaboek","Classic":"Klassiek","Colourful school desk, light and dark":"Kleurryke skoolbank, lig en donker","The original look":"Die oorspronklike voorkoms",
+"Vibrations":"Vibrasies","Try haptics":"Probeer haptiese terugvoer","Appearance":"Voorkoms","Day mode":"Dagmodus","Night mode":"Nagmodus","Night":"Nag","Day":"Dag",
+"Reduce motion":"Verminder beweging","Show mascot":"Wys maskot","Mascot animations":"Maskot-animasies","Buddy name":"Maat se naam",
+"Language":"Taal","Automatic":"Outomaties",
+"Practice now":"Oefen nou","Level":"Vlak","Streak":"Reeks","Loading…":"Laai tans…","Listening…":"Luister tans…",
+"Nothing was recorded":"Niks is opgeneem nie","Microphone permission denied":"Mikrofoontoestemming geweier","Recording saved as notes":"Opname as notas gestoor",
+"No flashcards in your selection yet.":"Nog geen flitskaarte in jou keuse nie.","Give the deck a title first":"Gee eers 'n titel aan die stel",
+"Start your streak today!":"Begin vandag jou reeks!",
+"Name your notes":"Gee jou notas 'n naam","Untitled notes":"Notas sonder titel"
+};
+var PAT=[
+[/^(\d+) selected$/,"$1 gekies"],
+[/^(\d+) days? in a row — keep it going!$/,"$1 dag(e) agtereenvolgend — hou so aan!"],
+[/^Moved to (.+)$/,"Geskuif na $1"],
+[/^Delete (\d+) decks?\?$/,"Vee $1 stel(le) uit?"],
+[/^Move (\d+) decks? to…$/,"Skuif $1 stel(le) na…"],
+[/^(\d+) cards? due$/,"$1 kaart(e) verskuldig"],
+[/^(\d+) deferred$/,"$1 uitgestel"],
+[/^(\d+) hard cards?$/,"$1 moeilike kaart(e)"],
+[/^today$/,"vandag"],[/^a day ago$/,"'n dag gelede"],[/^(\d+)d ago$/,"$1d gelede"],
+[/^a month ago$/,"'n maand gelede"],[/^(\d+) months ago$/,"$1 maande gelede"],
+[/^a year ago$/,"'n jaar gelede"],[/^(\d+) years ago$/,"$1 jaar gelede"]
+];
+function tr(s){ /* returns translated string, or null */
+  var m=s.match(/^(\s*)([\s\S]*?)(\s*)$/),lead=m[1],core=m[2],tail=m[3];
+  if(!core)return null;
+  if(AF[core]!==undefined)return lead+AF[core]+tail;
+  var k=core.replace(/^[^A-Za-z0-9]+/,""),pre=core.slice(0,core.length-k.length);
+  if(k&&pre&&AF[k]!==undefined)return lead+pre+AF[k]+tail;
+  for(var i=0;i<PAT.length;i++){if(PAT[i][0].test(core))return lead+core.replace(PAT[i][0],PAT[i][1])+tail}
+  return null;
+}
+window.qlT=function(en,af){return lang==="af"?af:en};
+window.qlLang=function(){return lang};
+
+/* ---------- DOM translator: text nodes + placeholder/aria-label/title ---------- */
+var txt=new WeakMap(),att=new WeakMap(),ATTRS=["placeholder","aria-label","title"];
+function skip(el){return !el||/^(SCRIPT|STYLE|TEXTAREA|NOSCRIPT)$/.test(el.nodeName)||el.isContentEditable||(el.closest&&el.closest("[data-notr]"))}
+function procText(n){
+  if(skip(n.parentNode))return;
+  var rec=txt.get(n),base=n.nodeValue;
+  if(rec&&base===rec.t)base=rec.o;
+  if(lang==="af"){
+    var r=tr(base);
+    if(r!==null){if(r!==n.nodeValue){txt.set(n,{o:base,t:r});n.nodeValue=r}}
+    else if(rec&&n.nodeValue===rec.t){n.nodeValue=rec.o;txt.delete(n)}
+  }else if(rec&&n.nodeValue===rec.t){n.nodeValue=rec.o;txt.delete(n)}
+}
+function procAttr(el,a){
+  if(skip(el)||!el.hasAttribute(a))return;
+  var map=att.get(el);if(!map){map={};att.set(el,map)}
+  var rec=map[a],base=el.getAttribute(a);
+  if(rec&&base===rec.t)base=rec.o;
+  if(lang==="af"){
+    var r=tr(base);
+    if(r!==null){if(r!==el.getAttribute(a)){map[a]={o:base,t:r};el.setAttribute(a,r)}}
+    else if(rec&&el.getAttribute(a)===rec.t){el.setAttribute(a,rec.o);delete map[a]}
+  }else if(rec&&el.getAttribute(a)===rec.t){el.setAttribute(a,rec.o);delete map[a]}
+}
+function walk(root){
+  if(!root)return;
+  if(root.nodeType===3){procText(root);return}
+  if(root.nodeType!==1)return;
+  ATTRS.forEach(function(a){procAttr(root,a)});
+  var w=document.createTreeWalker(root,NodeFilter.SHOW_TEXT|NodeFilter.SHOW_ELEMENT,null),n;
+  while((n=w.nextNode())){
+    if(n.nodeType===3)procText(n);else ATTRS.forEach(function(a){procAttr(n,a)});
+  }
+}
+var mo=new MutationObserver(function(list){
+  for(var i=0;i<list.length;i++){
+    var m=list[i];
+    if(m.type==="characterData")procText(m.target);
+    else if(m.type==="attributes")procAttr(m.target,m.attributeName);
+    else m.addedNodes.forEach(walk);
+  }
+});
+function start(){mo.observe(document.body,{childList:true,subtree:true,characterData:true,attributes:true,attributeFilter:ATTRS});walk(document.body)}
+if(document.body)start();else document.addEventListener("DOMContentLoaded",start);
+
+window.setLang=function(l){
+  lang=l==="af"?"af":"en";
+  try{localStorage.setItem(KEY,lang)}catch(e){}
+  document.documentElement.setAttribute("lang",lang==="af"?"af":"en");
+  try{closeModal()}catch(e){}
+  walk(document.body);
+  var h=location.hash||"#/";
+  if(h==="#/"||h===""||/^#\/settings/.test(h)){try{route()}catch(e){}}
+  try{toast(lang==="af"?"Taal verander na Afrikaans":"Language changed to English")}catch(e){}
+};
+window.openLangSheet=function(){
+  var o=function(id,fl,n,s){return '<button class="gz-lang-opt'+(lang===id?" on":"")+'" data-nohap onclick="setLang(\''+id+'\')"><span class="fl">'+fl+'</span><span>'+n+'<small>'+s+'</small></span></button>'};
+  modal('<div class="sh"><h2>'+(lang==="af"?"Taal":"Language")+'</h2>'+o("en","🇬🇧","English","App language")+o("af","🇿🇦","Afrikaans","Programtaal")+'</div>');
+};
+
+/* ---------- Settings: language row at the top of the list ---------- */
+var rs=window.renderSettingsPage;
+if(typeof rs==="function")window.renderSettingsPage=function(h){
+  rs.apply(this,arguments);
+  try{
+    if(/^#\/settings\/?$/.test(h||location.hash)){
+      var rows=document.querySelector("#view .rows");
+      if(rows&&!rows.querySelector("[data-langrow]")){
+        rows.insertAdjacentHTML("afterbegin",'<button class="row2" data-langrow onclick="openLangSheet()"><span class="stile">🌐</span><span class="t"><b>'+qlT("Language","Taal")+'</b><small>'+(lang==="af"?"Afrikaans · English":"English · Afrikaans")+'</small></span><span style="opacity:.5;font-size:1.3rem">›</span></button>');
+      }
+    }
+  }catch(e){}
+};
+
+/* ---------- Classic home (Gizmo-style) ---------- */
+var isNB=function(){return document.documentElement.getAttribute("data-ui")==="nb"};
+var I={
+ menu:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>',
+ plus:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>',
+ up:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 15V4M7 9l5-5 5 5M4 15v4a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-4"/></svg>',
+ cam:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 8h3l2-3h6l2 3h3v12H4z"/><circle cx="12" cy="14" r="3.5"/></svg>',
+ more:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9l6 6 6-6"/></svg>',
+ globe:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18"/></svg>',
+ send:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 6l6 6-6 6"/></svg>'
+};
+var MASCOT='<svg viewBox="0 0 160 150" aria-hidden="true"><defs><linearGradient id="gzg" x1="0" y1="0" x2="0" y2="1"><stop offset="0" style="stop-color:color-mix(in oklab,var(--primary) 70%,#fff)"/><stop offset="1" style="stop-color:var(--primary)"/></linearGradient></defs>'
+ +'<ellipse class="gz-shad" cx="80" cy="141" rx="34" ry="5" fill="currentColor" opacity=".12"/>'
+ +'<g class="gz-bob"><path d="M22 52l22 10-4 18zM138 52l-22 10 4 18zM26 82l20-2-2 18z" fill="#ff8fc7"/><path d="M134 82l-20-2 2 18z" fill="#ff8fc7"/>'
+ +'<path d="M32 74C32 34 58 16 82 16c26 0 48 20 48 58 0 36-22 50-50 50S32 108 32 74z" fill="url(#gzg)"/>'
+ +'<path d="M54 72q8 8 16 0M92 72q8 8 16 0" fill="none" stroke="#2a1d14" stroke-width="3.5" stroke-linecap="round"/>'
+ +'<path d="M70 92q10 7 20 0" fill="none" stroke="#2a1d14" stroke-width="3.5" stroke-linecap="round"/>'
+ +'<ellipse cx="48" cy="88" rx="7" ry="4.5" fill="#ff8fc7" opacity=".55"/><ellipse cx="112" cy="88" rx="7" ry="4.5" fill="#ff8fc7" opacity=".55"/>'
+ +'<ellipse cx="58" cy="122" rx="16" ry="9" fill="url(#gzg)"/><ellipse cx="102" cy="122" rx="16" ry="9" fill="url(#gzg)"/></g></svg>';
+
+function streakN(){try{var g=data.game||{},t=localISODate(),l=g.lastPracticeDate||"";return l===t||dayDiff(l,t)===1?(g.streak||0):0}catch(e){return 0}}
+function dueN(){try{return dueCards().length}catch(e){return 0}}
+
+window.gzAsk=function(inp){var v=(inp.value||"").trim();if(!v)return;
+  go("#/search");
+  setTimeout(function(){var q=document.getElementById("q");if(q){q.value=v;try{renderSearchResults(v)}catch(e){}}},140)};
+window.gzInput=function(inp){inp.parentNode.classList.toggle("has",!!inp.value.trim())};
+window.gzStudy=function(){var c=[];try{c=dueCards()}catch(e){}
+  if(c.length)startSession(c,qlT("Study all due cards","Studeer alle verskuldigde kaarte"),"#/");else go("#/study")};
+
+var prevHome=window.renderHome;
+window.renderHome=function(){
+  if(isNB()){return prevHome.apply(this,arguments)}
+  var v=document.getElementById("view"),n=dueN(),sn=streakN(),xp=0,decks=[];
+  try{xp=data.game.xp||0;decks=data.decks.slice(0,4)}catch(e){}
+  var showMascot=true;try{showMascot=settings.mascotVisible!==false}catch(e){}
+  var af=lang==="af";
+  var cardsTxt=n?(af?n+" kaart"+(n===1?"":"e")+" verskuldig":n+" card"+(n===1?"":"s")+" due"):(af?"Alles op datum":"All caught up");
+  var sub=n?(af?"Tyd om te studeer":"Time to study"):(af?"Niks verskuldig vandag nie":"Nothing due today");
+  v.innerHTML='<div class="gz">'
+  +'<div class="gz-top"><button class="gz-circle" onclick="go(\'#/settings\')" aria-label="'+(af?"Kieslys":"Menu")+'">'+I.menu+'</button><span class="gz-sp"></span>'
+  +'<button class="gz-pill" onclick="go(\'#/level\')" aria-label="XP"><span>⚡</span>'+xp+'</button>'
+  +'<button class="gz-pill" onclick="try{QX.streak()}catch(e){}" aria-label="Streak"><span>🔥</span>'+sn+'</button>'
+  +'<button class="gz-pill" onclick="openLangSheet()" aria-label="'+(af?"Taal":"Language")+'">'+I.globe+(af?"AF":"EN")+'</button></div>'
+  +'<div class="gz-hero">'+(showMascot?'<div class="gz-mascot">'+MASCOT+'</div>':'')
+  +'<div class="gz-hello"><small>'+(af?"Wat sal ons":"What shall we")+'</small><h1>'+(af?"Studeer?":"Study?")+'</h1></div></div>'
+  +'<div class="gz-ask"><button class="gz-circle" onclick="openPlusMenu()" aria-label="'+(af?"Skep":"Create")+'">'+I.plus+'</button>'
+  +'<div class="gz-input"><input type="text" enterkeyhint="go" autocomplete="off" placeholder="'+(af?"Ek wil studeer…":"I want to study…")+'" oninput="gzInput(this)" onkeydown="if(event.key===\'Enter\')gzAsk(this)">'
+  +'<button class="gz-go" aria-label="Go" onclick="gzAsk(this.previousElementSibling)">'+I.send+'</button></div></div>'
+  +'<div class="gz-acts">'
+  +'<button class="gz-act" onclick="pickFiles(\'image/*,application/pdf\',false,function(f){newFromFiles(f,\'notes\')})">'+I.up+(af?"Lêer":"Upload")+'</button>'
+  +'<button class="gz-act" onclick="pickFiles(\'image/*\',true,function(f){newFromFiles(f,\'notes\',\'Photo notes\')})">'+I.cam+(af?"Foto":"Photo")+'</button>'
+  +'<button class="gz-act" onclick="openPlusMenu()">'+I.more+(af?"Meer":"More")+'</button></div>'
+  +'<h2>'+(af?"Vandag":"Today")+'</h2>'
+  +'<div class="gz-card"><div class="gz-card-h"><span class="gz-ico">🎯</span><div><b>'+(af?"Vandag se studie":"Today’s study")+'</b><small><i class="gz-dot"></i>'+cardsTxt+' · '+sub+'</small></div></div>'
+  +'<button class="gz-cta" onclick="gzStudy()">'+(n?(af?"Studeer nou":"Study now"):(af?"Beplan my studie":"Plan my study"))+'</button></div>'
+  +'<h2>'+(af?"Onlangse lêers":"Recent files")+'</h2>'
+  +(decks.length?'<div class="rows">'+decks.map(function(d,i){return deckRow(d,i)}).join("")+'</div>':'<div class="gz-empty">'+(af?"Tik op die + om jou eerste stel te skep.":"Tap the + to create your first deck.")+'</div>')
+  +(data.decks.length>4?'<button class="gz-all" onclick="go(\'#/library\')">'+(af?"Sien alles →":"View all →")+'</button>':'')
+  +'</div>';
+};
+})();
+</script>
+
 </body>
 </html>
