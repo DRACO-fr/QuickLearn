@@ -1040,37 +1040,27 @@ html[data-motion="reduced"] #ql-startup-buffer .ql-stage *,html[data-motion="red
 @media(prefers-reduced-motion:reduce){#ql-startup-buffer .ql-stage *,#ql-startup-buffer .ql-word{animation:none!important}#ql-startup-buffer .ql-ripple{display:none}#ql-startup-buffer.out{transition:opacity .2s ease}}
 html[data-motion="reduced"] #ql-startup-buffer .ql-ripple{display:none}html[data-motion="reduced"] #ql-startup-buffer.out{transition:opacity .2s ease}
 </style>
+<style id="ql-splash-brain">
+/* launch screen: brain visible from the very first frame, then the whole screen slides up to reveal the app */
+#ql-startup-buffer .ql-stage{width:min(62vw,34vh);aspect-ratio:1/1}
+#ql-startup-buffer .ql-stage .ql-brain{--s:100%;width:100%;height:100%;display:block;opacity:1;animation:none}
+#ql-startup-buffer .ql-stage .ql-brain svg{display:block;width:100%;height:100%;overflow:visible;opacity:1;animation:mbLife 3.8s ease-in-out infinite}
+#ql-startup-buffer .ql-word{opacity:1;animation:none}
+#ql-startup-buffer .ql-ripple{display:none}
+#ql-startup-buffer.out{opacity:1;transform:translateY(-100%);transition:transform .55s cubic-bezier(.7,0,.2,1);pointer-events:none;will-change:transform}
+#ql-startup-buffer.out .ql-stage .ql-brain,#ql-startup-buffer.out .ql-stage .ql-brain svg{animation:none}
+#ql-startup-buffer.out .ql-word{opacity:1}
+html[data-motion="reduced"] #ql-startup-buffer .ql-stage *{animation:none!important}
+html[data-motion="reduced"] #ql-startup-buffer.out{transform:none;opacity:0;transition:opacity .2s ease}
+@media(prefers-reduced-motion:reduce){#ql-startup-buffer.out{transform:none;opacity:0;transition:opacity .2s ease}}
+</style>
 <script>window.__qlStartupAt=Date.now();window.__qlStartupMinDone=false;setTimeout(function(){window.__qlStartupMinDone=true;if(window.__qlAuthReady&&window.__qlFinishStartup)window.__qlFinishStartup()},2000);window.__qlAuthReady=false;(function(){var m=document.querySelector('meta[name="theme-color"]');if(m){window.__qlThemeColor=m.getAttribute("content");m.setAttribute("content","#F8A14C")}})()</script>
 </head>
 <body>
 <div id="ql-startup-buffer" role="status" aria-label="QuickLearn is loading">
   <div class="ql-ripple" aria-hidden="true"></div>
   <div class="ql-stage" aria-hidden="true">
-    <svg class="ql-face-svg" viewBox="0 0 600 560" focusable="false">
-      <defs><clipPath id="qlMouthClip"><path d="M196 408Q196 403 202 403L396 403Q402 403 402 409C402 462 358 496 299 496C240 496 196 462 196 408Z"/></clipPath></defs>
-      <g class="ql-face">
-        <path class="ql-horn" d="M78 52C100 75 140 90 162 111C130 121 106 134 92 151C78 120 74 85 78 52Z"/>
-        <path class="ql-horn" d="M498 46C475 70 438 90 416 110C445 120 470 133 488 150C500 120 505 80 498 46Z"/>
-        <path class="ql-brow l" d="M90 203Q132 181 174 197"/>
-        <path class="ql-brow r" d="M410 190Q452 174 494 199"/>
-        <g class="ql-eye-l">
-          <rect class="ql-white" x="78" y="222" width="120" height="185" rx="60"/>
-          <g class="ql-look"><rect class="ql-pupil" x="104" y="246" width="82" height="140" rx="41"/><circle class="ql-white" cx="122" cy="277" r="21"/></g>
-        </g>
-        <g class="ql-eye-r">
-          <rect class="ql-white" x="388" y="222" width="120" height="183" rx="60"/>
-          <g class="ql-look"><rect class="ql-pupil" x="402" y="245" width="82" height="140" rx="41"/><circle class="ql-white" cx="426" cy="270" r="21"/></g>
-        </g>
-        <path class="ql-wink" d="M418 282Q388 292 388 320Q432 298 482 324"/>
-        <rect class="ql-lid" x="46" y="404" width="180" height="96"/>
-        <circle class="ql-nose" cx="267" cy="370" r="11"/><circle class="ql-nose" cx="318" cy="370" r="11"/>
-        <g class="ql-mouth">
-          <path class="ql-mouth-bg" d="M196 408Q196 403 202 403L396 403Q402 403 402 409C402 462 358 496 299 496C240 496 196 462 196 408Z"/>
-          <g clip-path="url(#qlMouthClip)"><ellipse class="ql-tongue" cx="299" cy="472" rx="88" ry="60"/></g>
-          <path class="ql-teeth" d="M218 403L380 403L378 440Q366 448 356 440L351 424Q299 432 247 424L242 440Q232 448 220 440Z"/>
-        </g>
-      </g>
-    </svg>
+    <div class="mxw ql-brain" data-mood="wave" style="--s:100%"><svg class="mx" viewBox="0 0 200 200" role="img" aria-label="Brainy, your study buddy" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="192" rx="52" ry="5" fill="#000" opacity=".16"/><g class="mb-legL"><path d="M82 138 L79 176" fill="none" stroke="#4A1D16" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="73" cy="183" rx="13" ry="6" fill="#4A1D16"/></g><g class="mb-legR"><path d="M118 138 L121 176" fill="none" stroke="#4A1D16" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="127" cy="183" rx="13" ry="6" fill="#4A1D16"/></g><g class="mb-armL"><path d="M42 114 Q20 120 20 96" fill="none" stroke="#4A1D16" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="90" r="8.5" fill="#4A1D16"/></g><g class="mx-wave"><path d="M158 110 Q184 104 180 74" fill="none" stroke="#4A1D16" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="180" cy="68" r="8.5" fill="#4A1D16"/></g><g class="mb-body"><path d="M100 46 C92 32 70 32 62 44 C46 44 36 58 40 72 C28 80 28 100 40 108 C38 124 52 138 68 136 C74 148 92 150 100 142 C108 150 126 148 132 136 C148 138 162 124 160 108 C172 100 172 80 160 72 C164 58 154 44 138 44 C130 32 108 32 100 46Z" fill="#F0687E" stroke="#B93752" stroke-width="3" stroke-linejoin="round"/><g fill="none" stroke="#C9415D" stroke-width="3.5" stroke-linecap="round"><path d="M100 46 C95 60 105 70 100 84"/><path d="M62 44 C66 54 58 62 50 62"/><path d="M40 72 C50 76 54 84 50 92"/><path d="M40 108 C48 104 56 108 58 116"/><path d="M68 136 C70 128 78 126 84 130"/><path d="M138 44 C134 54 142 62 150 62"/><path d="M160 72 C150 76 146 84 150 92"/><path d="M160 108 C152 104 144 108 142 116"/><path d="M132 136 C130 128 122 126 116 130"/><path d="M78 52 C84 58 82 66 76 68"/><path d="M122 52 C116 58 118 66 124 68"/></g><path d="M65 100 Q78 84 91 100" fill="none" stroke="#3A1030" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M109 100 Q122 84 135 100" fill="none" stroke="#3A1030" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="55" cy="114" rx="8" ry="5" fill="#FF9DB0" opacity=".65"/><ellipse cx="145" cy="114" rx="8" ry="5" fill="#FF9DB0" opacity=".65"/><path d="M88 118 Q100 138 112 118Z" fill="#C2243F" stroke="#4A1D16" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="100" cy="129.5" rx="6" ry="2.8000000000000003" fill="#FF8FA3"/></g><g transform="translate(136 4)"><rect width="52" height="30" rx="15" fill="#35B6E8"/><path d="M12 28 L8 38 L24 29Z" fill="#35B6E8"/><text x="26" y="21" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="DM Sans,system-ui,sans-serif">Hi!</text></g></svg></div>
   </div>
   <div class="ql-word">QuickLearn</div>
 </div>
@@ -10012,8 +10002,6 @@ var busy=0;function sweep(){if(busy)return;busy=1;requestAnimationFrame(function
  document.querySelectorAll(".report-emoji:not([data-mx])").forEach(function(e){e.setAttribute("data-mx","1");var t=e.textContent,h=mascot(/🎉/.test(t)?"cheer":/👏/.test(t)?"happy":"think",{size:130,cls:"idle"});if(h)e.innerHTML=h});
  document.querySelectorAll(".empty2:not([data-mx]),.gz-empty:not([data-mx])").forEach(function(e){e.setAttribute("data-mx","1");var h=mascot(/🎉/.test(e.textContent)?"cheer":"think",{size:84,cls:"idle"});if(h)e.insertAdjacentHTML("afterbegin",'<div class="mx-empty">'+h+'</div>')})}catch(e){}})}
 new MutationObserver(sweep).observe(document.body,{childList:true,subtree:true});sweep();
-/* ---- launch splash ---- */
-try{var st=document.querySelector("#ql-startup-buffer .ql-stage");if(st){var h=brain("happy",{size:200}).replace(/^<div[^>]*>/,"").replace(/<\/div>$/,"");st.innerHTML=h}}catch(e){}
 })();
 </script>
 
@@ -10149,6 +10137,103 @@ function start(){all();var v=document.getElementById("view"),n=document.querySel
  [v,n,m].forEach(function(x){if(x)new MutationObserver(function(){all();soon()}).observe(x,{childList:true})});
  addEventListener("hashchange",soon);setTimeout(all,400);setTimeout(all,1500)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",start);else start();
+})();
+</script>
+<style id="ql-motion">
+/* ---- floating pill nav with a sliding lamp (light shining down on the active icon) ---- */
+nav.bottom{left:.75rem!important;right:.75rem!important;bottom:calc(.65rem + env(safe-area-inset-bottom))!important;width:auto!important;max-width:30rem!important;margin:0 auto!important;border-radius:1.75rem!important;border:1px solid color-mix(in oklab,var(--foreground) 10%,transparent)!important;background:color-mix(in oklab,var(--s1,var(--ob)) 94%,transparent)!important;backdrop-filter:blur(16px);box-shadow:0 14px 34px -12px rgba(0,0,0,.55);padding:.15rem .5rem!important;min-height:4.4rem}
+nav.bottom .navitem{background:none!important;transition:color .35s ease}
+nav.bottom .navitem.active{background:none!important;color:var(--qa)!important}
+nav.bottom .navitem.active svg{filter:drop-shadow(0 0 6px color-mix(in oklab,var(--qa) 70%,transparent));animation:qlIcoPop .5s cubic-bezier(.3,1.5,.4,1)}
+@keyframes qlIcoPop{0%{transform:translateY(2px) scale(.85)}100%{transform:none}}
+.ql-lampbox{position:absolute;inset:0;border-radius:inherit;overflow:hidden;pointer-events:none}
+.ql-lamp{position:absolute;top:0;left:0;height:100%;opacity:0;transition:transform .55s cubic-bezier(.3,1.2,.35,1),width .3s ease,opacity .2s}
+.ql-lamp::before{content:"";position:absolute;top:0;left:14%;right:14%;height:3px;border-radius:0 0 4px 4px;background:var(--qa);box-shadow:0 0 12px 1px var(--qa)}
+.ql-lamp::after{content:"";position:absolute;top:3px;left:-6%;right:-6%;height:78%;background:linear-gradient(to bottom,color-mix(in oklab,var(--qa) 42%,transparent),transparent);clip-path:polygon(18% 0,82% 0,100% 100%,0 100%);filter:blur(3px)}
+#view{padding-bottom:calc(7.6rem + env(safe-area-inset-bottom))}
+#qaiFab{bottom:calc(7.4rem + env(safe-area-inset-bottom))!important}
+html[data-motion="reduced"] .ql-lamp{transition:none}
+html[data-motion="reduced"] nav.bottom .navitem.active svg{animation:none}
+/* ---- full-screen "Gemini is working" scenes ---- */
+#ql-ai{position:fixed;inset:0;z-index:9500;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:1rem;padding:2rem 1.5rem calc(2rem + env(safe-area-inset-bottom));background:radial-gradient(60% 45% at 50% 38%,color-mix(in oklab,var(--qa) 20%,transparent),transparent 70%),var(--background,#111);color:var(--foreground);opacity:0;transition:opacity .35s ease}
+#ql-ai.in{opacity:1}
+.ql-ai-stage{position:relative;width:min(78vw,290px);height:min(78vw,290px)}
+.ql-sc{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;opacity:0;transform:scale(.94);transition:opacity .5s ease,transform .5s ease}
+.ql-sc.on{opacity:1;transform:none}
+.ql-sc .mxw{--s:min(52vw,200px);margin-bottom:-.6rem}
+.ql-book{width:78%;margin-top:-.4rem;overflow:visible}
+.ql-book .pg{fill:var(--qa-soft);stroke:var(--qa);stroke-width:3;stroke-linejoin:round}
+.ql-book .wr{fill:none;stroke:var(--qa);stroke-width:3;stroke-linecap:round;stroke-dasharray:1;stroke-dashoffset:1}
+.ql-sc.on .wr{animation:qlWrite 3.6s linear infinite}
+.ql-sc.on .wr.b{animation-name:qlWrite2}.ql-sc.on .wr.c{animation-name:qlWrite3}
+@keyframes qlWrite{0%{stroke-dashoffset:1}28%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:1}}
+@keyframes qlWrite2{0%,32%{stroke-dashoffset:1}60%,92%{stroke-dashoffset:0}100%{stroke-dashoffset:1}}
+@keyframes qlWrite3{0%,64%{stroke-dashoffset:1}92%{stroke-dashoffset:0}100%{stroke-dashoffset:1}}
+.ql-book .pen{fill:var(--qa);stroke:var(--foreground);stroke-width:1.5}
+.ql-sc.on .pen{animation:qlPen 3.6s linear infinite}
+@keyframes qlPen{0%{transform:translate(0,0)}28%{transform:translate(70px,-3px)}32%{transform:translate(0,10px)}60%{transform:translate(70px,7px)}64%{transform:translate(0,22px)}92%{transform:translate(70px,19px)}100%{transform:translate(0,0)}}
+.ql-bubble{position:absolute;top:2%;right:6%;display:flex;gap:.35rem;padding:.55rem .8rem;border-radius:1.2rem;background:var(--qa-soft);border:2px solid var(--qa)}
+.ql-bubble i{width:.55rem;height:.55rem;border-radius:50%;background:var(--qa);animation:qlDot 1.2s ease-in-out infinite}
+.ql-bubble i:nth-child(2){animation-delay:.18s}.ql-bubble i:nth-child(3){animation-delay:.36s}
+@keyframes qlDot{0%,70%,100%{transform:translateY(0);opacity:.4}35%{transform:translateY(-6px);opacity:1}}
+.ql-orbit{position:absolute;inset:6%;animation:qlSpin 6s linear infinite}
+.ql-orbit b{position:absolute;color:var(--qa);font-size:1.1rem;line-height:1}
+.ql-orbit b:nth-child(1){top:0;left:50%}.ql-orbit b:nth-child(2){bottom:12%;left:6%}.ql-orbit b:nth-child(3){bottom:12%;right:6%}
+@keyframes qlSpin{to{transform:rotate(360deg)}}
+.ql-cards{position:relative;width:78%;height:4.2rem;margin-top:-.2rem}
+.ql-cards i{position:absolute;top:0;width:30%;height:100%;border-radius:.7rem;background:var(--qa-soft);border:2px solid var(--qa);animation:qlFlip 2.4s ease-in-out infinite}
+.ql-cards i:nth-child(1){left:2%}.ql-cards i:nth-child(2){left:35%;animation-delay:.4s}.ql-cards i:nth-child(3){left:68%;animation-delay:.8s}
+@keyframes qlFlip{0%,15%{transform:rotateY(0)}45%,65%{transform:rotateY(180deg);background:var(--qa)}95%,100%{transform:rotateY(360deg)}}
+.ql-ai-msg{margin:0;min-height:1.6em;font-size:1.1rem;font-weight:700;text-align:center;transition:opacity .25s}
+.ql-ai-bar{width:min(60vw,220px);height:.4rem;border-radius:1rem;background:var(--qa-soft);overflow:hidden}
+.ql-ai-bar i{display:block;width:40%;height:100%;border-radius:1rem;background:var(--qa);animation:qlBar 1.4s ease-in-out infinite}
+@keyframes qlBar{0%{transform:translateX(-100%)}100%{transform:translateX(260%)}}
+.ql-ai-hide{margin-top:.5rem;padding:.65rem 1.4rem;border-radius:999px;border:1.5px solid var(--qa-line);background:none;color:var(--qa);font:inherit;font-weight:700;cursor:pointer}
+html[data-motion="reduced"] #ql-ai *,html[data-motion="reduced"] #ql-ai{animation:none!important}
+@media(prefers-reduced-motion:reduce){#ql-ai *{animation:none!important}}
+</style>
+<script id="ql-motion-js">
+(function(){"use strict";
+/* ---- nav lamp ---- */
+function lamp(){var n=document.querySelector("nav.bottom");if(!n)return;
+ var box=n.querySelector(".ql-lampbox");if(!box){box=document.createElement("div");box.className="ql-lampbox";box.innerHTML='<i class="ql-lamp"></i>';n.insertBefore(box,n.firstChild)}
+ var l=box.firstChild,a=n.querySelector(".navitem.active");
+ if(!a||!a.offsetWidth){l.style.opacity=0;return}
+ var w=Math.min(a.offsetWidth,64);l.style.width=w+"px";l.style.opacity=1;
+ l.style.transform="translateX("+(a.offsetLeft+(a.offsetWidth-w)/2)+"px)"}
+function lampStart(){var n=document.querySelector("nav.bottom");if(!n)return;lamp();
+ new MutationObserver(function(ms){if(ms.some(function(m){return !(m.target.closest&&m.target.closest(".ql-lampbox"))}))requestAnimationFrame(lamp)})
+  .observe(n,{attributes:true,attributeFilter:["class","style"],subtree:true,childList:true});
+ addEventListener("resize",lamp);setTimeout(lamp,300);setTimeout(lamp,1200)}
+/* ---- Gemini scenes ---- */
+var ov,sc=0,ms=0,ti=0,mi=0,pend=0,showT=0,hideT=0,dismissed=false;
+function af(){try{return lang==="af"}catch(e){return false}}
+var MSG=[["Reading your request","Writing it down","Thinking it through","Putting it together","Almost there"],["Lees jou versoek","Skryf dit neer","Dink dit deur","Sit dit saam","Amper daar"]];
+function M(m){try{return window.mascot(m,{size:200,cls:"idle"})||""}catch(e){return ""}}
+function build(){var d=document.createElement("div");d.id="ql-ai";d.setAttribute("role","status");
+ d.innerHTML='<div class="ql-ai-stage">'
+ +'<div class="ql-sc">'+M("happy")+'<svg class="ql-book" viewBox="0 0 240 96"><path class="pg" d="M10 20Q60 8 120 22Q180 8 230 20V82Q180 70 120 84Q60 70 10 82Z"/><path d="M120 22V84" stroke="var(--qa)" stroke-width="2.5" fill="none"/>'
+ +'<path class="wr" pathLength="1" d="M28 40Q64 35 106 41"/><path class="wr b" pathLength="1" d="M28 52Q64 47 106 53"/><path class="wr c" pathLength="1" d="M28 64Q64 59 106 65"/>'
+ +'<g transform="translate(130 38)"><g class="pen"><path d="M0 0L8-4L22-18L18-22L4-8Z"/></g></g></svg></div>'
+ +'<div class="ql-sc">'+M("think")+'<div class="ql-bubble"><i></i><i></i><i></i></div><div class="ql-orbit"><b>✦</b><b>✦</b><b>✦</b></div></div>'
+ +'<div class="ql-sc">'+M("cheer")+'<div class="ql-cards"><i></i><i></i><i></i></div></div></div>'
+ +'<p class="ql-ai-msg"></p><div class="ql-ai-bar"><i></i></div>'
+ +'<button class="ql-ai-hide" onclick="qlAiHide()">'+(af()?"Versteek":"Hide")+'</button>';return d}
+function scene(){var s=ov.querySelectorAll(".ql-sc");s.forEach(function(e,i){e.classList.toggle("on",i===sc%s.length)});sc++}
+function msg(){var p=ov.querySelector(".ql-ai-msg"),L=MSG[af()?1:0];p.style.opacity=0;setTimeout(function(){if(p.isConnected){p.textContent=L[ms%L.length]+"…";p.style.opacity=1}ms++},200)}
+function show(){if(ov||dismissed)return;var p=document.getElementById("qai");if(p&&p.classList.contains("on"))return;
+ ov=build();document.body.appendChild(ov);sc=0;ms=0;scene();msg();requestAnimationFrame(function(){ov&&ov.classList.add("in")});
+ ti=setInterval(scene,3600);mi=setInterval(msg,2200)}
+function hide(){if(!ov)return;var o=ov;ov=null;clearInterval(ti);clearInterval(mi);o.classList.remove("in");setTimeout(function(){o.remove()},380)}
+window.qlAiHide=function(){dismissed=true;hide()};
+function begin(){pend++;clearTimeout(hideT);if(!ov&&!showT&&!dismissed)showT=setTimeout(function(){showT=0;if(pend>0)show()},900)}
+function end(){pend=Math.max(0,pend-1);if(pend===0){clearTimeout(showT);showT=0;hideT=setTimeout(function(){if(pend===0){dismissed=false;hide()}},800)}}
+var of=window.fetch;
+if(typeof of==="function")window.fetch=function(u){var url=typeof u==="string"?u:(u&&u.url)||"";
+ if(url.indexOf("generativelanguage.googleapis.com")<0)return of.apply(this,arguments);
+ begin();var p;try{p=of.apply(this,arguments)}catch(e){end();throw e}
+ p.then(end,end);return p};
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",lampStart);else lampStart();
 })();
 </script>
 </body>
