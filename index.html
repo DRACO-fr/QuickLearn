@@ -9421,8 +9421,22 @@ document.head.appendChild(st);
 const q=()=>document.getElementById("qai");
 const vv=window.visualViewport;
 function fit(){
-  const e=q(); if(!e||!e.classList.contains("on")){ if(e){e.style.height="";e.style.top=""} return; }
-  if(vv){ e.style.height=vv.height+"px"; e.style.top=vv.offsetTop+"px"; e.style.bottom="auto"; }
+  const e=q(); if(!e) return;
+  const sp=(k,v)=>v==null?e.style.removeProperty(k):e.style.setProperty(k,v,"important");
+  if(!e.classList.contains("on")){ ["height","top","bottom"].forEach(k=>sp(k,null)); if(e.classList.contains("qa-sheet")) e.classList.remove("qa-sheet"); return; }
+  const nav=document.querySelector("nav.bottom"), nr=nav?nav.getBoundingClientRect():null;
+  const navShown=!!(nr&&nr.height>0&&nav.style.display!=="none");
+  const sideNav=navShown&&nr.width<window.innerWidth*.5;
+  const kb=vv?(window.innerHeight-vv.height-vv.offsetTop>120):false;
+  const sheet=!kb;   // keyboard closed: sheet that leaves the tab bar visible; keyboard open: use the space above it
+  if(e.classList.contains("qa-sheet")!==sheet) e.classList.toggle("qa-sheet",sheet);
+  if(sheet){
+    sp("top","calc(env(safe-area-inset-top) + .6rem)");
+    sp("bottom",(navShown&&!sideNav?Math.max(0,window.innerHeight-nr.top)+8:window.innerHeight*0+12)+"px");
+    sp("height","auto");
+  } else {
+    sp("height",vv.height+"px"); sp("top",vv.offsetTop+"px"); sp("bottom","auto");
+  }
   if(window.scrollY||document.documentElement.scrollTop) window.scrollTo(0,0);
   const m=document.getElementById("qaiM"); if(m&&document.activeElement&&document.activeElement.id==="qaiT") m.scrollTop=m.scrollHeight;
 }
@@ -9431,10 +9445,11 @@ function lock(){
   document.documentElement.classList.toggle("qa-open",on); fit();
 }
 if(vv){ vv.addEventListener("resize",fit); vv.addEventListener("scroll",fit); }
+window.addEventListener("resize",fit); window.addEventListener("orientationchange",()=>setTimeout(fit,200));
 document.addEventListener("focusin",ev=>{ if(ev.target&&ev.target.id==="qaiT"){ fit(); setTimeout(fit,50); setTimeout(fit,300); } });
 const t=setInterval(()=>{ const e=q(); if(!e) return; clearInterval(t); new MutationObserver(lock).observe(e,{attributes:true,attributeFilter:["class"]}); lock(); },200);
 const st=document.createElement("style");
-st.textContent="html.qa-open,html.qa-open body{overflow:hidden;overscroll-behavior:none}#qai{height:100dvh;overflow:hidden}.qa-i textarea::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}";
+st.textContent="html.qa-open,html.qa-open body{overflow:hidden;overscroll-behavior:none}#qai{height:100dvh;overflow:hidden}#qai.qa-sheet{left:.6rem;right:.6rem;border:1px solid var(--border);border-radius:1.5rem;box-shadow:0 14px 44px -12px rgba(0,0,0,.55)}#qai.qa-sheet .qa-h{padding-top:.8rem}#qai.qa-sheet .qa-i{padding-bottom:.8rem}.qa-i textarea::placeholder{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}";
 document.head.appendChild(st);
 })();
 </script>
