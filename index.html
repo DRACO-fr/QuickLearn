@@ -6,7 +6,7 @@
 <meta charset="UTF-8">
 <script>try{var __s=JSON.parse(localStorage.getItem("quicklearn-settings-v1")||"{}");if(__s.theme==="light")document.documentElement.setAttribute("data-theme","light");var __r=__s.reduceMotion;if(__r==null)__r=window.matchMedia&&matchMedia("(prefers-reduced-motion: reduce)").matches;document.documentElement.setAttribute("data-motion",__r?"reduced":"full");if(__s.fps120)document.documentElement.setAttribute("data-fps","120")}catch(e){}</script>
 <script id="ql-icons">
-/* ===== QuickLearn custom icon set: loads first and watches the whole page, so emoji never paint ===== */
+/* ===== KatchUp custom icon set: loads first and watches the whole page, so emoji never paint ===== */
 (function(){
 const P={"target": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><circle cx=\"12\" cy=\"12\" r=\"5\"/><circle cx=\"12\" cy=\"12\" r=\"1.2\" fill=\"currentColor\"/>", "fire": "<path d=\"M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-2 1-3 2-4 0 2 1 3 2 3 0-3-1-6 1-9z\"/>", "bolt": "<path d=\"M13 3L5 14h6l-1 7 8-11h-6z\"/>", "spark": "<path d=\"M12 3l2 6 6 3-6 3-2 6-2-6-6-3 6-3z\"/>", "brain": "<path d=\"M9 4a3 3 0 0 0-3 3 3 3 0 0 0-2 5 3 3 0 0 0 2 4 3 3 0 0 0 6 1V5a2 2 0 0 0-3-1zM15 4a3 3 0 0 1 3 3 3 3 0 0 1 2 5 3 3 0 0 1-2 4 3 3 0 0 1-6 1\"/>", "party": "<path d=\"M4 20l4-12 8 8z\"/><path d=\"M14 5v2M19 9h2M17 3l-1 1M20 14l-1.5-.5\"/>", "book": "<path d=\"M3 5h7a2 2 0 0 1 2 2v13a2 2 0 0 0-2-2H3zM21 5h-7a2 2 0 0 0-2 2v13a2 2 0 0 1 2-2h7z\"/>", "mic": "<rect x=\"9\" y=\"3\" width=\"6\" height=\"11\" rx=\"3\"/><path d=\"M5 11a7 7 0 0 0 14 0M12 18v3\"/>", "sun": "<circle cx=\"12\" cy=\"12\" r=\"4\"/><path d=\"M12 3v2M12 19v2M3 12h2M19 12h2M5.6 5.6L7 7M17 17l1.4 1.4M5.6 18.4L7 17M17 7l1.4-1.4\"/>", "moon": "<path d=\"M20 14.5A8 8 0 0 1 9.5 4 8 8 0 1 0 20 14.5z\"/>", "school": "<path d=\"M3 9l9-5 9 5zM5 9v8M9.5 9v8M14.5 9v8M19 9v8M3 20h18\"/>", "cap": "<path d=\"M2 9l10-5 10 5-10 5zM6 11.5V16c0 1.5 3 3 6 3s6-1.5 6-3v-4.5M22 9v6\"/>", "note": "<path d=\"M6 3h9l4 4v14H6z\"/><path d=\"M14 3v5h5M9 12h7M9 16h7\"/>", "check": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8 12.5l3 3 5-6\"/>", "plant": "<path d=\"M12 21v-8M12 13c0-4 3-6 7-6 0 4-3 6-7 6zM12 16c0-3-2-5-6-5 0 3 2 5 6 5z\"/>", "cards": "<rect x=\"8\" y=\"3\" width=\"12\" height=\"15\" rx=\"2\"/><path d=\"M5 7a2 2 0 0 0-1 1.7V19a2 2 0 0 0 2 2h9\"/>", "plus": "<path d=\"M12 5v14M5 12h14\"/>", "cal": "<rect x=\"4\" y=\"5\" width=\"16\" height=\"16\" rx=\"2\"/><path d=\"M4 10h16M8 3v4M16 3v4\"/>", "chart": "<path d=\"M4 20V4M4 20h16M8 16l4-5 3 3 5-7\"/>", "bars": "<path d=\"M6 20v-8M12 20V5M18 20v-5\"/>", "globe": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M3 12h18M12 3c3 3 3 15 0 18M12 3c-3 3-3 15 0 18\"/>", "compass": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M15.5 8.5l-2 5-5 2 2-5z\"/>", "user": "<circle cx=\"12\" cy=\"8\" r=\"4\"/><path d=\"M4 21c0-4 4-6 8-6s8 2 8 6\"/>", "trash": "<path d=\"M4 7h16M10 11v6M14 11v6M6 7l1 13h10l1-13M9 7V4h6v3\"/>", "folder": "<path d=\"M3 7a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v8a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z\"/>", "scissors": "<circle cx=\"6\" cy=\"6\" r=\"3\"/><circle cx=\"6\" cy=\"18\" r=\"3\"/><path d=\"M8.5 8L20 19M8.5 16L20 5\"/>", "web": "<circle cx=\"12\" cy=\"12\" r=\"2\"/><circle cx=\"5\" cy=\"6\" r=\"1.5\"/><circle cx=\"19\" cy=\"7\" r=\"1.5\"/><circle cx=\"12\" cy=\"20\" r=\"1.5\"/><path d=\"M10.5 11L6 7M13.5 11L18 8M12 14v5\"/>", "link": "<path d=\"M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1\"/>", "speaker": "<path d=\"M4 9h4l5-4v14l-5-4H4zM16.5 9a4 4 0 0 1 0 6M19 6.5a8 8 0 0 1 0 11\"/>", "palette": "<path d=\"M12 3a9 9 0 1 0 0 18c1.5 0 2-1 1.5-2s0-2.5 1.5-2.5H18a3 3 0 0 0 3-3C21 7 17 3 12 3z\"/><circle cx=\"8\" cy=\"11\" r=\"1\"/><circle cx=\"12\" cy=\"7.5\" r=\"1\"/><circle cx=\"16\" cy=\"10\" r=\"1\"/>", "flask": "<path d=\"M9 3h6M10 3v6l-5 10a1.5 1.5 0 0 0 1.4 2h11.2a1.5 1.5 0 0 0 1.4-2l-5-10V3M7.5 15h9\"/>", "pin": "<path d=\"M12 21v-7M8 3h8l-1 6 3 4H6l3-4z\"/>", "search": "<circle cx=\"11\" cy=\"11\" r=\"7\"/><path d=\"M20 20l-3.5-3.5\"/>", "home": "<path d=\"M4 11l8-7 8 7v9a1 1 0 0 1-1 1h-4v-6H9v6H5a1 1 0 0 1-1-1z\"/>", "lock": "<rect x=\"5\" y=\"11\" width=\"14\" height=\"10\" rx=\"2\"/><path d=\"M8 11V8a4 4 0 0 1 8 0v3\"/>", "key": "<circle cx=\"8\" cy=\"15\" r=\"4\"/><path d=\"M11 12l9-9M16 7l3 3\"/>", "trophy": "<path d=\"M7 4h10v5a5 5 0 0 1-10 0zM7 6H4v1a3 3 0 0 0 3 3M17 6h3v1a3 3 0 0 1-3 3M12 14v4M8 21h8\"/>", "crown": "<path d=\"M3 8l4 4 5-7 5 7 4-4-2 11H5z\"/>", "warn": "<path d=\"M12 4l9 16H3zM12 10v4M12 17v.5\"/>", "x": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9 9l6 6M15 9l-6 6\"/>", "bulb": "<path d=\"M9 18h6M10 21h4M12 3a6 6 0 0 0-3.5 11c.7.6 1 1.3 1 2h5c0-.7.3-1.4 1-2A6 6 0 0 0 12 3z\"/>", "chat": "<path d=\"M4 5h16v11H9l-5 4z\"/>", "think": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M9.5 9.5a2.5 2.5 0 1 1 3.5 2.3c-.7.4-1 .9-1 1.7M12 17v.5\"/>", "bag": "<rect x=\"3\" y=\"7\" width=\"18\" height=\"13\" rx=\"2\"/><path d=\"M9 7V5a1 1 0 0 1 1-1h4a1 1 0 0 1 1 1v2M3 13h18\"/>", "laptop": "<rect x=\"5\" y=\"5\" width=\"14\" height=\"10\" rx=\"1.5\"/><path d=\"M2 19h20\"/>", "gear": "<circle cx=\"12\" cy=\"12\" r=\"3\"/><path d=\"M12 3v3M12 18v3M3 12h3M18 12h3M5.6 5.6l2.1 2.1M16.3 16.3l2.1 2.1M5.6 18.4l2.1-2.1M16.3 7.7l2.1-2.1\"/>", "bell": "<path d=\"M6 17V11a6 6 0 0 1 12 0v6l2 2H4zM10 21h4\"/>", "clock": "<circle cx=\"12\" cy=\"13\" r=\"8\"/><path d=\"M12 9v4l3 2M9 2h6\"/>", "heart": "<path d=\"M12 20s-8-5-8-11a4.5 4.5 0 0 1 8-2.5A4.5 4.5 0 0 1 20 9c0 6-8 11-8 11z\"/>", "hand": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "down": "<path d=\"M12 4v12M6 12l6 6 6-6M5 21h14\"/>", "up": "<path d=\"M12 20V6M6 12l6-6 6 6\"/>", "camera": "<path d=\"M4 8h3l2-3h6l2 3h3v12H4z\"/><circle cx=\"12\" cy=\"14\" r=\"3.5\"/>", "image": "<rect x=\"3\" y=\"4\" width=\"18\" height=\"16\" rx=\"2\"/><circle cx=\"9\" cy=\"10\" r=\"1.5\"/><path d=\"M4 18l5-5 4 4 3-3 4 4\"/>", "play": "<path d=\"M7 4l13 8-13 8z\"/>", "pause": "<path d=\"M8 5v14M16 5v14\"/>", "stop": "<rect x=\"6\" y=\"6\" width=\"12\" height=\"12\" rx=\"1\"/>", "next": "<path d=\"M5 5l9 7-9 7zM18 5v14\"/>", "ruler": "<path d=\"M3 17L17 3l4 4L7 21zM8 12l2 2M11 9l2 2M14 6l2 2\"/>", "scale": "<path d=\"M12 4v16M6 20h12M5 7h14M5 7l-3 7a3 3 0 0 0 6 0zM19 7l-3 7a3 3 0 0 0 6 0z\"/>", "cube": "<path d=\"M12 3l8 4.5v9L12 21l-8-4.5v-9zM12 12l8-4.5M12 12v9M12 12L4 7.5\"/>", "game": "<rect x=\"3\" y=\"8\" width=\"18\" height=\"10\" rx=\"4\"/><path d=\"M8 11v4M6 13h4M16 12v.5M18 14v.5\"/>", "ball": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M12 8l4 3-1.5 5h-5L8 11zM12 3v5M16 11l5-1M14.5 16l3 4M9.5 16l-3 4M8 11L3 10\"/>", "food": "<path d=\"M7 3v8a2 2 0 0 0 2 2v8M5 3v6M9 3v6M17 21V3c-3 1-4 4-4 8h4\"/>", "run": "<circle cx=\"14\" cy=\"4.5\" r=\"2\"/><path d=\"M9 21l3-6-3-3 2-4 4 2 3 3M6 12l3-3\"/>", "smile": "<circle cx=\"12\" cy=\"12\" r=\"9\"/><path d=\"M8.5 14.5a4.5 4.5 0 0 0 7 0M9 9.5v.5M15 9.5v.5\"/>", "atom": "<circle cx=\"12\" cy=\"12\" r=\"1.5\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(60 12 12)\"/><ellipse cx=\"12\" cy=\"12\" rx=\"9\" ry=\"3.8\" transform=\"rotate(120 12 12)\"/>", "star": "<path d=\"M12 3l2.7 5.6 6.1.8-4.5 4.2 1.1 6-5.4-3-5.4 3 1.1-6L3.2 9.4l6.1-.8z\"/>", "edit": "<path d=\"M4 20l1-4L16 5l3 3L8 19zM14 7l3 3\"/>", "divide": "<path d=\"M5 12h14M12 6v.5M12 18v.5\"/>", "ruler2": "<rect x=\"3\" y=\"3\" width=\"18\" height=\"18\" rx=\"2\"/><path d=\"M3 9h18M9 21V9\"/>", "sync": "<path d=\"M4 12a8 8 0 0 1 13.7-5.6L20 8.5M20 4v4.5h-4.5M20 12a8 8 0 0 1-13.7 5.6L4 15.5M4 20v-4.5h4.5\"/>", "tick": "<path d=\"M5 12.5l4.5 4.5L19 7\"/>", "closex": "<path d=\"M6 6l12 12M18 6L6 18\"/>", "arrowr": "<path d=\"M4 12h15M13 6l6 6-6 6\"/>", "arrowl": "<path d=\"M20 12H5M11 6l-6 6 6 6\"/>", "arrowlr": "<path d=\"M4 12h16M8 8l-4 4 4 4M16 8l4 4-4 4\"/>", "undo": "<path d=\"M9 6L4 11l5 5M4 11h10a5 5 0 0 1 0 10h-3\"/>", "send": "<path d=\"M21 3L10 14M21 3l-7 18-4-7-7-4z\"/>", "full": "<path d=\"M4 9V4h5M20 9V4h-5M4 15v5h5M20 15v5h-5\"/>", "chevd": "<path d=\"M6 9l6 6 6-6\"/>", "chevu": "<path d=\"M6 15l6-6 6 6\"/>"};
 const M={"🎯": "target", "🔥": "fire", "⚡": "bolt", "✨": "spark", "✦": "spark", "🌟": "spark", "⭐": "star", "★": "star", "🧠": "brain", "🧬": "brain", "🧩": "brain", "🎉": "party", "👏": "party", "📖": "book", "📚": "book", "📘": "book", "📒": "book", "🔠": "book", "🎤": "mic", "🎙": "mic", "🗣": "mic", "🎧": "mic", "☀": "sun", "🌙": "moon", "🏛": "school", "🏫": "school", "🏤": "school", "🎓": "cap", "📝": "note", "📄": "note", "📋": "note", "📌": "note", "✍": "edit", "✏": "edit", "✅": "check", "🟢": "check", "🌱": "plant", "🌿": "plant", "🪴": "plant", "🌳": "plant", "🌲": "plant", "🍀": "plant", "🌾": "plant", "🏝": "plant", "🃏": "cards", "🗓": "cal", "📅": "cal", "📈": "chart", "📊": "bars", "🌍": "globe", "🗺": "globe", "🇿": "globe", "🇦": "globe", "🇺": "globe", "🇸": "globe", "🇬": "globe", "🇧": "globe", "🇨": "globe", "🧭": "compass", "👤": "user", "🗑": "trash", "📁": "folder", "✂": "scissors", "🕸": "web", "🔗": "link", "📎": "link", "🔊": "speaker", "🎵": "speaker", "🎨": "palette", "🎭": "palette", "🔬": "flask", "🧪": "flask", "⚗": "flask", "🔍": "search", "🔎": "search", "🏠": "home", "🔒": "lock", "🔑": "key", "🏆": "trophy", "👑": "crown", "⚠": "warn", "❌": "x", "❔": "x", "💡": "bulb", "💬": "chat", "😮": "chat", "🤔": "think", "💼": "bag", "🧳": "bag", "💻": "laptop", "🖥": "laptop", "⌨": "laptop", "🕹": "laptop", "⚙": "gear", "🔔": "bell", "📳": "bell", "⏰": "clock", "⏱": "clock", "❤": "heart", "👆": "hand", "👋": "hand", "💪": "hand", "⬇": "down", "📥": "down", "💾": "down", "⬆": "up", "📷": "camera", "🖼": "image", "🎞": "image", "▶": "play", "⏩": "play", "⏸": "pause", "⏹": "stop", "⏭": "next", "📐": "ruler", "📏": "ruler", "🪜": "ruler", "⚖": "scale", "🧮": "scale", "🧊": "cube", "🐉": "game", "⚽": "ball", "🍳": "food", "🥗": "food", "🍝": "food", "🍽": "food", "🏃": "run", "😬": "smile", "😎": "smile", "⚛": "atom", "➗": "divide", "🚪": "home", "✕": "closex", "✗": "closex", "✖": "closex", "✓": "tick", "✔": "tick", "➤": "send", "⛶": "full", "→": "arrowr", "⇒": "arrowr", "←": "arrowl", "↔": "arrowlr", "↩": "undo", "↻": "sync", "🔄": "sync", "🔁": "sync", "🔃": "sync", "▾": "chevd", "▼": "chevd", "▲": "chevu", "🗽": "school", "🕊": "heart"};
@@ -59,13 +59,13 @@ window.addEventListener("load",()=>fix(document.body));
 })();
 </script>
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover">
-<title>QuickLearn: Notes, AI Flashcards & Smart Revision</title>
-<meta name="description" content="QuickLearn: turn notes into flashcards, tests and study plans in seconds.">
+<title>KatchUp: Notes, AI Flashcards & Smart Revision</title>
+<meta name="description" content="KatchUp: turn notes into flashcards, tests and study plans in seconds.">
 <meta name="theme-color" content="#130c08" />
 <meta name="mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-capable" content="yes" />
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-<meta name="apple-mobile-web-app-title" content="QuickLearn" />
+<meta name="apple-mobile-web-app-title" content="KatchUp" />
 <link rel="icon" type="image/svg+xml" href="favicon.svg" />
 <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png" />
 <link rel="apple-touch-icon" href="apple-touch-icon.png" />
@@ -295,7 +295,7 @@ a.row2,a.ext{text-decoration:none;color:#fff}
 .sub{text-align:center;color:#ddd;margin:-.6rem 0 1.1rem;font-family:DM Sans,system-ui,sans-serif}
 .rec{min-height:8rem;max-height:40vh;overflow:auto;font-family:DM Sans,system-ui,sans-serif;line-height:1.5;color:#ddd}
 
-/* ===== QuickLearn theme layer ===== */
+/* ===== KatchUp theme layer ===== */
 :root{--ql-mint:#e29a2d;--ql-blue:#ff7c5b;--ql-ink:#130d04;--primary:#e29a2d;--primary-fg:#130d04;--font-display:"DM Sans",system-ui,sans-serif;--font-sans:"DM Sans",system-ui,sans-serif}
 body{background:#130c08;background-image:radial-gradient(60rem 30rem at 85% -10%,rgba(226,154,45,.10),transparent 60%),radial-gradient(50rem 30rem at -10% 10%,rgba(255,124,91,.10),transparent 60%);background-attachment:fixed}
 .wm{font-family:"DM Sans",system-ui,sans-serif;font-weight:600;font-size:1.05rem;letter-spacing:-.02em;color:#fff}
@@ -998,7 +998,7 @@ html[data-theme="light"] .blsec-tt small,html[data-theme="light"] .blsec-meta sm
 </style>
 
 <style id="ql-startup-buffer-style">
-/* QuickLearn launch screen — warm take on a mascot splash: solid colour, animated face, wordmark low on the screen */
+/* KatchUp launch screen — warm take on a mascot splash: solid colour, animated face, wordmark low on the screen */
 #ql-startup-buffer{--ql-bg:#F8A14C;--ql-horn:#D4571F;--ql-brow:#E0802B;--ql-ink:#2B1308;--ql-tongue:#FF4A3D;position:fixed;inset:0;z-index:2147483647;background:var(--ql-bg);overflow:hidden;opacity:1;font-family:var(--font-sans,"DM Sans",system-ui,sans-serif);-webkit-user-select:none;user-select:none;-webkit-tap-highlight-color:transparent}
 #ql-startup-buffer .ql-stage{position:absolute;left:50%;top:49.7%;width:min(55.6vw,25.6vh);aspect-ratio:600/560;transform:translate(-50%,-50%)}
 #ql-startup-buffer .ql-face-svg{display:block;width:100%;height:100%;overflow:visible;animation:qlReveal 1.15s ease both}
@@ -1114,12 +1114,12 @@ ul.chk > li[data-chk="1"]{opacity:.65;text-decoration:line-through}
 </style>
 </head>
 <body>
-<div id="ql-startup-buffer" role="status" aria-label="QuickLearn is loading">
+<div id="ql-startup-buffer" role="status" aria-label="KatchUp is loading">
   <div class="ql-ripple" aria-hidden="true"></div>
   <div class="ql-stage" aria-hidden="true">
     <div class="mxw ql-brain" data-mood="wave" style="--s:100%"><svg class="mx" viewBox="0 0 200 200" role="img" aria-label="Brainy, your study buddy" xmlns="http://www.w3.org/2000/svg"><ellipse cx="100" cy="192" rx="52" ry="5" fill="#000" opacity=".16"/><g class="mb-legL"><path d="M82 138 L79 176" fill="none" stroke="#4A1D16" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="73" cy="183" rx="13" ry="6" fill="#4A1D16"/></g><g class="mb-legR"><path d="M118 138 L121 176" fill="none" stroke="#4A1D16" stroke-width="9" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="127" cy="183" rx="13" ry="6" fill="#4A1D16"/></g><g class="mb-armL"><path d="M42 114 Q20 120 20 96" fill="none" stroke="#4A1D16" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="20" cy="90" r="8.5" fill="#4A1D16"/></g><g class="mx-wave"><path d="M158 110 Q184 104 180 74" fill="none" stroke="#4A1D16" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><circle cx="180" cy="68" r="8.5" fill="#4A1D16"/></g><g class="mb-body"><path d="M100 46 C92 32 70 32 62 44 C46 44 36 58 40 72 C28 80 28 100 40 108 C38 124 52 138 68 136 C74 148 92 150 100 142 C108 150 126 148 132 136 C148 138 162 124 160 108 C172 100 172 80 160 72 C164 58 154 44 138 44 C130 32 108 32 100 46Z" fill="#F0687E" stroke="#B93752" stroke-width="3" stroke-linejoin="round"/><g fill="none" stroke="#C9415D" stroke-width="3.5" stroke-linecap="round"><path d="M100 46 C95 60 105 70 100 84"/><path d="M62 44 C66 54 58 62 50 62"/><path d="M40 72 C50 76 54 84 50 92"/><path d="M40 108 C48 104 56 108 58 116"/><path d="M68 136 C70 128 78 126 84 130"/><path d="M138 44 C134 54 142 62 150 62"/><path d="M160 72 C150 76 146 84 150 92"/><path d="M160 108 C152 104 144 108 142 116"/><path d="M132 136 C130 128 122 126 116 130"/><path d="M78 52 C84 58 82 66 76 68"/><path d="M122 52 C116 58 118 66 124 68"/></g><path d="M65 100 Q78 84 91 100" fill="none" stroke="#3A1030" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><path d="M109 100 Q122 84 135 100" fill="none" stroke="#3A1030" stroke-width="5.5" stroke-linecap="round" stroke-linejoin="round"/><ellipse cx="55" cy="114" rx="8" ry="5" fill="#FF9DB0" opacity=".65"/><ellipse cx="145" cy="114" rx="8" ry="5" fill="#FF9DB0" opacity=".65"/><path d="M88 118 Q100 138 112 118Z" fill="#C2243F" stroke="#4A1D16" stroke-width="2.5" stroke-linejoin="round"/><ellipse cx="100" cy="129.5" rx="6" ry="2.8000000000000003" fill="#FF8FA3"/></g><g transform="translate(136 4)"><rect width="52" height="30" rx="15" fill="#35B6E8"/><path d="M12 28 L8 38 L24 29Z" fill="#35B6E8"/><text x="26" y="21" text-anchor="middle" font-size="16" font-weight="800" fill="#fff" font-family="DM Sans,system-ui,sans-serif">Hi!</text></g></svg></div>
   </div>
-  <div class="ql-word">QuickLearn</div>
+  <div class="ql-word">KatchUp</div>
 </div>
 <script>
 /* Closes the launch screen the moment we know where to send the person (sign-in page or home). */
@@ -1135,7 +1135,7 @@ window.__qlFinishStartup=function(){
 </script>
 <div class="shell">
   <header class="top">
-    <div class="brand" onclick="go('#/')">QuickLearn</div>
+    <div class="brand" onclick="go('#/')">KatchUp</div>
     <button class="keybtn" onclick="openKeyModal()">AI key</button>
     <button class="keybtn" id="accountBtn" onclick="openAccountModal()">Sign in</button>
   </header>
@@ -1179,7 +1179,7 @@ try {
     const btn = document.getElementById('accountBtn');
     if (btn) btn.textContent = user ? (user.displayName ? user.displayName.split(' ')[0] : 'Account') : 'Sign in';
     try { qlSyncOnAuth(user); } catch (e) { console.error('Sync start failed:', e); }
-    if (user) { try { toast('Signed in as ' + (user.email || user.displayName || 'QuickLearn user')); } catch (_) {} }
+    if (user) { try { toast('Signed in as ' + (user.email || user.displayName || 'KatchUp user')); } catch (_) {} }
   });
 } catch (e) { console.error('Firebase initialization failed:', e); }
 /* ============================== CLOUD SYNC (Firestore) ============================== */
@@ -1223,7 +1223,7 @@ async function qlSyncOnAuth(user){
       const sameUser=localStorage.getItem(QL_UID_KEY)===user.uid;
       let useCloud;
       if(sameUser) useCloud=updatedAt>localAt;
-      else if(qlLocalHasData()) useCloud=confirm('Your QuickLearn cloud data was found.\n\nOK = load your cloud data on this device (replaces what is here).\nCancel = upload this device\'s data instead (replaces the cloud copy).');
+      else if(qlLocalHasData()) useCloud=confirm('Your KatchUp cloud data was found.\n\nOK = load your cloud data on this device (replaces what is here).\nCancel = upload this device\'s data instead (replaces the cloud copy).');
       else useCloud=true;
       if(useCloud){
         let raw=''; for(let i=0;i<chunks;i++){ const c=await base.doc('chunk_'+i).get(); raw+=(c.exists?c.data().text:''); }
@@ -1331,9 +1331,9 @@ function openAccountModal() {
   const user = quickLearnUser;
   root.innerHTML = `<div class="modal-backdrop" onclick="if(event.target===this)closeAccountModal()"><section class="modal" role="dialog" aria-modal="true" aria-labelledby="qlAuthTitle">
     <button class="modal-close" onclick="closeAccountModal()" aria-label="Close">×</button>
-    <h2 id="qlAuthTitle">${user ? 'Your QuickLearn account' : 'Sign in to QuickLearn'}</h2>
+    <h2 id="qlAuthTitle">${user ? 'Your KatchUp account' : 'Sign in to KatchUp'}</h2>
     ${user ? `<p class="muted">Signed in as <strong>${qlEscapeHtml(user.email || user.displayName || 'Google account')}</strong></p><button class="btn btn-primary" style="width:100%;margin-top:12px" onclick="quickLearnSignOut()">Sign out</button>` : `
-      <p class="muted">Sign in to use your QuickLearn account. Cloud syncing will be enabled after the database rules are configured.</p>
+      <p class="muted">Sign in to use your KatchUp account. Cloud syncing will be enabled after the database rules are configured.</p>
       <label class="field-label" for="qlAuthEmail">Email</label><input class="input" id="qlAuthEmail" type="email" autocomplete="email" placeholder="you@example.com">
       <label class="field-label" for="qlAuthPassword">Password</label><input class="input" id="qlAuthPassword" type="password" autocomplete="current-password" placeholder="At least 6 characters">
       <div id="qlAuthError" role="alert" style="color:var(--danger,#ff6b6b);font-size:.9rem;margin-top:8px"></div>
@@ -1355,7 +1355,7 @@ async function quickLearnEmailSignUp(){
   if(!quickLearnAuth) return qlAuthError('Firebase could not initialize. Check your internet connection and Firebase configuration.');
   const {email,password}=qlAuthFields(); if(!email||!password) return qlAuthError('Enter your email and choose a password.');
   if(password.length<6) return qlAuthError('Use a password with at least 6 characters.');
-  try { await quickLearnAuth.createUserWithEmailAndPassword(email,password); closeAccountModal(); toast('QuickLearn account created!'); }
+  try { await quickLearnAuth.createUserWithEmailAndPassword(email,password); closeAccountModal(); toast('KatchUp account created!'); }
   catch(e){ qlAuthError(qlAuthMessage(e)); }
 }
 async function quickLearnGoogleSignIn(){
@@ -1381,6 +1381,14 @@ function qlAuthMessage(e){ const code=e&&e.code; const map={
   'auth/unauthorized-domain':'This website domain is not authorized in Firebase Authentication settings.'
 }; return map[code] || (e&&e.message) || 'Sign-in failed. Please try again.'; }
 </script>
+<style id="ql-key-css">
+.qlk-steps{list-style:none;padding:0;margin:.7rem 0 .9rem;display:grid;gap:.5rem;counter-reset:qls}
+.qlk-steps li{counter-increment:qls;display:flex;gap:.6rem;align-items:flex-start;font-size:.85rem;line-height:1.35}
+.qlk-steps li::before{content:counter(qls);flex:none;width:1.45rem;height:1.45rem;border-radius:50%;display:grid;place-items:center;font-size:.74rem;font-weight:700;background:var(--primary,#7c5cff);color:var(--primary-fg,#fff)}
+.qlk-status{font-size:.8rem;min-height:1.2rem;margin:.45rem 0 0}
+.qlk-status.ok{color:#22a55a}
+.qlk-status.bad{color:#e5484d}
+</style>
 <script>
 /* ============================== DATA ============================== */
 const DATA_KEY = "quicklearn-data-v1";
@@ -1670,7 +1678,7 @@ function openSettings(){
     <div class="seg full" data-nohap><button id="thNight" class="${light?"":"on"}" onclick="setTheme('dark')">🌙 Night</button><button id="thDay" class="${light?"on":""}" onclick="setTheme('light')">☀️ Day</button></div>
     <div class="setrow" style="cursor:default"><span class="seti">🎞️</span><span class="sett"><b>Reduce motion</b><small id="motSub">${motSub()}</small></span>
       <button id="swMot" data-nohap class="sw${motionReduced()?" on":""}" role="switch" aria-checked="${motionReduced()}" aria-label="Reduce motion" onclick="toggleMotion()"><i></i></button></div>
-    <div class="setrow" style="cursor:default"><span class="seti">🎭</span><span class="sett"><b>Show mascot</b><small id="mxVisibleSub">${settings.mascotVisible===false?"Off · mascot hidden throughout the app":"On · show your QuickLearn buddy"}</small></span>
+    <div class="setrow" style="cursor:default"><span class="seti">🎭</span><span class="sett"><b>Show mascot</b><small id="mxVisibleSub">${settings.mascotVisible===false?"Off · mascot hidden throughout the app":"On · show your KatchUp buddy"}</small></span>
       <button id="swMxVisible" data-nohap class="sw${settings.mascotVisible!==false?" on":""}" role="switch" aria-checked="${settings.mascotVisible!==false}" aria-label="Show mascot" onclick="toggleMascotVisible()"><i></i></button></div>
     <div class="setrow" style="cursor:default"><span class="seti">✨</span><span class="sett"><b>Mascot animations</b><small id="mxSub">${mxSub()}</small></span>
       <button id="swMx" data-nohap class="sw${settings.mascotAnim!==false?" on":""}" role="switch" aria-checked="${settings.mascotAnim!==false}" aria-label="Mascot animations" onclick="toggleMx()"><i></i></button></div>
@@ -2200,7 +2208,7 @@ async function createWordDoc(){
     setTimeout(() => URL.revokeObjectURL(url), 5000);
     if(document.getElementById("docStatus")) closeModal();
     toast(mode === "guide" ? "Study guide created" : "Word document created");
-    notifyLocal("QuickLearn", mode === "guide" ? "Your study guide is ready" : "Your Word document is ready", "#/");
+    notifyLocal("KatchUp", mode === "guide" ? "Your study guide is ready" : "Your Word document is ready", "#/");
   }catch(e){
     console.error(e);
     setDocStatus(esc(e.message || "Couldn't create the Word document") + (mode === "guide" ? "<br><span class='muted'>You can try again, or choose Raw notes to export without AI.</span>" : ""), true);
@@ -2386,7 +2394,7 @@ window.QLCov = (function(){
 // files = [{ dataUrl }] (JPEG data URLs from filesToImages)
 async function gemini(prompt, files, options={}){
   const key = getKey();
-  if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
+  if(!key){ qlAskKey(); throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey"); }
   if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
   const parts = [{text:String(prompt) + "\n\n" + NO_TRANSLATE_RULE}];
   if(files && files.length){
@@ -3018,14 +3026,87 @@ async function getStudyAdvice(){
     out.innerHTML = `${errBox(esc(e.message))}`;
   }
 }
-function openKeyModal(){
-  modal(`<h2 style="font-size:1rem">Gemini API key</h2>
-    <p class="muted" style="margin:.4rem 0 1rem">Needed only for the AI features. Get a free key at aistudio.google.com/apikey. Stored on this device only.</p>
-    <input class="input" id="keyField" placeholder="AIza…" value="${esc(getKey())}">
-    <div class="row" style="justify-content:flex-end;margin-top:1rem">
+function openKeyModal(why){
+  const has = !!getKey();
+  modal(`<h2 style="font-size:1rem">🔑 Connect your free Gemini key</h2>
+    <p class="muted" style="margin:.4rem 0 0">${why ? esc(why) : 'Powers the AI features. It is free, takes about a minute, and stays on this device only.'}</p>
+    <ol class="qlk-steps">
+      <li><span>Tap <b>Get my free key</b> and sign in with Google.</span></li>
+      <li><span>Tap <b>Create API key</b>, then copy it.</span></li>
+      <li><span>Come back here and tap <b>Paste</b>.</span></li>
+    </ol>
+    <a class="btn btn-secondary" style="display:block;text-align:center;box-sizing:border-box;text-decoration:none;margin-bottom:.7rem" href="https://aistudio.google.com/apikey" target="_blank" rel="noopener">Get my free key ↗</a>
+    <div class="row" style="gap:.5rem">
+      <input class="input" id="keyField" placeholder="AIza…" autocomplete="off" autocapitalize="off" spellcheck="false" value="${esc(getKey())}" oninput="qlKeyCheck()" style="flex:1;min-width:0">
+      <button class="btn btn-secondary" style="flex:none" onclick="qlKeyPaste()">Paste</button>
+    </div>
+    <p class="qlk-status" id="keyStatus"></p>
+    <div class="row" style="justify-content:flex-end;margin-top:.8rem">
+      ${has ? '<button class="btn btn-secondary" style="margin-right:auto" onclick="qlKeyRemove()">Remove</button>' : ''}
       <button class="btn btn-secondary" onclick="closeModal()">Cancel</button>
-      <button class="btn btn-primary" onclick="localStorage.setItem('${KEY_KEY}',document.getElementById('keyField').value.trim());closeModal();toast('Key saved')">Save</button>
+      <button class="btn btn-primary" onclick="qlKeySave()">Save</button>
     </div>`);
+  if(has) qlKeyCheck();
+}
+let _qlKeyT = 0;
+function qlKeyPing(k){
+  // XHR on purpose: the AI loading overlay watches fetch() calls to Gemini, and a quick key check should not trigger it
+  return new Promise((res, rej) => {
+    try{
+      const x = new XMLHttpRequest();
+      x.open('GET', 'https://generativelanguage.googleapis.com/v1beta/models?pageSize=1&key=' + encodeURIComponent(k));
+      x.timeout = 8000;
+      x.onload = () => res(x.status);
+      x.onerror = () => rej(new Error('net'));
+      x.ontimeout = () => rej(new Error('net'));
+      x.send();
+    }catch(e){ rej(e); }
+  });
+}
+function qlKeyCheck(){
+  const f = document.getElementById('keyField'), st = document.getElementById('keyStatus'); if(!f || !st) return;
+  const k = f.value.trim(); clearTimeout(_qlKeyT);
+  if(!k){ st.className = 'qlk-status'; st.textContent = ''; return; }
+  if(k.length < 20){ st.className = 'qlk-status bad'; st.textContent = 'That looks too short. Copy the whole key.'; return; }
+  st.className = 'qlk-status'; st.textContent = 'Checking key…';
+  _qlKeyT = setTimeout(async () => {
+    try{
+      const code = await qlKeyPing(k);
+      if(f.value.trim() !== k) return;
+      if(code >= 200 && code < 300){ st.className = 'qlk-status ok'; st.textContent = '✓ Key works'; }
+      else if(code === 400 || code === 403){ st.className = 'qlk-status bad'; st.textContent = 'Google rejected this key. Check you copied all of it.'; }
+      else { st.className = 'qlk-status'; st.textContent = 'Could not verify right now. You can still save it.'; }
+    }catch(_){
+      if(f.value.trim() === k){ st.className = 'qlk-status'; st.textContent = 'Could not reach Google to check it. You can still save it.'; }
+    }
+  }, 450);
+}
+async function qlKeyPaste(){
+  const f = document.getElementById('keyField');
+  try{
+    const t = ((await navigator.clipboard.readText()) || '').trim();
+    if(!t){ toast('Your clipboard is empty. Copy the key first.'); return; }
+    if(f){ f.value = t; qlKeyCheck(); }
+  }catch(_){
+    toast('Could not read the clipboard. Press and hold the box, then paste.');
+    if(f) f.focus();
+  }
+}
+function qlKeySave(){
+  const f = document.getElementById('keyField'), k = f ? f.value.trim() : '';
+  if(!k){ toast('Paste your key first'); return; }
+  try{ localStorage.setItem(KEY_KEY, k); }catch(_){ toast('Could not save the key on this device.'); return; }
+  closeModal(); toast('Key saved ✓');
+}
+function qlKeyRemove(){ try{ localStorage.removeItem(KEY_KEY); }catch(_){} closeModal(); toast('Key removed'); }
+/* asks for the key at the moment it is first needed (delayed so it lands after any "failed" sheet has closed) */
+function qlAskKey(){
+  setTimeout(() => {
+    try{
+      if(getKey() || document.getElementById('keyField')) return;
+      openKeyModal('Add your free Gemini key to use this feature. It takes about a minute.');
+    }catch(_){}
+  }, 650);
 }
 
 /* ============================== FLASHCARD SESSION ============================== */
@@ -3606,7 +3687,7 @@ function renderHome(){
   const qa = (c, ic, label, fn) => `<button onclick="${fn}"><span class="c" style="background:${c}">${ic}</span>${label}</button>`;
   view.innerHTML = `<div class="kh home">
       <button class="avatar eco" onclick="go('#/level')" aria-label="Your level">${eco()}</button>
-      <span class="wm">Quick<b>Learn</b></span><div class="stats">${streakBadge()}${lvlChip()}<span>⚡ ${data.game.xp}</span></div>
+      <span class="wm">Katch<b>Up</b></span><div class="stats">${streakBadge()}${lvlChip()}<span>⚡ ${data.game.xp}</span></div>
       <button class="gear" onclick="openSettings()" aria-label="Settings">${IC.gear}</button>
       <button class="sp" onclick="go('#/search')">${IC.search} Search for anything</button>
       <div class="qa">
@@ -4753,7 +4834,7 @@ async function genCourse(id){
     for(let ci=0;ci<sourceChunks.length;ci++){
       const pct=5+Math.round((ci/sourceChunks.length)*22);
       prog(`Analysing notes section ${ci+1} of ${sourceChunks.length}…`,pct);
-      const pp=`You are QuickLearn's meticulous course architect. The source notes below are the complete authority. Your goal is ZERO OMISSION, not brevity. Return ONLY valid JSON: {"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Specific lesson title","focus":"Precise, exhaustive checklist of every source fact this lesson must teach"}]}]}. There is NO fixed or maximum number of units or lessons. Create as many as required; do not compress details to reduce lesson count. Before planning, mentally inventory every paragraph and sentence, heading, subheading, bullet and nested list item, definition, term, name, date, number, formula, unit, example, classification, component, process step, cause, effect, comparison, condition, exception, qualification, caption, table entry and small factual statement. Split sentences containing multiple facts into independently teachable details. Every such detail must appear explicitly in at least one lesson focus. Preserve the source's organization and terminology; no outside facts, guesses, or silent corrections. Do not use vague focus phrases such as "overview of the topic" to stand in for a detailed checklist. Split dense topics across as many lessons as needed. Each lesson should have a specific title and a detailed focus listing the exact points to teach. Every unit must have at least one lesson. Do not create questions yet.\nSOURCE NOTES:\n${sourceChunks[ci]}`;
+      const pp=`You are KatchUp's meticulous course architect. The source notes below are the complete authority. Your goal is ZERO OMISSION, not brevity. Return ONLY valid JSON: {"title":"Course title","units":[{"title":"Unit title","lessons":[{"title":"Specific lesson title","focus":"Precise, exhaustive checklist of every source fact this lesson must teach"}]}]}. There is NO fixed or maximum number of units or lessons. Create as many as required; do not compress details to reduce lesson count. Before planning, mentally inventory every paragraph and sentence, heading, subheading, bullet and nested list item, definition, term, name, date, number, formula, unit, example, classification, component, process step, cause, effect, comparison, condition, exception, qualification, caption, table entry and small factual statement. Split sentences containing multiple facts into independently teachable details. Every such detail must appear explicitly in at least one lesson focus. Preserve the source's organization and terminology; no outside facts, guesses, or silent corrections. Do not use vague focus phrases such as "overview of the topic" to stand in for a detailed checklist. Split dense topics across as many lessons as needed. Each lesson should have a specific title and a detailed focus listing the exact points to teach. Every unit must have at least one lesson. Do not create questions yet.\nSOURCE NOTES:\n${sourceChunks[ci]}`;
       const raw=await askWithRetry(pp,`Planning section ${ci+1}`);
       const units=parseArray(raw,"units");
       if(!units.length)throw new Error(`No course plan was returned for notes section ${ci+1}.`);
@@ -5298,7 +5379,7 @@ function toggleMascotVisible(){
   const sw = document.getElementById("swMxVisible");
   if(sw){ sw.classList.toggle("on", settings.mascotVisible !== false); sw.setAttribute("aria-checked", settings.mascotVisible !== false); }
   const sub = document.getElementById("mxVisibleSub");
-  if(sub) sub.textContent = settings.mascotVisible === false ? "Off · mascot hidden throughout the app" : "On · show your QuickLearn buddy";
+  if(sub) sub.textContent = settings.mascotVisible === false ? "Off · mascot hidden throughout the app" : "On · show your KatchUp buddy";
   // Re-render the current screen so mascot illustrations disappear/return immediately.
   try { route(); } catch(_) {}
   haptic("select");
@@ -5368,7 +5449,7 @@ function sendToWorker(payload){
 
 async function startJob(kind, deckId, prompt, files, then){
   const key = getKey();
-  if(!key) throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey");
+  if(!key){ qlAskKey(); throw new Error("Add your Gemini API key first (AI key button, top right). Get a free one at aistudio.google.com/apikey"); }
   if(navigator.onLine === false) throw new Error("You're offline — AI features need an internet connection. Everything else still works.");
   if(kind!=="scan"){ const _dm=demarcBlock(deckId); if(_dm) prompt=_dm+prompt; }   // exam scope from the student
   const job = { id:uid(), kind, deckId, then:then||null, status:"running", startedAt:Date.now() };
@@ -5378,9 +5459,9 @@ async function startJob(kind, deckId, prompt, files, then){
     id:job.id, key, prompt,
     images:(files||[]).slice(0,8).map(f=>f.dataUrl.split(",")[1]),
     notify:{
-      title:"QuickLearn",
+      title:"KatchUp",
       ok:`Your ${JOB_NAME[kind]} for “${name}” ${kind==="cards"?"are":"is"} ready`,
-      fail:`Couldn't make your ${JOB_NAME[kind]} for “${name}”. Open QuickLearn to try again.`,
+      fail:`Couldn't make your ${JOB_NAME[kind]} for “${name}”. Open KatchUp to try again.`,
       hash:"#/deck/"+deckId
     }
   });
@@ -5437,7 +5518,7 @@ function completeJob(id, res){
   if(location.hash === "#/deck/"+job.deckId) route();       // refresh only if you're looking at that deck
   if(!ok) setOut(`<div class="panel" style="margin-top:.75rem;color:var(--destructive);font-size:.85rem">${esc(msg)}</div>`);
   else if(location.hash === "#/deck/"+job.deckId && !job.then) setOut("");
-  if(document.hidden) notifyLocal("QuickLearn", ok ? msg : "Couldn't finish: "+msg, "#/deck/"+job.deckId);
+  if(document.hidden) notifyLocal("KatchUp", ok ? msg : "Couldn't finish: "+msg, "#/deck/"+job.deckId);
   else { toast(ok ? msg : "Couldn't finish: "+msg, ok ? "success" : "error"); try{ navigator.vibrate && navigator.vibrate(ok ? 120 : [80,60,80]); }catch(_){} }
   if(ok) setTimeout(()=>{ jobs = jobs.filter(j=>j.id !== id); saveJobs(); renderJobs(); }, 6000);
   renderJobs();
@@ -5509,7 +5590,7 @@ jobs = jobs.filter(j => j.status === "running");   // stale finished/failed pill
 saveJobs(); renderJobs(); checkJobs();
 </script>
 <script>
-/* Automatically show the sign-in dialog when QuickLearn opens for a signed-out visitor. */
+/* Automatically show the sign-in dialog when KatchUp opens for a signed-out visitor. */
 (function () {
   let handledInitialAuthState = false;
   let stopInitialAuthWatch = null;
@@ -5538,7 +5619,7 @@ saveJobs(); renderJobs(); checkJobs();
 })();
 </script>
 <script>
-/* ================= QuickLearn add-on: exam-prep courses · warm dragon faces · sectioned settings · voice ================= */
+/* ================= KatchUp add-on: exam-prep courses · warm dragon faces · sectioned settings · voice ================= */
 (function(){
 "use strict";
 /* ---------- 1. Exam-prep course catalog ---------- */
@@ -5752,7 +5833,7 @@ async function wake(){
 document.addEventListener("visibilitychange",wake);wake();
 window.qlExport=function(){
   const blob=new Blob([JSON.stringify({app:"quicklearn",exported:new Date().toISOString(),data:data,settings:settings},null,2)],{type:"application/json"});
-  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="quicklearn-backup-"+todayISO()+".json";
+  const a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="katchup-backup-"+todayISO()+".json";
   document.body.appendChild(a);a.click();setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove()},500);toast("Backup downloaded");
 };
 window.qlImport=function(file){
@@ -5765,7 +5846,7 @@ window.qlImport=function(file){
         if(!ok)return;localStorage.setItem(DATA_KEY,JSON.stringify(o.data));localStorage.setItem('quicklearn-updated-v1',String(Date.now()));
         if(o.settings)localStorage.setItem(SETTINGS_KEY,JSON.stringify(o.settings));location.reload();
       });
-    }catch(_){toast("That file isn’t a QuickLearn backup")}
+    }catch(_){toast("That file isn’t a KatchUp backup")}
   };
   fr.readAsText(file);
 };
@@ -5820,7 +5901,7 @@ window.openSettings=function(){
     '<div class="setrow" style="cursor:default"><span class="seti">📳</span><span class="sett"><b>Vibrations</b><small id="hapSub">'+hapSub()+'</small></span><button id="swHap" data-nohap class="sw'+(S.haptics?" on":"")+'" role="switch" aria-checked="'+S.haptics+'" aria-label="Vibrations" onclick="toggleHaptics()"><i></i></button></div>'+
     '<button class="btn btn-secondary" data-nohap style="width:100%;margin:.1rem 0 .2rem" onclick="haptic(\'easy\')">✨ Try haptics</button>';
   const buddy=
-    '<div class="setrow" style="cursor:default"><span class="seti">🎭</span><span class="sett"><b>Show mascot</b><small id="mxVisibleSub">'+(S.mascotVisible===false?"Off · mascot hidden throughout the app":"On · show your QuickLearn buddy")+'</small></span><button id="swMxVisible" data-nohap class="sw'+(S.mascotVisible!==false?" on":"")+'" role="switch" aria-checked="'+(S.mascotVisible!==false)+'" aria-label="Show mascot" onclick="toggleMascotVisible()"><i></i></button></div>'+
+    '<div class="setrow" style="cursor:default"><span class="seti">🎭</span><span class="sett"><b>Show mascot</b><small id="mxVisibleSub">'+(S.mascotVisible===false?"Off · mascot hidden throughout the app":"On · show your KatchUp buddy")+'</small></span><button id="swMxVisible" data-nohap class="sw'+(S.mascotVisible!==false?" on":"")+'" role="switch" aria-checked="'+(S.mascotVisible!==false)+'" aria-label="Show mascot" onclick="toggleMascotVisible()"><i></i></button></div>'+
     '<div class="setrow" style="cursor:default"><span class="seti">✨</span><span class="sett"><b>Mascot animations</b><small id="mxSub">'+mxSub()+'</small></span><button id="swMx" data-nohap class="sw'+(S.mascotAnim!==false?" on":"")+'" role="switch" aria-checked="'+(S.mascotAnim!==false)+'" aria-label="Mascot animations" onclick="toggleMx()"><i></i></button></div>'+
     nav("✏️","Buddy name",esc(data.mascot&&data.mascot.name?data.mascot.name:"Not named yet")+" · "+(data.game.coins||0)+" coins","openMascotName(false)");
   const acct=
@@ -5829,7 +5910,7 @@ window.openSettings=function(){
   const dataSec=
     '<div class="setrow" style="cursor:default"><span class="seti">🔄</span><span class="sett"><b>Sync</b><small id="qlSyncSub">'+qlSyncSub()+'</small></span><button id="qlSyncBtn" class="btn btn-secondary" data-nohap style="flex:none" onclick="qlSyncNow()">Sync</button></div>'+
     nav("⬇️","Export backup","Download all your decks, cards and progress","qlExport()")+
-    nav("⬆️","Import backup","Restore from a QuickLearn backup file","document.getElementById(\'qlImp\').click()")+
+    nav("⬆️","Import backup","Restore from a KatchUp backup file","document.getElementById(\'qlImp\').click()")+
     '<input type="file" id="qlImp" accept="application/json,.json" hidden onchange="qlImport(this.files[0]);this.value=\'\'">';
   modal('<div class="sh"><h2>Settings</h2><div style="max-height:68vh;overflow-y:auto;-webkit-overflow-scrolling:touch;margin:0 -.25rem;padding:0 .25rem">'+
     head("🎧","Voice & listening")+voice+head("🎨","Display & comfort")+display+head("🕹️","Feedback")+feel+head("🐉","Study buddy")+buddy+head("👤","Account & AI")+acct+head("💾","Your data")+dataSec+
@@ -5842,7 +5923,7 @@ document.head.appendChild(st);
 })();
 
 </script>
-<!-- ===== QuickLearn additions: AI assistant · day planner · streaks · exam calendar ===== -->
+<!-- ===== KatchUp additions: AI assistant · day planner · streaks · exam calendar ===== -->
 <style id="qx-css">
 .qs-card{margin:.2rem 1.1rem .7rem;padding:1rem;border-radius:1.2rem;background:linear-gradient(135deg,#4a2410,#2a1510);border:1px solid #a94d2a;display:flex;flex-direction:column;gap:.7rem;cursor:pointer;color:#fff}
 .qs-top{display:flex;align-items:center;gap:.8rem}
@@ -5958,7 +6039,7 @@ function planSheet(){const s=P().set,chip=i=>`<button type="button" class="chip2
   <div class="grid2" style="margin-top:.6rem">${L("Study per day")}${sel("qp_study",[[45,"45 min"],[60,"1 hour"],[90,"1.5 hours"],[120,"2 hours"],[180,"3 hours"],[240,"4 hours"]],s.study)}</label>${L("Best study time")}${sel("qp_pref",[["after","After school/work"],["morn","Morning"],["eve","Evening"]],s.pref)}</label>${L("Streak review at")}<input id="qp_rev" type="time" class="input" value="${s.review}"></label>${L("Plan length")}${sel("qp_len",[[7,"1 week"],[14,"2 weeks"],[28,"4 weeks"]],s.len)}</label>${L("Meals in plan")}${sel("qp_meals",[[1,"Yes"],[0,"No"]],s.meals)}</label>${L("Remind me")}${sel("qp_rem",[[0,"Never"],[5,"5 min before"],[10,"10 min before"],[15,"15 min before"],[30,"30 min before"],[60,"1 hour before"]],s.remind)}</label></div>
   <div class="muted" style="margin:.6rem 0 .3rem">Regular activities — one per line, e.g. <i>Football Tue Thu 16:30-18:00</i></div><textarea id="qp_acts" class="input" style="min-height:5rem">${esc(fmtActs())}</textarea>
   <div class="row" style="margin-top:.6rem"><button class="btn btn-secondary" style="flex:1;font-size:.78rem" onclick="QX.notif()">🔔 Allow alerts</button><button class="btn btn-secondary" style="flex:1;font-size:.78rem" onclick="QX.ics()">📥 Add to phone calendar</button></div>
-  <p class="muted" style="font-size:.72rem">Alerts pop up while QuickLearn is open. For reminders when it’s closed, add the plan to your phone calendar.</p>
+  <p class="muted" style="font-size:.72rem">Alerts pop up while KatchUp is open. For reminders when it’s closed, add the plan to your phone calendar.</p>
   <div class="row" style="justify-content:flex-end;margin-top:.6rem"><button class="btn btn-ghost" onclick="closeModal()">Cancel</button><button class="btn btn-primary" onclick="QX.build()">Build my plan</button></div></div>`)}
 function build(o){const p=P(),s=Object.assign(p.set,o.set),today=localISODate(),now=new Date(),nowM=now.getHours()*60+now.getMinutes()+15;let n=0;
   p.act=o.acts;p.ev=p.ev.filter(e=>!(e.src==="plan"&&e.date>=today));
@@ -5987,14 +6068,14 @@ function build(o){const p=P(),s=Object.assign(p.set,o.set),today=localISODate(),
   save()}
 /* ---------- reminders ---------- */
 function ping(e,st){const m=`⏰ ${e.title} ${e.type==="exam"?"is today":"at "+hm(st)}`;toast(m);haptic("select");
-  try{if("Notification"in window&&Notification.permission==="granted"){const t=e.title.replace(/^\S+\s/,"");navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r?r.showNotification("QuickLearn",{body:m,icon:"icon-192.png"}):new Notification("QuickLearn",{body:m}))||0}}catch(_){}}
+  try{if("Notification"in window&&Notification.permission==="granted"){const t=e.title.replace(/^\S+\s/,"");navigator.serviceWorker&&navigator.serviceWorker.getRegistration().then(r=>r?r.showNotification("KatchUp",{body:m,icon:"icon-192.png"}):new Notification("KatchUp",{body:m}))||0}}catch(_){}}
 function tick(){const p=P(),lead=p.set.remind,now=new Date(),f=p.fired=p.fired||{};if(!lead)return;
   [0,1].forEach(k=>{const d=new Date(now.getFullYear(),now.getMonth(),now.getDate()+k),ds=iso(d);evOn(ds).forEach(e=>{if(e.type==="routine"&&!/Wind/.test(e.title))return;
     const st=e.start?mins(e.start):e.type==="exam"?420:null;if(st==null||e.done)return;
     const at=new Date(d.getFullYear(),d.getMonth(),d.getDate(),0,st).getTime()-lead*6e4,key=e.id+ds;
     if(now>=at&&now<at+(lead+5)*6e4&&!f[key]){f[key]=+now;ping(e,st);save()}})});
   for(const k in f)if(now-f[k]>1728e5)delete f[k]}
-function ics(){const lead=P().set.remind||10,z=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z",L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//QuickLearn//EN"],c0=t=>t.replace(/[,;\n]/g," ");
+function ics(){const lead=P().set.remind||10,z=new Date().toISOString().replace(/[-:]/g,"").slice(0,15)+"Z",L=["BEGIN:VCALENDAR","VERSION:2.0","PRODID:-//KatchUp//EN"],c0=t=>t.replace(/[,;\n]/g," ");
   for(let k=0;k<45;k++){const d=new Date();d.setDate(d.getDate()+k);const ds=iso(d),c=ds.replace(/-/g,"");evOn(ds).forEach(e=>{if(e.type==="routine")return;
     L.push("BEGIN:VEVENT","UID:"+e.id+c+"@quicklearn","DTSTAMP:"+z,"SUMMARY:"+c0(e.title));
     if(e.start)L.push("DTSTART:"+c+"T"+e.start.replace(":","")+"00","DTEND:"+c+"T"+(e.end||e.start).replace(":","")+"00");else L.push("DTSTART;VALUE=DATE:"+c);
@@ -6011,7 +6092,7 @@ function fabSync(){const nav=document.querySelector("nav.bottom"),f=document.get
 async function send(txt){txt=(txt||document.getElementById("qaiT").value).trim();if(!txt)return;const p=P(),T=document.getElementById("qaiT");T.value="";
   const hist=p.chat.slice(-8).map(c=>(c.r==="u"?"Student: ":"Coach: ")+c.t).join("\n");
   p.chat.push({r:"u",t:txt});const tmp={r:"a",t:"",tmp:1};p.chat.push(tmp);draw();
-  const prompt=`You are QuickLearn's friendly study coach inside a flashcard app. Be warm, concrete and brief (under 120 words unless asked for a plan). Use the student's data and PERFORMANCE BRIEF below. When asked about weaknesses or how to improve, name the specific topics and numbers from the brief, say what the pattern suggests, and give a short concrete plan (offer to schedule sessions with add_event actions). Never invent results that are not in the brief.\n\n${ctx()}\n\nReply with ONLY JSON: {"reply":"markdown text","actions":[]}. Allowed actions — include them only when the student wants something scheduled: {"type":"add_event","title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","kind":"study|activity","subject":"optional subject name","weekly":false} | {"type":"add_exam","subject":"","date":"YYYY-MM-DD","title":""} | {"type":"plan"} (opens the full day planner).\n\nConversation so far:\n${hist}\nStudent: ${txt}`;
+  const prompt=`You are KatchUp's friendly study coach inside a flashcard app. Be warm, concrete and brief (under 120 words unless asked for a plan). Use the student's data and PERFORMANCE BRIEF below. When asked about weaknesses or how to improve, name the specific topics and numbers from the brief, say what the pattern suggests, and give a short concrete plan (offer to schedule sessions with add_event actions). Never invent results that are not in the brief.\n\n${ctx()}\n\nReply with ONLY JSON: {"reply":"markdown text","actions":[]}. Allowed actions — include them only when the student wants something scheduled: {"type":"add_event","title":"","date":"YYYY-MM-DD","start":"HH:MM","end":"HH:MM","kind":"study|activity","subject":"optional subject name","weekly":false} | {"type":"add_exam","subject":"","date":"YYYY-MM-DD","title":""} | {"type":"plan"} (opens the full day planner).\n\nConversation so far:\n${hist}\nStudent: ${txt}`;
   try{const raw=await gemini(prompt);let j=null;try{j=jparse(raw)}catch(_){}
     if(!j||typeof j!=="object"||Array.isArray(j))j={reply:raw};tmp.tmp=0;tmp.t=String(j.reply||"I’m not sure — could you rephrase that?");tmp.a=(Array.isArray(j.actions)?j.actions:[]).filter(a=>a&&["add_event","add_exam","plan"].includes(a.type)).slice(0,6)}
   catch(e){tmp.tmp=0;tmp.t=e.message;tmp.key=/key/i.test(e.message)}
@@ -6029,7 +6110,7 @@ window.QX={streak:()=>streakSheet(),sm(d){const x=new Date(sm.y,sm.m+d,1);sm={y:
   pick(ds){cal.sel=ds;renderStudy()},mo(d){const x=new Date(cal.y,cal.m+d,1);cal.y=x.getFullYear();cal.m=x.getMonth();renderStudy()},
   today(){const n=new Date();cal.y=n.getFullYear();cal.m=n.getMonth();cal.sel=localISODate();renderStudy()},
   add:evForm,plan:planSheet,ics,send,act,
-  notif:async()=>{if(!("Notification"in window)){toast("Alerts aren’t supported here — add the plan to your phone calendar instead");return}const r=await Notification.requestPermission();toast(r==="granted"?"Alerts on — they appear while QuickLearn is open":"Alerts are blocked — you’ll still see in-app reminders")},
+  notif:async()=>{if(!("Notification"in window)){toast("Alerts aren’t supported here — add the plan to your phone calendar instead");return}const r=await Notification.requestPermission();toast(r==="granted"?"Alerts on — they appear while KatchUp is open":"Alerts are blocked — you’ll still see in-app reminders")},
   saveEv(){const t=document.getElementById("qe_t").value.trim(),ds=document.getElementById("qe_d").value,a=document.getElementById("qe_a").value,b=document.getElementById("qe_b").value,k=document.getElementById("qe_k").value;
     if(!t||!ds||!a||!b||mins(b)<=mins(a)){toast("Add a title, date and a valid start/end time");return}
     if(document.getElementById("qe_w").value==="1")P().act.push({id:uid(),title:t,days:[pd(ds).getDay()],start:a,end:b});
@@ -6051,7 +6132,7 @@ if(!location.hash||location.hash==="#/"||/^#\/study/.test(location.hash))try{rou
 })();
 </script>
 
-<!-- ===== QuickLearn additions: Focus mode · sound effects ===== -->
+<!-- ===== KatchUp additions: Focus mode · sound effects ===== -->
 <style id="qf-css">
 .kh.home .qa{margin-top:1rem}.kh.home~.chips{margin:.3rem 0 .6rem}
 .qs-card{gap:.55rem;padding:.85rem 1rem;margin-bottom:.6rem}.qs-n{font-size:1.8rem}.qs-fl{font-size:2.2rem}
@@ -6115,7 +6196,7 @@ apply();
 
 
 <style>
-/* QuickLearn minimal refresh + mandatory standalone account gate */
+/* KatchUp minimal refresh + mandatory standalone account gate */
 :root{--ql-mint:#d9a56c;--primary:#d9a56c}
 body{background:var(--background);background-image:none}
 .panel,.row2,.lc,.ext,.ob,.chip2,.flashcard,.modal{box-shadow:none!important}
@@ -6176,9 +6257,9 @@ function renderGate(mode){
  qlGateMode=mode||"signin";
  let old=document.getElementById("ql-gate");if(old)old.remove();
  const gate=document.createElement("div");gate.id="ql-gate";
- const terms=`<div class="gate-terms"><strong>QuickLearn Terms & Conditions</strong><br><br>
+ const terms=`<div class="gate-terms"><strong>KatchUp Terms & Conditions</strong><br><br>
 1. <strong>Personal account:</strong> Your account is for your own use. Do not share, sell, rent, or transfer your login or account access.<br><br>
-2. <strong>Source code:</strong> Do not copy, redistribute, publish, sell, reverse engineer, or share QuickLearn's source code except where you have written permission or applicable law permits it.<br><br>
+2. <strong>Source code:</strong> Do not copy, redistribute, publish, sell, reverse engineer, or share KatchUp's source code except where you have written permission or applicable law permits it.<br><br>
 3. <strong>Respectful use:</strong> Do not use the app for unlawful activity, to interfere with its operation, or to access another person's account or data.<br><br>
 4. <strong>Your content:</strong> You are responsible for having permission to upload notes, recordings, and other material. Do not record people or share their words without appropriate consent.<br><br>
 5. <strong>AI-generated content:</strong> Transcriptions, summaries, answers, and study materials may contain mistakes. Check important information against reliable course materials.<br><br>
@@ -6189,10 +6270,10 @@ function renderGate(mode){
 10. <strong>Updates:</strong> These terms may be updated. Where required, we will ask you to review and accept revised terms.<br><br>
 These terms are a practical starting point and do not replace a legally reviewed agreement or privacy policy.</div>`;
  gate.innerHTML=`<div class="gate-card">
-   <div class="gate-brand">QuickLearn<span style="color:var(--primary)">.</span></div>
+   <div class="gate-brand">KatchUp<span style="color:var(--primary)">.</span></div>
    <div class="gate-kicker">${quickLearnUser?"ACCOUNT ACCESS":"YOUR STUDY SPACE"}</div>
    <h1>${quickLearnUser?"One last step.":"Learn with focus."}</h1>
-   <p>${quickLearnUser?"Review and accept the terms to continue to your account.":"Sign in or create an account to continue. Your account is required to use QuickLearn."}</p>
+   <p>${quickLearnUser?"Review and accept the terms to continue to your account.":"Sign in or create an account to continue. Your account is required to use KatchUp."}</p>
    ${quickLearnUser?`<p>Signed in as <strong>${qlEscapeHtml(quickLearnUser.email||quickLearnUser.displayName||"your account")}</strong></p>`:`
    <div class="gate-fields">
     <label for="qlGateEmail">Email address</label><input class="input" id="qlGateEmail" type="email" autocomplete="email" placeholder="you@example.com">
@@ -6204,7 +6285,7 @@ These terms are a practical starting point and do not replace a legally reviewed
    <div class="gate-divider">or</div>
    <button class="btn btn-secondary gate-btn" onclick="qlGateGoogleSignIn()">Continue with Google</button>`}
    <div class="gate-kicker">PLEASE READ</div>${terms}
-   <label class="gate-accept"><input id="qlGateAccept" type="checkbox" ${qlAccepted?"checked":""} onchange="qlGateTermsChanged(this.checked)"><span>I have read and agree to the QuickLearn Terms & Conditions above, including the rules on account sharing, source-code sharing, and responsible use.</span></label>
+   <label class="gate-accept"><input id="qlGateAccept" type="checkbox" ${qlAccepted?"checked":""} onchange="qlGateTermsChanged(this.checked)"><span>I have read and agree to the KatchUp Terms & Conditions above, including the rules on account sharing, source-code sharing, and responsible use.</span></label>
    <button class="btn btn-primary gate-btn" id="qlGateContinue" ${qlAccepted?"":"disabled"} onclick="qlGateContinue()">Accept terms & continue</button>
    ${quickLearnUser?`<button class="btn btn-ghost gate-btn" onclick="quickLearnSignOut()">Sign out</button>`:""}
  </div>`;
@@ -6328,7 +6409,7 @@ if(typeof oldRenderHome==="function")window.renderHome=function(){
 })();
 </script>
 
-<!-- ===== QuickLearn home redesign: two-page minimal home ===== -->
+<!-- ===== KatchUp home redesign: two-page minimal home ===== -->
 <style>
 /* snapping works on the real viewport only when nothing in between is a scroll container */
 body:has(.home-pages),main#view:has(.home-pages){overflow-x:clip!important}
@@ -6453,7 +6534,7 @@ window.renderHome=function(){
 </script>
 
 
-<!-- ===== QuickLearn two-screen layouts: My exams + Progress (same idea as the home page) ===== -->
+<!-- ===== KatchUp two-screen layouts: My exams + Progress (same idea as the home page) ===== -->
 <style>
 body:has(.ex-pages),main#view:has(.ex-pages),body:has(.pg-pages),main#view:has(.pg-pages){overflow-x:clip!important}
 html:has(.ex-pages),html:has(.pg-pages){scroll-snap-type:y proximity}
@@ -6943,7 +7024,7 @@ async function psGet(url){
  return null;
 }
 async function psAsk(prompt){
- const key=getKey();if(!key)throw new Error("Add your Gemini API key first (AI key button, top right).");
+ const key=getKey();if(!key){qlAskKey();throw new Error("Add your Gemini API key first (AI key button, top right).");}
  const cfgs=[[{google_search:{}},{url_context:{}}],[{google_search:{}}]];
  for(const tools of cfgs)for(const model of [GEMINI_MODEL,GEMINI_FALLBACK_MODEL])for(let a=0;a<3;a++){
   let r=null;
@@ -7322,7 +7403,7 @@ html[data-motion="reduced"] :is(.mm,.mm *,.iq-tipbg,.iq-tipbg *,.iq-hero){animat
 </style>
 <script>
 /* =====================================================================================
-   QuickLearn · IQ module
+   KatchUp · IQ module
    1) answer log (confidence, mistakes, attempts)   2) performance analytics + next best step
    3) Forgotten Knowledge                            4) concept mind map + targeted mini-lessons
    5) first-visit page tutorials
@@ -9075,7 +9156,7 @@ window.PF={rec,pt,test,blurt,course,profile,brief,sheet};
 </script>
 <style id="ql-ui-system">
 /* =====================================================================
-   QuickLearn · UI system pass (final layer)
+   KatchUp · UI system pass (final layer)
    1 spacing scale · 2 one type family + hierarchy · 3 softer palette
    4 grid + gutters · 5 icon containers · 6 soft dividers · 7 buttons
    8 labels/badges · 9 prose · 10 optical corrections
@@ -9372,7 +9453,7 @@ function load1(){
   const t=queue[cur]; if(!t){ stop(); return; }
   if(!urls[t.id]) urls[t.id]=URL.createObjectURL(t.blob);
   au.src=urls[t.id]; au.play().catch(()=>{});
-  try{ if("mediaSession" in navigator){ navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:"QuickLearn"}); navigator.mediaSession.setActionHandler("nexttrack",next); navigator.mediaSession.setActionHandler("previoustrack",prev); navigator.mediaSession.setActionHandler("play",()=>au.play()); navigator.mediaSession.setActionHandler("pause",()=>au.pause()); } }catch(_){}
+  try{ if("mediaSession" in navigator){ navigator.mediaSession.metadata=new MediaMetadata({title:t.name,artist:"KatchUp"}); navigator.mediaSession.setActionHandler("nexttrack",next); navigator.mediaSession.setActionHandler("previoustrack",prev); navigator.mediaSession.setActionHandler("play",()=>au.play()); navigator.mediaSession.setActionHandler("pause",()=>au.pause()); } }catch(_){}
   bar(); mr();
 }
 function stop(){ au.pause(); au.removeAttribute("src"); queue=[]; cur=-1; bar(); mr(); }
@@ -10410,7 +10491,7 @@ document.addEventListener("click",function(e){var el=e.target.closest&&e.target.
 </script>
 
 <style id="ql-clarity">
-/* QuickLearn clarity layer: every colour comes from the active theme's accent (--primary), so all 7 styles, light and dark, match */
+/* KatchUp clarity layer: every colour comes from the active theme's accent (--primary), so all 7 styles, light and dark, match */
 :root{--qa:var(--primary,#f0b365);--qa-soft:color-mix(in oklab,var(--qa) 16%,transparent);--qa-line:color-mix(in oklab,var(--qa) 40%,transparent);--qa-on:var(--primary-fg,#111)}
 :focus-visible{outline:2px solid var(--qa);outline-offset:2px}
 #view{padding-bottom:calc(6.5rem + env(safe-area-inset-bottom))}

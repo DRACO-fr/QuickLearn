@@ -1,4 +1,4 @@
-/* QuickLearn service worker
+/* KatchUp service worker
  * 1) Offline: keeps the app, fonts and libraries on the device so it opens with no internet.
  * 2) Background AI jobs: runs Gemini requests so they keep going when you leave the page,
  *    stores the result for the page to pick up, and sends a notification when it's done.
@@ -123,9 +123,9 @@ async function cacheFirst(req) {
 }
 
 function offlinePage() {
-  return new Response("<!doctype html><meta name=viewport content='width=device-width,initial-scale=1'><title>QuickLearn</title>" +
+  return new Response("<!doctype html><meta name=viewport content='width=device-width,initial-scale=1'><title>KatchUp</title>" +
     "<body style='font-family:system-ui;background:#130c08;color:#fff;display:grid;place-items:center;height:100vh;margin:0;text-align:center'>" +
-    "<div><h2>You're offline</h2><p>Open QuickLearn once with internet and it will work offline after that.</p></div>",
+    "<div><h2>You're offline</h2><p>Open KatchUp once with internet and it will work offline after that.</p></div>",
     { status: 503, headers: { "Content-Type": "text/html; charset=utf-8" } });
 }
 
@@ -206,7 +206,7 @@ async function runJob(m) {
   // Only notify if nobody is looking at the app right now.
   if (!wins.some(c => c.visibilityState === "visible") && m.notify) {
     try {
-      await self.registration.showNotification(m.notify.title || "QuickLearn", {
+      await self.registration.showNotification(m.notify.title || "KatchUp", {
         body: result.ok ? m.notify.ok : m.notify.fail,
         icon: "icon-192.png", badge: "icon-192.png",
         tag: "quicklearn-" + (m.notify.hash || m.id),

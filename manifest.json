@@ -1,6 +1,8 @@
 {
-  "name": "QuickLearn",
-  "short_name": "QuickLearn",
+  "name": "KatchUp",
+  "short_name": "KatchUp",
+  "id": "./",
+  "lang": "en",
   "description": "Turn notes into flashcards, tests and study plans in seconds.",
   "start_url": "./index.html",
   "scope": "./",
@@ -9,9 +11,32 @@
   "background_color": "#070b14",
   "theme_color": "#070b14",
   "icons": [
-    { "src": "icon-192.png", "sizes": "192x192", "type": "image/png", "purpose": "any" },
-    { "src": "icon-512.png", "sizes": "512x512", "type": "image/png", "purpose": "any" },
-    { "src": "icon-maskable-512.png", "sizes": "512x512", "type": "image/png", "purpose": "maskable" },
-    { "src": "favicon.svg", "sizes": "any", "type": "image/svg+xml" }
+    {
+      "src": "icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any"
+    },
+    {
+      "src": "icon-maskable-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "maskable"
+    },
+    {
+      "src": "favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml"
+    }
+  ],
+  "categories": [
+    "education",
+    "productivity"
   ]
 }
